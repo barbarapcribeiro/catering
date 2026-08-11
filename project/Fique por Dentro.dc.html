@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<script src="./image-slot.js"></script>
+<style>body { margin:0; }</style>
+</helmet>
+<div style="min-height:100vh;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a2233;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:#fff;border-bottom:1px solid #e3e8f0;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:#283897;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">B</div>
+      <div>
+        <div style="font-weight:700;font-size:14.5px;">Olá, Bárbara C. Ribeiro</div>
+        <div style="font-size:12px;color:#7d8798;">Sodexo &bull; Demonstração</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:18px;">
+      <a href="./Home.dc.html" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Pedidos</a>
+      <a href="./Produção.dc.html" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Produção</a>
+      <a href="./Fique por Dentro.dc.html" style="font-size:13.5px;color:#283897;font-weight:700;text-decoration:none;">Fique por dentro</a>
+      <div style="width:1px;height:22px;background:#e3e8f0;"></div>
+      <button style="position:relative;width:38px;height:38px;border-radius:50%;border:1px solid #e3e8f0;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" style-hover="background:#eff2f8;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#46526a" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span style="position:absolute;top:-2px;right:-2px;background:#c0392b;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;">3</span>
+      </button>
+      <a href="./Painel Administrativo.dc.html" style="padding:9px 16px;border-radius:8px;border:1px solid #1a2233;background:#fff;color:#1a2233;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block;" style-hover="background:#eff2f8;">Painel Administrativo</a>
+    </div>
+  </div>
+
+  <div style="max-width:1080px;margin:0 auto;padding:28px 32px 64px;">
+
+    <div style="margin-bottom:28px;">
+      <h1 style="font-size:26px;font-weight:800;margin:0 0 6px;letter-spacing:-0.3px;">Fique por dentro</h1>
+      <div style="font-size:14px;color:#7d8798;">Novidades, promoções e um resumo da sua semana por aqui.</div>
+    </div>
+
+    <!-- Novidades e Promoções -->
+    <div style="margin-bottom:36px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <span style="font-weight:700;font-size:17px;">Novidades e Promoções</span>
+        <span style="background:#e9edf9;color:#283897;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:12px;">Novidades da semana</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <sc-for list="{{ promos }}" as="p" hint-placeholder-count="3">
+          <div style="background:{{ p.bg }};border-radius:16px;padding:22px;display:grid;grid-template-columns:1fr 220px;gap:20px;align-items:center;">
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <span style="background:#fff;color:{{ p.tagColor }};font-size:11px;font-weight:700;padding:4px 11px;border-radius:12px;">{{ p.tag }}</span>
+                <sc-if value="{{ p.hasDiscount }}" hint-placeholder-val="{{ false }}">
+                  <span style="background:{{ p.tagColor }};color:#fff;font-size:11px;font-weight:800;padding:4px 11px;border-radius:12px;">{{ p.discount }}</span>
+                </sc-if>
+              </div>
+              <div style="font-size:19px;font-weight:800;margin-bottom:8px;">{{ p.title }}</div>
+              <div style="font-size:13.5px;color:#46526a;line-height:1.5;margin-bottom:10px;max-width:440px;">{{ p.detail }}</div>
+              <div style="font-size:12px;color:#7d8798;margin-bottom:16px;">Válido até {{ p.validUntil }}</div>
+              <div style="display:flex;gap:10px;">
+                <button onClick="{{ p.action }}" style="padding:11px 20px;border-radius:9px;border:none;background:{{ p.tagColor }};color:#fff;font-size:13px;font-weight:700;cursor:pointer;">{{ p.cta }}</button>
+                <button onClick="{{ p.toggleDetail }}" style="padding:11px 16px;border-radius:9px;border:1px solid rgba(0,0,0,.1);background:transparent;color:#1a2233;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">{{ p.detailToggleLabel }}</button>
+              </div>
+              <sc-if value="{{ p.expanded }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(0,0,0,.08);font-size:12.5px;color:#46526a;line-height:1.5;">{{ p.terms }}</div>
+              </sc-if>
+            </div>
+            <image-slot id="{{ p.imgId }}" shape="rounded" radius="12" placeholder="Imagem" style="width:100%;height:150px;"></image-slot>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- Sua semana -->
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:10px;">
+        <span style="font-weight:700;font-size:17px;">Sua semana no app</span>
+        <div style="display:flex;gap:8px;">
+          <sc-for list="{{ activityFilters }}" as="f" hint-placeholder-count="4">
+            <button onClick="{{ f.select }}" style="padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid {{ f.border }};background:{{ f.bg }};color:{{ f.color }};">{{ f.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#7d8798;margin-bottom:18px;">Resumo do que você fez por aqui de 21 a 25 de julho.</div>
+
+      <div style="background:#fff;border:1px solid #e3e8f0;border-radius:16px;padding:8px 22px;">
+        <sc-for list="{{ groupedActivity }}" as="g" hint-placeholder-count="5">
+          <div style="padding:16px 0;border-bottom:1px solid #edf1f7;">
+            <div style="font-size:12px;font-weight:700;color:#7d8798;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;">{{ g.dayLabel }}</div>
+            <sc-for list="{{ g.items }}" as="a" hint-placeholder-count="2">
+              <div style="display:flex;align-items:flex-start;gap:12px;padding:8px 0;">
+                <div style="width:30px;height:30px;border-radius:50%;background:{{ a.iconBg }};color:{{ a.iconColor }};display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">{{ a.iconGlyph }}</div>
+                <div style="flex:1;">
+                  <div style="font-size:13.5px;font-weight:600;">{{ a.text }}</div>
+                  <div style="font-size:11.5px;color:#7d8798;">{{ a.time }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noActivity }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:32px 0;color:#7d8798;font-size:13.5px;">Nenhuma atividade nessa categoria esta semana.</div>
+        </sc-if>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const PROMO_DEFS = [
+  {id:'combo', tag:'NOVIDADE', bg:'#e9edf9', tagColor:'#283897', title:'Combo Reunião', imgId:'promo-combo-detail',
+    detail:'Um novo combo pensado para reuniões produtivas: coffee break completo com opções quentes e frias, montado em até 2h úteis.',
+    terms:'Disponível para pedidos com no mínimo 10 pessoas. Sujeito à disponibilidade da unidade de atendimento.',
+    validUntil:'15/08/2026', hasDiscount:false, cta:'Conhecer opções', link:'./Novo Pedido - Coffee Break.dc.html'},
+  {id:'coffee', tag:'PROMOÇÃO', bg:'#e6f5ec', tagColor:'#1a7a4f', title:'Desconto no Coffee Break', imgId:'promo-coffee-detail',
+    detail:'Peça para grupos acima de 20 pessoas e ganhe 10% de desconto automático no valor total do pedido.',
+    terms:'Desconto aplicado automaticamente no carrinho ao atingir 20 pessoas ou mais. Válido para todos os kits de Coffee Break.',
+    validUntil:'31/07/2026', hasDiscount:true, discount:'10% OFF', cta:'Aproveitar agora', link:'./Novo Pedido - Coffee Break.dc.html'},
+  {id:'lanche', tag:'NOVIDADE', bg:'#faf0e3', tagColor:'#b5690f', title:'Lanche Saudável', imgId:'promo-lanche-detail',
+    detail:'Novas opções de lanches saudáveis chegaram ao cardápio: frutas frescas, mix de castanhas e barrinhas integrais.',
+    terms:'Novos itens já disponíveis na categoria Lanche ao montar seu próximo pedido.', validUntil:'sem data limite', hasDiscount:false, cta:'Ver opções', link:null},
+];
+
+const ACTIVITY_DEFS = [
+  {day:'Segunda, 21/07', type:'pedido', text:'Pedido "Coffee Break Diretoria" criado', time:'09:15'},
+  {day:'Segunda, 21/07', type:'favorito', text:'Item "Água Mineral" adicionado aos favoritos', time:'09:20'},
+  {day:'Terça, 22/07', type:'mensagem', text:'Mensagem enviada no chat do pedido #CB-15234', time:'11:18'},
+  {day:'Quarta, 23/07', type:'pedido', text:'Pedido "Lanche Reunião Comercial" solicitado', time:'08:40'},
+  {day:'Quinta, 24/07', type:'busca', text:'Busca por "coffee break" no catálogo de serviços', time:'10:02'},
+  {day:'Quinta, 24/07', type:'favorito', text:'Item "Refeição Normal" adicionado aos favoritos', time:'10:05'},
+  {day:'Sexta, 25/07', type:'pedido', text:'Pedido "Evento Especial RH" solicitado', time:'08:30'},
+];
+
+const ICONS = {
+  pedido: {glyph:'📦', bg:'#e9edf9', color:'#283897'},
+  favorito: {glyph:'★', bg:'#fdf3d9', color:'#b5690f'},
+  mensagem: {glyph:'💬', bg:'#dfeaff', color:'#1e4fa3'},
+  busca: {glyph:'🔍', bg:'#eef0ec', color:'#46526a'},
+};
+
+class Component extends DCLogic {
+  state = {
+    expanded: {},
+    activityFilter: 'todos',
+  };
+
+  toggleDetail = (id) => this.setState(s => ({ expanded: { ...s.expanded, [id]: !s.expanded[id] } }));
+  goTo = (link) => { if (link) window.location.href = link; };
+  setFilter = (f) => this.setState({ activityFilter: f });
+
+  renderVals() {
+    const s = this.state;
+    const promos = PROMO_DEFS.map(p => ({
+      ...p,
+      expanded: !!s.expanded[p.id],
+      detailToggleLabel: s.expanded[p.id] ? 'Ocultar detalhes' : 'Ver detalhes',
+      toggleDetail: () => this.toggleDetail(p.id),
+      action: () => this.goTo(p.link),
+    }));
+
+    const filterDefs = [
+      {id:'todos', label:'Todos'},
+      {id:'pedido', label:'Pedidos'},
+      {id:'favorito', label:'Favoritos'},
+      {id:'mensagem', label:'Mensagens'},
+    ];
+    const activityFilters = filterDefs.map(f => {
+      const active = s.activityFilter === f.id;
+      return { ...f, select: () => this.setFilter(f.id), bg: active ? '#283897' : '#fff', color: active ? '#fff' : '#46526a', border: active ? '#283897' : '#d3dae6' };
+    });
+
+    let filtered = ACTIVITY_DEFS;
+    if (s.activityFilter !== 'todos') filtered = filtered.filter(a => a.type === s.activityFilter);
+
+    const days = [];
+    filtered.forEach(a => {
+      let group = days.find(d => d.dayLabel === a.day);
+      if (!group) { group = { dayLabel: a.day, items: [] }; days.push(group); }
+      const icon = ICONS[a.type];
+      group.items.push({ ...a, iconGlyph: icon.glyph, iconBg: icon.bg, iconColor: icon.color });
+    });
+
+    return {
+      promos,
+      activityFilters,
+      groupedActivity: days,
+      noActivity: days.length === 0,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

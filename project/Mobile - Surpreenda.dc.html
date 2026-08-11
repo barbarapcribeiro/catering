@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet data-dc-atomics>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="min-height:100vh;background:#2a2f3a;display:flex;align-items:flex-start;justify-content:center;padding:28px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="430px,900px">
+  <div style="height:100%;display:flex;flex-direction:column;background:#f5f7fa;color:#1a2233;">
+
+    <div style="display:flex;align-items:center;gap:10px;padding:56px 16px 12px;background:#fff;border-bottom:1px solid #e3e8f0;flex-shrink:0;">
+      <a href="./Mobile - Home.dc.html" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;border:1px solid #e3e8f0;color:#46526a;text-decoration:none;flex-shrink:0;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <div style="flex:1;">
+        <div style="font-size:14.5px;font-weight:800;">Surpreenda</div>
+        <div style="font-size:11px;color:#7d8798;">Pedido #SP-15236 &bull; {{ stepLabel }}</div>
+      </div>
+      <div style="width:34px;height:34px;border-radius:10px;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11.5px;flex-shrink:0;">SP</div>
+    </div>
+
+    <div style="display:flex;gap:6px;padding:10px 16px;background:#fff;border-bottom:1px solid #e3e8f0;flex-shrink:0;">
+      <sc-for list="{{ dots }}" as="d" hint-placeholder-count="5">
+        <div style="flex:1;height:4px;border-radius:2px;background:{{ d.bg }};"></div>
+      </sc-for>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;padding:16px 16px 120px;">
+
+      <!-- STEP 1: kits -->
+      <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <div style="font-size:14px;font-weight:800;">Escolha seus kits</div>
+          <span style="background:#e9edf9;color:#283897;font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;">Mínimo 8 pessoas</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <sc-for list="{{ kits }}" as="k" hint-placeholder-count="4">
+            <div style="display:flex;gap:12px;background:#fff;border:2px solid {{ k.border }};border-radius:14px;padding:12px;">
+              <image-slot id="{{ k.imgId }}" shape="rounded" radius="10" placeholder="Foto" style="width:74px;height:74px;flex-shrink:0;"></image-slot>
+              <div style="flex:1;min-width:0;">
+                <span style="display:inline-block;background:{{ k.badgeBg }};color:#fff;font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:8px;margin-bottom:5px;">{{ k.badge }}</span>
+                <div style="font-size:13.5px;font-weight:700;">{{ k.name }}</div>
+                <div style="font-size:11px;color:#7d8798;margin:2px 0 6px;">{{ k.desc }}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="font-size:14.5px;font-weight:800;">{{ k.priceLabel }}</div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <button onClick="{{ k.dec }}" style="width:28px;height:28px;border-radius:8px;border:1px solid #d3dae6;background:#fff;cursor:pointer;font-size:15px;line-height:1;color:#46526a;">&minus;</button>
+                    <span style="font-size:13px;font-weight:800;min-width:18px;text-align:center;">{{ k.qty }}</span>
+                    <button onClick="{{ k.inc }}" style="width:28px;height:28px;border-radius:8px;border:1px solid #d3dae6;background:#fff;cursor:pointer;font-size:15px;line-height:1;color:#46526a;">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- STEP 2: informações -->
+      <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:14px;font-weight:800;">Informações do evento</div>
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
+            <input type="checkbox" checked="{{ needsApproval }}" onChange="{{ onNeedsApprovalChange }}" style="width:17px;height:17px;cursor:pointer;" />
+            <span style="font-weight:600;">Requer aprovação</span>
+          </label>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;background:#fdedd3;border:1px solid #f0d49a;border-radius:11px;padding:10px 12px;margin-bottom:14px;">
+          <span style="font-size:14px;">⏱️</span>
+          <div style="font-size:11.5px;color:#8a5a0f;font-weight:600;line-height:1.4;">Esse pedido precisa de no mínimo 48h úteis para ser aceito para produção.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <label style="display:block;background:#fff;border:1px solid #d3dae6;border-radius:12px;padding:11px 13px;font-size:11px;font-weight:700;color:#46526a;">Nome do evento
+            <input value="{{ eventName }}" onChange="{{ onEventName }}" placeholder="Ex.: Café da equipe" style="display:block;width:100%;margin-top:5px;border:none;font-size:14px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;background:none;" />
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <label style="background:#fff;border:1px solid #d3dae6;border-radius:12px;padding:11px 13px;font-size:11px;font-weight:700;color:#46526a;">Data do evento
+              <input type="date" value="{{ eventDate }}" onChange="{{ onEventDate }}" style="display:block;width:100%;margin-top:5px;border:none;font-size:13.5px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;background:none;" />
+            </label>
+            <label style="background:#fff;border:1px solid #d3dae6;border-radius:12px;padding:11px 13px;font-size:11px;font-weight:700;color:#46526a;">Horário
+              <input type="time" value="{{ eventTime }}" onChange="{{ onEventTime }}" style="display:block;width:100%;margin-top:5px;border:none;font-size:13.5px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;background:none;" />
+            </label>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#46526a;margin-bottom:7px;">Local de entrega</div>
+            <div style="display:flex;gap:8px;">
+              <sc-for list="{{ localOptions }}" as="lo" hint-placeholder-count="3">
+                <button onClick="{{ lo.select }}" style="flex:1;padding:10px;border-radius:11px;font-size:12.5px;font-weight:700;cursor:pointer;border:2px solid {{ lo.border }};background:{{ lo.bg }};color:{{ lo.color }};">{{ lo.name }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <label style="background:#fff;border:1px solid #d3dae6;border-radius:12px;padding:11px 13px;font-size:11px;font-weight:700;color:#46526a;">Nº de pessoas (mín. 8)
+            <input type="number" min="8" value="{{ people }}" onChange="{{ onPeopleChange }}" style="display:block;width:100%;margin-top:5px;border:none;font-size:13.5px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;background:none;" />
+          </label>
+          <label style="background:#fff;border:1px solid #d3dae6;border-radius:12px;padding:11px 13px;font-size:11px;font-weight:700;color:#46526a;">Observações (opcional)
+            <textarea value="{{ obs }}" onChange="{{ onObsChange }}" rows="3" placeholder="Ex: entregar na copa do 2º andar..." style="display:block;width:100%;margin-top:5px;border:none;font-size:13.5px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;background:none;font-family:inherit;resize:none;"></textarea>
+          </label>
+        </div>
+      </sc-if>
+
+      <!-- STEP 3: revisão -->
+      <sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:14px;font-weight:800;margin-bottom:12px;">Revisão do pedido</div>
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:16px;margin-bottom:12px;">
+          <sc-for list="{{ cartItems }}" as="ci" hint-placeholder-count="2">
+            <div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:8px 0;border-bottom:1px solid #f3f5fa;">
+              <div style="font-weight:600;">{{ ci.name }} <span style="color:#7d8798;font-weight:400;">×{{ ci.qty }}</span></div>
+              <div style="font-weight:700;">{{ ci.priceLabel }}</div>
+            </div>
+          </sc-for>
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#46526a;padding-top:10px;"><span>Subtotal</span><span>{{ subtotalLabel }}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#46526a;margin-top:6px;"><span>Taxa de serviço e/ou frete</span><input value="{{ feeInput }}" onChange="{{ onFeeChange }}" placeholder="R$ 0,00" style="width:90px;text-align:right;padding:5px 8px;border-radius:8px;border:1px solid #d3dae6;font-size:13px;box-sizing:border-box;" /></div>
+          <div style="display:flex;justify-content:space-between;font-size:15.5px;font-weight:800;border-top:2px dashed #e3e8f0;padding-top:10px;margin-top:10px;"><span>Total</span><span style="color:#283897;">{{ totalLabel }}</span></div>
+        </div>
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:16px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12.5px;">
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Evento</div><div style="font-weight:700;">{{ summaryName }}</div></div>
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Data e horário</div><div style="font-weight:700;">{{ summaryDate }} &bull; {{ summaryTime }}</div></div>
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Local</div><div style="font-weight:700;">{{ summaryLocal }}</div></div>
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Pessoas</div><div style="font-weight:700;">{{ people }}</div></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- STEP 4: pagamento -->
+      <sc-if value="{{ isStep4 }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:14px;font-weight:800;margin-bottom:12px;">Forma de pagamento</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+          <sc-for list="{{ paymentOptions }}" as="po" hint-placeholder-count="3">
+            <button onClick="{{ po.select }}" style="display:flex;align-items:center;gap:12px;border:2px solid {{ po.border }};background:{{ po.bg }};border-radius:14px;padding:14px;cursor:pointer;text-align:left;width:100%;box-sizing:border-box;">
+              <div style="width:40px;height:40px;border-radius:10px;background:#e9edf9;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">{{ po.emoji }}</div>
+              <div style="flex:1;">
+                <div style="font-size:13.5px;font-weight:700;">{{ po.label }}</div>
+                <div style="font-size:11.5px;color:#7d8798;">{{ po.sub }}</div>
+              </div>
+              <div style="width:19px;height:19px;border-radius:50%;border:2px solid {{ po.radioBorder }};background:{{ po.radioBg }};box-sizing:border-box;flex-shrink:0;"></div>
+            </button>
+          </sc-for>
+        </div>
+        <sc-if value="{{ isPix }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#e9edf9;border-radius:12px;padding:12px 14px;font-size:12px;color:#2c3a8c;">O QR Code do Pix será exibido no recibo, na próxima etapa.</div>
+        </sc-if>
+        <sc-if value="{{ isCard }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#e9edf9;border-radius:12px;padding:12px 14px;font-size:12px;color:#2c3a8c;">O pagamento com cartão será realizado na entrega, com maquininha.</div>
+        </sc-if>
+      </sc-if>
+
+      <!-- STEP 5: recibo -->
+      <sc-if value="{{ isStep5 }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#e6f5ec;color:#1a7a4f;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">✓</div>
+          <div>
+            <div style="font-size:16px;font-weight:800;">Pedido confirmado!</div>
+            <div style="font-size:11.5px;color:#7d8798;">#SP-15236 &bull; {{ todayLabel }}</div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:16px;padding:20px;">
+          <div style="text-align:center;border-bottom:2px dashed #e3e8f0;padding-bottom:12px;margin-bottom:12px;">
+            <div style="font-size:11px;font-weight:700;color:#7d8798;letter-spacing:.14em;text-transform:uppercase;margin-bottom:3px;">Recibo</div>
+            <div style="font-size:15px;font-weight:800;">Surpreenda &bull; Sodexo</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;border-bottom:1px solid #edf1f7;padding-bottom:12px;margin-bottom:10px;">
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Evento</div><div style="font-weight:700;">{{ summaryName }}</div></div>
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Data e horário</div><div style="font-weight:700;">{{ summaryDate }} &bull; {{ summaryTime }}</div></div>
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Local</div><div style="font-weight:700;">{{ summaryLocal }}</div></div>
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Pessoas</div><div style="font-weight:700;">{{ people }}</div></div>
+          </div>
+          <sc-for list="{{ cartItems }}" as="ci" hint-placeholder-count="2">
+            <div style="display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:6px 0;border-bottom:1px solid #f3f5fa;">
+              <div style="font-weight:600;">{{ ci.name }} <span style="color:#7d8798;font-weight:400;">×{{ ci.qty }}</span></div>
+              <div style="font-weight:700;">{{ ci.priceLabel }}</div>
+            </div>
+          </sc-for>
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#46526a;padding-top:10px;"><span>Subtotal</span><span>{{ subtotalLabel }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#46526a;margin-top:5px;"><span>Taxa de serviço e/ou frete</span><span>{{ feeLabel }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;border-top:2px dashed #e3e8f0;padding-top:9px;margin-top:9px;"><span>Total pago</span><span style="color:#283897;">{{ totalLabel }}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#f5f7fa;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:12px;">
+            <span style="color:#7d8798;">Pagamento</span>
+            <span style="font-weight:700;">{{ paymentLabel }}</span>
+          </div>
+          <div style="text-align:center;font-size:10.5px;color:#a6afc0;border-top:1px dashed #d3dae6;margin-top:14px;padding-top:10px;">Este recibo é uma demonstração e não possui valor fiscal.</div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:16px;padding:18px;margin-top:14px;text-align:center;">
+          <div style="font-size:13px;font-weight:800;margin-bottom:3px;">Pesquisa de satisfação</div>
+          <div style="font-size:11.5px;color:#7d8798;line-height:1.4;margin-bottom:12px;">Escaneie o QR Code para avaliar o serviço</div>
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&amp;data=https://sodexo.example/pesquisa-satisfacao?pedido=SP-15236" alt="QR Code da pesquisa de satisfação" style="width:140px;height:140px;display:block;margin:0 auto;" />
+          <div style="font-size:10px;color:#a6afc0;margin-top:10px;">Pedido #SP-15236</div>
+        </div>
+
+        <a href="./Mobile - Home.dc.html" style="display:block;margin-top:16px;padding:13px;border-radius:12px;border:1px solid #d3dae6;background:#fff;color:#1a2233;font-size:13px;font-weight:700;text-decoration:none;text-align:center;">Voltar para o início</a>
+      </sc-if>
+
+    </div>
+
+    <sc-if value="{{ showBottomBar }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e3e8f0;padding:12px 16px 26px;display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;">
+          <div style="font-size:10.5px;color:#7d8798;">Total estimado</div>
+          <div style="font-size:17px;font-weight:800;color:#283897;">{{ totalLabel }}</div>
+        </div>
+        <sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ goBack }}" style="padding:13px 16px;border-radius:12px;border:1px solid #d3dae6;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#1a2233;">Voltar</button>
+        </sc-if>
+        <button onClick="{{ goNext }}" disabled="{{ nextDisabled }}" style="padding:13px 22px;border-radius:12px;border:none;background:{{ nextBg }};color:#fff;font-size:13px;font-weight:700;cursor:{{ nextCursor }};">{{ nextLabel }}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;bottom:110px;left:20px;right:20px;background:#1a2233;color:#fff;padding:12px 16px;border-radius:12px;font-size:12.5px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.3);z-index:100;text-align:center;">{{ toastMsg }}</div>
+    </sc-if>
+
+  </div>
+</x-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:480,&quot;height&quot;:950}}">
+
+const KITS = [
+  {id:'manha', name:'Kit Café da Manhã', desc:'Pães, frios, frutas, bolos, café e sucos.', price:180, badge:'CAFÉ DA MANHÃ', badgeBg:'#b5690f', imgId:'sp-kit-manha'},
+  {id:'tarde', name:'Kit Café da Tarde', desc:'Bolos, biscoitos, salgados assados, café e chás.', price:170, badge:'CAFÉ DA TARDE', badgeBg:'#1a7a4f', imgId:'sp-kit-tarde'},
+  {id:'horaextra', name:'Kit Hora Extra', desc:'Lanches reforçados, sanduíches, sucos e café.', price:190, badge:'HORA EXTRA', badgeBg:'#2c5f8a', imgId:'sp-kit-horaextra'},
+  {id:'aniversariante', name:'Kit Aniversariante', desc:'Bolo confeitado, salgadinhos, doces e refrigerantes.', price:220, badge:'ANIVERSARIANTE', badgeBg:'#283897', imgId:'sp-kit-aniversariante'},
+];
+const PAYMENTS = [
+  {id:'credito', label:'Cartão de crédito', sub:'Na entrega, com maquininha', emoji:'💳'},
+  {id:'debito', label:'Cartão de débito', sub:'Na entrega, com maquininha', emoji:'💳'},
+  {id:'pix', label:'Pix', sub:'QR Code exibido no recibo', emoji:'⚡'},
+];
+const money = (v) => 'R$ ' + v.toFixed(2).replace('.', ',');
+
+class Component extends DCLogic {
+  state = {
+    step: 1, qtys: {},
+    people: 8, eventDate: '', eventTime: '', eventLocal: '', eventName: '',
+    needsApproval: false, obs: '', payment: null, feeInput: '', toast: null,
+  };
+
+  toastMsg(msg) {
+    this.setState({ toast: true, toastMsg: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: null }), 2200);
+  }
+
+  setQty = (id, v) => this.setState(s => ({ qtys: { ...s.qtys, [id]: Math.max(0, v) } }));
+
+  renderVals() {
+    const s = this.state;
+    const kits = KITS.map(k => {
+      const qty = s.qtys[k.id] || 0;
+      return { ...k, qty, priceLabel: money(k.price),
+        border: qty > 0 ? '#283897' : '#e3e8f0',
+        inc: () => this.setQty(k.id, qty + 1), dec: () => this.setQty(k.id, qty - 1) };
+    });
+    const cartItems = KITS.filter(k => (s.qtys[k.id] || 0) > 0).map(k => ({ name: k.name, qty: s.qtys[k.id], priceLabel: money(k.price * s.qtys[k.id]) }));
+    const subtotal = KITS.reduce((sum, k) => sum + k.price * (s.qtys[k.id] || 0), 0);
+    const fee = parseFloat((s.feeInput || '').replace(',', '.')) || 0;
+    const total = subtotal + fee;
+    const cartEmpty = cartItems.length === 0;
+
+    const paymentOptions = PAYMENTS.map(p => {
+      const sel = s.payment === p.id;
+      return { ...p, select: () => this.setState({ payment: p.id }),
+        border: sel ? '#283897' : '#e3e8f0', bg: sel ? '#f4f6fc' : '#fff',
+        radioBorder: sel ? '#283897' : '#d3dae6', radioBg: sel ? '#283897' : '#fff' };
+    });
+    const paymentDef = PAYMENTS.find(p => p.id === s.payment);
+
+    const stepLabels = {1:'Kits', 2:'Informações', 3:'Revisão', 4:'Pagamento', 5:'Recibo'};
+    const nextLabels = {1:'Continuar', 2:'Revisar pedido', 3:'Ir para pagamento', 4:'Finalizar pedido'};
+    const nextDisabled = (s.step === 1 && cartEmpty) || (s.step === 4 && !s.payment);
+    const todayLabel = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    return {
+      kits, cartItems, paymentOptions,
+      dots: [1,2,3,4,5].map(n => ({ bg: n <= s.step ? '#283897' : '#e3e8f0' })),
+      stepLabel: stepLabels[s.step],
+      isStep1: s.step === 1, isStep2: s.step === 2, isStep3: s.step === 3, isStep4: s.step === 4, isStep5: s.step === 5,
+      showBottomBar: s.step < 5, showBack: s.step > 1,
+      goBack: () => this.setState(st => ({ step: st.step - 1 })),
+      goNext: () => {
+        if (s.step === 4) { this.setState({ step: 5 }); this.toastMsg('Pedido finalizado com sucesso!'); }
+        else this.setState(st => ({ step: st.step + 1 }));
+      },
+      nextLabel: nextLabels[s.step] || '', nextDisabled,
+      nextBg: nextDisabled ? '#b9c2e2' : '#283897',
+      nextCursor: nextDisabled ? 'not-allowed' : 'pointer',
+      subtotalLabel: money(subtotal), totalLabel: money(total), feeLabel: money(fee),
+      feeInput: s.feeInput, onFeeChange: (e) => this.setState({ feeInput: e.target.value }),
+      people: s.people, onPeopleChange: (e) => this.setState({ people: Math.max(8, parseInt(e.target.value) || 8) }),
+      eventName: s.eventName, onEventName: (e) => this.setState({ eventName: e.target.value }),
+      eventDate: s.eventDate, onEventDate: (e) => this.setState({ eventDate: e.target.value }),
+      eventTime: s.eventTime, onEventTime: (e) => this.setState({ eventTime: e.target.value }),
+      localOptions: ['Sala 1', 'Sala 2', 'Sala 3'].map(name => {
+        const sel = s.eventLocal === name;
+        return { name, select: () => this.setState({ eventLocal: name }),
+          border: sel ? '#283897' : '#d3dae6', bg: sel ? '#e9edf9' : '#fff', color: sel ? '#283897' : '#46526a' };
+      }),
+      needsApproval: s.needsApproval,
+      onNeedsApprovalChange: (e) => this.setState({ needsApproval: e.target.checked }),
+      obs: s.obs, onObsChange: (e) => this.setState({ obs: e.target.value }),
+      isPix: s.payment === 'pix', isCard: s.payment === 'credito' || s.payment === 'debito',
+      paymentLabel: paymentDef ? paymentDef.label : '—',
+      todayLabel,
+      summaryName: s.eventName || 'Não informado',
+      summaryDate: s.eventDate || 'Não informado',
+      summaryTime: s.eventTime || '—',
+      summaryLocal: s.eventLocal || 'Não informado',
+      toast: s.toast, toastMsg: s.toastMsg,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<template id="__bundler_thumbnail" data-bg-color="#f5f7fa">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#f5f7fa"/>
+    <rect x="60" y="60" width="1080" height="90" rx="12" fill="#283897"/>
+    <rect x="60" y="180" width="250" height="140" rx="14" fill="#fff" stroke="#e3e8f0" stroke-width="4"/>
+    <rect x="330" y="180" width="250" height="140" rx="14" fill="#fff" stroke="#e3e8f0" stroke-width="4"/>
+    <rect x="600" y="180" width="250" height="140" rx="14" fill="#fff" stroke="#e3e8f0" stroke-width="4"/>
+    <rect x="870" y="180" width="270" height="140" rx="14" fill="#fff" stroke="#e3e8f0" stroke-width="4"/>
+    <rect x="60" y="350" width="600" height="300" rx="14" fill="#fff" stroke="#e3e8f0" stroke-width="4"/>
+    <rect x="680" y="350" width="460" height="300" rx="14" fill="#fff" stroke="#e3e8f0" stroke-width="4"/>
+    <circle cx="900" cy="500" r="80" fill="none" stroke="#283897" stroke-width="24"/>
+  </svg>
+</template>
+<style>body { margin:0; }</style>
+</helmet>
+<div style="min-height:100vh;display:flex;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a2233;">
+
+  <!-- Sidebar -->
+  <div style="width:220px;flex-shrink:0;background:#fff;border-right:1px solid #e3e8f0;padding:20px 14px;display:flex;flex-direction:column;gap:22px;">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 6px;">
+      <div style="width:32px;height:32px;border-radius:8px;background:#283897;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;">S</div>
+      <div style="font-size:14px;font-weight:800;">Sodexo Direct</div>
+    </div>
+
+    <div>
+      <button style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;border:none;background:transparent;color:#46526a;font-size:12.5px;font-weight:600;cursor:pointer;text-align:left;width:100%;box-sizing:border-box;" onClick="{{ goDashboard }}">
+        <span style="width:16px;text-align:center;flex-shrink:0;">🏠</span>Dashboard
+      </button>
+    </div>
+
+    <div>
+      <div style="font-size:10.5px;font-weight:700;color:#a6afc0;text-transform:uppercase;letter-spacing:.04em;padding:0 8px 6px;">Relatórios</div>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <sc-for list="{{ reportNav }}" as="rn" hint-placeholder-count="8">
+          <button onClick="{{ rn.select }}" style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;border:none;background:{{ rn.bg }};color:{{ rn.color }};font-size:12.5px;font-weight:600;cursor:pointer;text-align:left;">
+            <span style="width:16px;text-align:center;flex-shrink:0;">{{ rn.glyph }}</span>{{ rn.label }}
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div style="flex:1;min-width:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:#fff;border-bottom:1px solid #e3e8f0;">
+      <div style="position:relative;width:340px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2" style="position:absolute;left:13px;top:11px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input placeholder="Pesquisar item (pedido, produto, usuário...)" style="width:100%;padding:10px 14px 10px 36px;border-radius:9px;border:1px solid #d3dae6;font-size:13px;outline:none;box-sizing:border-box;" />
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;flex-shrink:0;">
+        <a href="./Home.dc.html" style="font-size:12.5px;color:#283897;font-weight:600;text-decoration:none;white-space:nowrap;">← Voltar ao app</a>
+        <div style="display:flex;align-items:center;gap:9px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:#283897;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">B</div>
+          <div>
+            <div style="font-size:12.5px;font-weight:700;white-space:nowrap;">Bárbara C. Ribeiro</div>
+            <div style="font-size:10.5px;color:#7d8798;white-space:nowrap;">Administrador</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:24px 28px 48px;max-width:1400px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h1 style="font-size:22px;font-weight:800;margin:0 0 4px;letter-spacing:-0.3px;">Relatórios</h1>
+          <div style="font-size:13px;color:#7d8798;">Acompanhe indicadores, análise de pedidos e faturamento da sua operação.</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div style="padding:9px 14px;border-radius:9px;border:1px solid #d3dae6;background:#fff;font-size:12.5px;font-weight:600;white-space:nowrap;">📅 {{ periodLabel }}</div>
+          <button style="padding:9px 14px;border-radius:9px;border:1px solid #d3dae6;background:#fff;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;">Comparar período</button>
+          <button onClick="{{ exportReport }}" style="padding:9px 16px;border-radius:9px;border:none;background:#283897;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;">⭳ Exportar</button>
+        </div>
+      </div>
+
+      <sc-if value="{{ exportOpen }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeExport }}" style="position:fixed;inset:0;background:rgba(20,18,15,.45);z-index:90;display:flex;align-items:center;justify-content:center;padding:20px;">
+          <div onClick="{{ stopProp }}" style="background:#fff;border-radius:16px;width:420px;max-width:100%;padding:26px;">
+            <div style="font-size:16px;font-weight:800;margin-bottom:4px;">Exportar para Excel</div>
+            <div style="font-size:12.5px;color:#7d8798;margin-bottom:18px;">Selecione os campos que devem ser incluídos na exportação (dados de "Pedidos").</div>
+            <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:18px;">
+              <sc-for list="{{ exportFields }}" as="ef" hint-placeholder-count="7">
+                <label style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #edf1f7;font-size:13px;cursor:pointer;">
+                  <input type="checkbox" checked="{{ ef.checked }}" onChange="{{ ef.toggle }}" style="width:16px;height:16px;accent-color:#283897;cursor:pointer;" />
+                  {{ ef.label }}
+                </label>
+              </sc-for>
+            </div>
+            <div style="font-size:11.5px;color:#7d8798;margin-bottom:16px;">{{ exportCountLabel }}</div>
+            <div style="display:flex;gap:10px;">
+              <button onClick="{{ closeExport }}" style="flex:1;padding:11px;border-radius:9px;border:1px solid #d3dae6;background:#fff;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+              <button onClick="{{ doExport }}" disabled="{{ noFieldsSelected }}" style="flex:2;padding:11px;border-radius:9px;border:none;background:{{ exportBtnBg }};color:#fff;font-size:13px;font-weight:700;cursor:{{ exportBtnCursor }};">⭳ Exportar .xlsx</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="display:flex;gap:20px;border-bottom:1px solid #e3e8f0;margin-bottom:20px;overflow-x:auto;flex-wrap:wrap;">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="8">
+          <button onClick="{{ t.select }}" style="padding:9px 2px;border:none;background:none;border-bottom:2px solid {{ t.borderColor }};color:{{ t.color }};font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">{{ t.label }}</button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ isVisaoGeral }}" hint-placeholder-val="{{ true }}">
+        <!-- KPI cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px;">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="5">
+            <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:14px 16px;min-width:0;box-sizing:border-box;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <div style="font-size:11.5px;color:#7d8798;font-weight:600;">{{ k.label }}</div>
+                <span style="font-size:13px;">{{ k.glyph }}</span>
+              </div>
+              <div style="font-size:19px;font-weight:800;margin-bottom:6px;">{{ k.value }}</div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:11px;color:{{ k.trendColor }};font-weight:600;">{{ k.trend }}</span>
+              </div>
+              <svg viewBox="0 0 100 28" style="width:100%;height:26px;margin-top:6px;"><polyline points="{{ k.spark }}" fill="none" stroke="{{ k.sparkColor }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:14px;margin-bottom:14px;align-items:start;">
+          <!-- bar chart -->
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:14px;">Faturamento por dia</div>
+            <svg viewBox="0 0 320 130" style="width:100%;height:130px;">
+              <sc-for list="{{ barChart }}" as="b" hint-placeholder-count="8">
+                <rect x="{{ b.x }}" y="{{ b.y }}" width="{{ b.w }}" height="{{ b.h }}" rx="2" fill="#283897"/>
+              </sc-for>
+            </svg>
+            <div style="display:flex;justify-content:space-between;font-size:9.5px;color:#7d8798;margin-top:2px;">
+              <sc-for list="{{ barLabels }}" as="l" hint-placeholder-count="8"><span>{{ l }}</span></sc-for>
+            </div>
+          </div>
+
+          <!-- donut by service -->
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:14px;">Faturamento por tipo de serviço</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{ serviceBreakdown }}" as="sb" hint-placeholder-count="4">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;">
+                    <span style="font-weight:600;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:{{ sb.color }};display:inline-block;"></span>{{ sb.label }}</span>
+                    <span style="color:#7d8798;">{{ sb.pct }}%</span>
+                  </div>
+                  <div style="height:6px;border-radius:4px;background:#eaeef5;overflow:hidden;"><div style="height:100%;width:{{ sb.pct }}%;background:{{ sb.color }};border-radius:4px;"></div></div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid #edf1f7;">
+              <span style="font-size:11.5px;color:#7d8798;">Total</span>
+              <span style="font-size:15px;font-weight:800;color:#283897;">{{ serviceTotalLabel }}</span>
+            </div>
+          </div>
+
+          <!-- top units -->
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+              <div style="font-size:13.5px;font-weight:700;">Top 5 Centros de custo</div>
+              <span style="font-size:11px;color:#7d8798;">Faturamento</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:11px;">
+              <sc-for list="{{ topUnits }}" as="u" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:20px;height:20px;border-radius:6px;background:#e9edf9;color:#283897;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ u.rank }}</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ u.name }}</div>
+                    <div style="height:5px;border-radius:3px;background:#eaeef5;margin-top:4px;overflow:hidden;"><div style="height:100%;width:{{ u.pct }}%;background:#283897;border-radius:3px;"></div></div>
+                  </div>
+                  <div style="font-size:11.5px;font-weight:700;flex-shrink:0;">{{ u.valueLabel }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <!-- status row -->
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;">
+          <sc-for list="{{ statusCards }}" as="s" hint-placeholder-count="5">
+            <button onClick="{{ s.action }}" style="background:{{ s.bg }};border:1px solid {{ s.border }};border-radius:12px;padding:13px 15px;text-align:left;cursor:pointer;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span style="font-size:14px;">{{ s.glyph }}</span>
+                <span style="font-size:11.5px;font-weight:700;color:{{ s.color }};">{{ s.label }}</span>
+              </div>
+              <div style="font-size:17px;font-weight:800;margin-bottom:4px;">{{ s.value }}</div>
+              <div style="font-size:11px;color:{{ s.color }};font-weight:600;">Ver pedidos &rsaquo;</div>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.1fr 1.3fr;gap:14px;">
+          <!-- resumo por tipo -->
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <div style="font-size:13.5px;font-weight:700;">Resumo de faturamento</div>
+              <a href="#" style="font-size:11.5px;color:#283897;font-weight:600;text-decoration:none;">Ver relatório completo</a>
+            </div>
+            <div style="display:grid;grid-template-columns:1.3fr 0.8fr 0.8fr 0.9fr 0.9fr;gap:6px;padding-bottom:8px;border-bottom:1px solid #e3e8f0;font-size:10px;font-weight:700;color:#7d8798;text-transform:uppercase;">
+              <div>Tipo</div><div>Fat.</div><div>%</div><div>Pedidos</div><div>vs período</div>
+            </div>
+            <sc-for list="{{ serviceBreakdown }}" as="sb" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:1.3fr 0.8fr 0.8fr 0.9fr 0.9fr;gap:6px;align-items:center;padding:10px 0;border-bottom:1px solid #f3f5fa;">
+                <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;"><span style="width:8px;height:8px;border-radius:50%;background:{{ sb.color }};flex-shrink:0;"></span>{{ sb.label }}</div>
+                <div style="font-size:12px;font-weight:700;">{{ sb.valueLabel }}</div>
+                <div style="font-size:12px;color:#7d8798;">{{ sb.pct }}%</div>
+                <div style="font-size:12px;">{{ sb.orders }}</div>
+                <div style="font-size:11.5px;font-weight:600;color:{{ sb.trendColor }};">{{ sb.trend }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- ultimos pedidos -->
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <div style="font-size:13.5px;font-weight:700;">Últimos pedidos</div>
+              <a href="./Gerenciar Pedidos.dc.html" style="font-size:11.5px;color:#283897;font-weight:600;text-decoration:none;">Ver todos</a>
+            </div>
+            <div style="display:grid;grid-template-columns:1.4fr 0.9fr 1fr 0.9fr;gap:6px;padding-bottom:8px;border-bottom:1px solid #e3e8f0;font-size:10px;font-weight:700;color:#7d8798;text-transform:uppercase;">
+              <div>Pedido</div><div>Unidade</div><div>Data/Hora</div><div>Status</div>
+            </div>
+            <sc-for list="{{ recentOrders }}" as="o" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:1.4fr 0.9fr 1fr 0.9fr;gap:6px;align-items:center;padding:10px 0;border-bottom:1px solid #f3f5fa;">
+                <div style="min-width:0;">
+                  <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ o.id }}</div>
+                  <div style="font-size:10.5px;color:#7d8798;">{{ o.type }}</div>
+                </div>
+                <div style="font-size:11.5px;color:#46526a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ o.unidade }}</div>
+                <div style="font-size:11.5px;color:#46526a;">{{ o.datetime }}</div>
+                <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:{{ o.statusBg }};color:{{ o.statusColor }};justify-self:start;white-space:nowrap;">{{ o.status }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isPedidos }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px;">
+          <sc-for list="{{ pedidosKpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:14px 16px;min-width:0;box-sizing:border-box;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <div style="font-size:11.5px;color:#7d8798;font-weight:600;">{{ k.label }}</div>
+                <span style="font-size:13px;">{{ k.glyph }}</span>
+              </div>
+              <div style="font-size:19px;font-weight:800;margin-bottom:6px;">{{ k.value }}</div>
+              <div style="font-size:11px;color:{{ k.trendColor }};font-weight:600;">{{ k.trend }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:14px;align-items:start;">
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:14px;">Volume de pedidos por dia</div>
+            <svg viewBox="0 0 320 130" style="width:100%;height:130px;">
+              <sc-for list="{{ pedidosBarChart }}" as="b" hint-placeholder-count="8">
+                <rect x="{{ b.x }}" y="{{ b.y }}" width="{{ b.w }}" height="{{ b.h }}" rx="2" fill="#1e4fa3"/>
+              </sc-for>
+            </svg>
+            <div style="display:flex;justify-content:space-between;font-size:9.5px;color:#7d8798;margin-top:2px;">
+              <sc-for list="{{ barLabels }}" as="l" hint-placeholder-count="8"><span>{{ l }}</span></sc-for>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:14px;">Pedidos por status</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{ pedidosStatusBreakdown }}" as="sb" hint-placeholder-count="5">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;">
+                    <span style="font-weight:600;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:{{ sb.color }};display:inline-block;"></span>{{ sb.label }}</span>
+                    <span style="color:#7d8798;">{{ sb.count }} &bull; {{ sb.pct }}%</span>
+                  </div>
+                  <div style="height:6px;border-radius:4px;background:#eaeef5;overflow:hidden;"><div style="height:100%;width:{{ sb.pct }}%;background:{{ sb.color }};border-radius:4px;"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+            <div style="font-size:13.5px;font-weight:700;">Todos os pedidos do período</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <div style="position:relative;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2" style="position:absolute;left:10px;top:9px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+                <input value="{{ pedidosSearch }}" onChange="{{ onPedidosSearch }}" placeholder="Buscar pedido, tipo ou unidade..." style="padding:7px 10px 7px 28px;border-radius:7px;border:1px solid #d3dae6;font-size:12px;outline:none;box-sizing:border-box;width:220px;" />
+              </div>
+              <select value="{{ pedidosStatusFilter }}" onChange="{{ onPedidosStatusFilter }}" style="border:1px solid #d3dae6;border-radius:7px;padding:7px 8px;font-size:12px;">
+                <option value="todos">Todos os status</option>
+                <sc-for list="{{ statusOptions }}" as="so" hint-placeholder-count="5"><option value="{{ so }}">{{ so }}</option></sc-for>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 0.7fr 0.9fr 1fr;gap:8px;padding-bottom:8px;border-bottom:1px solid #e3e8f0;font-size:10px;font-weight:700;color:#7d8798;text-transform:uppercase;">
+            <div>Pedido</div><div>Tipo</div><div>Unidade</div><div>Data/Hora</div><div>Pessoas</div><div>Valor</div><div>Status</div>
+          </div>
+          <sc-for list="{{ allOrders }}" as="o" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 0.7fr 0.9fr 1fr;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #f3f5fa;">
+              <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ o.id }}</div>
+              <div style="font-size:12px;color:#46526a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ o.type }}</div>
+              <div style="font-size:12px;color:#46526a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ o.unidade }}</div>
+              <div style="font-size:11.5px;color:#46526a;">{{ o.datetime }}</div>
+              <div style="font-size:12px;color:#46526a;">{{ o.people }}</div>
+              <div style="font-size:12px;font-weight:700;">{{ o.valueLabel }}</div>
+              <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:{{ o.statusBg }};color:{{ o.statusColor }};justify-self:start;white-space:nowrap;">{{ o.status }}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noOrdersFiltered }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:28px 0;color:#7d8798;font-size:13px;">Nenhum pedido encontrado com esses filtros.</div>
+          </sc-if>
+          <div style="font-size:11.5px;color:#7d8798;margin-top:12px;">Mostrando {{ allOrdersCount }} de {{ totalOrdersInPeriod }} pedidos do período.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isFaturamento }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px;">
+          <sc-for list="{{ faturamentoKpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:14px 16px;min-width:0;box-sizing:border-box;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <div style="font-size:11.5px;color:#7d8798;font-weight:600;">{{ k.label }}</div>
+                <span style="font-size:13px;">{{ k.glyph }}</span>
+              </div>
+              <div style="font-size:19px;font-weight:800;margin-bottom:6px;">{{ k.value }}</div>
+              <div style="font-size:11px;color:{{ k.trendColor }};font-weight:600;">{{ k.trend }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:14px;align-items:start;">
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:14px;">Faturamento por dia</div>
+            <svg viewBox="0 0 320 130" style="width:100%;height:130px;">
+              <sc-for list="{{ barChart }}" as="b" hint-placeholder-count="8">
+                <rect x="{{ b.x }}" y="{{ b.y }}" width="{{ b.w }}" height="{{ b.h }}" rx="2" fill="#283897"/>
+              </sc-for>
+            </svg>
+            <div style="display:flex;justify-content:space-between;font-size:9.5px;color:#7d8798;margin-top:2px;">
+              <sc-for list="{{ barLabels }}" as="l" hint-placeholder-count="8"><span>{{ l }}</span></sc-for>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:14px;">Faturamento por centro de custo</div>
+            <div style="display:flex;flex-direction:column;gap:11px;">
+              <sc-for list="{{ faturamentoPorCC }}" as="cc" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-bottom:4px;">
+                      <span style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;">{{ cc.code }}</span>
+                      <span style="font-weight:700;white-space:nowrap;flex-shrink:0;">{{ cc.valueLabel }}</span>
+                    </div>
+                    <div style="height:6px;border-radius:4px;background:#eaeef5;overflow:hidden;"><div style="height:100%;width:{{ cc.pct }}%;background:#283897;border-radius:4px;"></div></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+            <div style="font-size:13.5px;font-weight:700;">Faturas</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <sc-for list="{{ faturaFilterTabs }}" as="ft" hint-placeholder-count="4">
+                <button onClick="{{ ft.select }}" style="padding:7px 14px;border-radius:20px;font-size:11.5px;font-weight:700;cursor:pointer;border:1px solid {{ ft.border }};background:{{ ft.bg }};color:{{ ft.color }};white-space:nowrap;">{{ ft.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1.2fr 1.1fr 1fr 0.9fr 0.9fr 1fr;gap:8px;padding-bottom:8px;border-bottom:1px solid #e3e8f0;font-size:10px;font-weight:700;color:#7d8798;text-transform:uppercase;">
+            <div>Fatura</div><div>Unidade</div><div>Centro de custo</div><div>Vencimento</div><div>Valor</div><div>Status</div>
+          </div>
+          <sc-for list="{{ faturas }}" as="f" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:1.2fr 1.1fr 1fr 0.9fr 0.9fr 1fr;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #f3f5fa;">
+              <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ f.id }}</div>
+              <div style="font-size:12px;color:#46526a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ f.unidade }}</div>
+              <div style="font-size:12px;color:#46526a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ f.cc }}</div>
+              <div style="font-size:11.5px;color:#46526a;">{{ f.dueDate }}</div>
+              <div style="font-size:12px;font-weight:700;">{{ f.valueLabel }}</div>
+              <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:{{ f.statusBg }};color:{{ f.statusColor }};justify-self:start;white-space:nowrap;">{{ f.status }}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noFaturas }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:28px 0;color:#7d8798;font-size:13px;">Nenhuma fatura nesse filtro.</div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isProdutos }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px;">
+          <sc-for list="{{ produtosKpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:14px 16px;min-width:0;box-sizing:border-box;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <div style="font-size:11.5px;color:#7d8798;font-weight:600;">{{ k.label }}</div>
+                <span style="font-size:13px;">{{ k.glyph }}</span>
+              </div>
+              <div style="font-size:17px;font-weight:800;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ k.value }}</div>
+              <div style="font-size:11px;color:{{ k.trendColor }};font-weight:600;">{{ k.trend }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;align-items:start;">
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+              <span style="font-size:14px;">🏆</span>
+              <div style="font-size:13.5px;font-weight:700;">Top 10 mais vendidos</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:11px;">
+              <sc-for list="{{ topProducts }}" as="p" hint-placeholder-count="10">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:20px;height:20px;border-radius:6px;background:#e6f5ec;color:#1a7a4f;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ p.rank }}</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.name }}</div>
+                    <div style="height:5px;border-radius:3px;background:#eaeef5;margin-top:4px;overflow:hidden;"><div style="height:100%;width:{{ p.pct }}%;background:#1a7a4f;border-radius:3px;"></div></div>
+                  </div>
+                  <div style="text-align:right;flex-shrink:0;">
+                    <div style="font-size:11.5px;font-weight:700;">{{ p.qtyLabel }}</div>
+                    <div style="font-size:10px;color:#7d8798;">{{ p.valueLabel }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+              <span style="font-size:14px;">📉</span>
+              <div style="font-size:13.5px;font-weight:700;">Menos vendidos no período</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:11px;">
+              <sc-for list="{{ bottomProducts }}" as="p" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:20px;height:20px;border-radius:6px;background:#fbe4e0;color:#c0392b;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ p.rank }}</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.name }}</div>
+                  </div>
+                  <div style="text-align:right;flex-shrink:0;">
+                    <div style="font-size:11.5px;font-weight:700;">{{ p.qtyLabel }}</div>
+                    <div style="font-size:10px;color:#7d8798;">{{ p.lastOrdered }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid #edf1f7;">
+              <div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;">⚠️ Sem pedidos há 30+ dias</div>
+              <sc-for list="{{ staleProducts }}" as="sp" hint-placeholder-count="3">
+                <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #f3f5fa;">
+                  <span>{{ sp.name }}</span>
+                  <span style="color:#c0392b;font-weight:600;">{{ sp.lastOrdered }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:14px;">Faturamento por categoria</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{ categoryBreakdown }}" as="cb" hint-placeholder-count="5">
+                <div>
+                  <div style="display:flex;justify-content:space-between;gap:8px;font-size:11.5px;margin-bottom:3px;">
+                    <span style="font-weight:600;display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><span style="width:8px;height:8px;border-radius:50%;background:{{ cb.color }};display:inline-block;flex-shrink:0;"></span>{{ cb.label }}</span>
+                    <span style="color:#7d8798;flex-shrink:0;">{{ cb.pct }}%</span>
+                  </div>
+                  <div style="height:6px;border-radius:4px;background:#eaeef5;overflow:hidden;"><div style="height:100%;width:{{ cb.pct }}%;background:{{ cb.color }};border-radius:4px;"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:6px;">Sugestões de cardápio</div>
+            <div style="font-size:11.5px;color:#7d8798;margin-bottom:14px;">Baseado no desempenho dos últimos 30 dias.</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{ suggestions }}" as="sg" hint-placeholder-count="4">
+                <div style="display:flex;align-items:flex-start;gap:10px;background:{{ sg.bg }};border-radius:9px;padding:10px 12px;">
+                  <span style="font-size:14px;">{{ sg.glyph }}</span>
+                  <div style="font-size:12px;color:{{ sg.color }};font-weight:600;line-height:1.4;">{{ sg.text }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSatisfacao }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px;">
+          <sc-for list="{{ satisfacaoKpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:14px 16px;min-width:0;box-sizing:border-box;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <div style="font-size:11.5px;color:#7d8798;font-weight:600;">{{ k.label }}</div>
+                <span style="font-size:13px;">{{ k.glyph }}</span>
+              </div>
+              <div style="font-size:19px;font-weight:800;margin-bottom:6px;">{{ k.value }}</div>
+              <div style="font-size:11px;color:{{ k.trendColor }};font-weight:600;">{{ k.trend }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:14px;margin-bottom:14px;align-items:start;">
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:14px;">Distribuição das respostas</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <sc-for list="{{ npsBreakdown }}" as="nb" hint-placeholder-count="3">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+                    <span style="font-weight:700;display:flex;align-items:center;gap:6px;">{{ nb.glyph }} {{ nb.label }}</span>
+                    <span style="color:#7d8798;">{{ nb.count }} &bull; {{ nb.pct }}%</span>
+                  </div>
+                  <div style="height:8px;border-radius:4px;background:#eaeef5;overflow:hidden;"><div style="height:100%;width:{{ nb.pct }}%;background:{{ nb.color }};border-radius:4px;"></div></div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid #edf1f7;font-size:11.5px;color:#7d8798;">NPS = % Promotores − % Detratores</div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;min-width:0;">
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:14px;">Evolução do NPS</div>
+            <svg viewBox="0 0 320 120" style="width:100%;height:120px;">
+              <polyline points="{{ npsChartPoints }}" fill="none" stroke="#c99a1f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <sc-for list="{{ npsChartDots }}" as="d" hint-placeholder-count="7">
+                <circle cx="{{ d.x }}" cy="{{ d.y }}" r="3" fill="#c99a1f"/>
+              </sc-for>
+            </svg>
+            <div style="display:flex;justify-content:space-between;font-size:9.5px;color:#7d8798;margin-top:2px;">
+              <sc-for list="{{ barLabels }}" as="l" hint-placeholder-count="8"><span>{{ l }}</span></sc-for>
+            </div>
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid #edf1f7;">
+              <div style="font-size:12px;font-weight:700;margin-bottom:10px;">Satisfação por tipo de serviço</div>
+              <sc-for list="{{ satisfacaoPorTipo }}" as="st" hint-placeholder-count="4">
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:6px 0;border-bottom:1px solid #f3f5fa;">
+                  <span>{{ st.label }}</span>
+                  <span style="font-weight:700;color:{{ st.color }};">⭐ {{ st.score }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div style="font-size:13.5px;font-weight:700;">Comentários recentes</div>
+            <span style="font-size:11.5px;color:#7d8798;">{{ commentsCount }} respostas com comentário</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0;">
+            <sc-for list="{{ comments }}" as="c" hint-placeholder-count="5">
+              <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f3f5fa;">
+                <div style="width:30px;height:30px;border-radius:50%;background:{{ c.bg }};color:{{ c.color }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">{{ c.score }}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:2px;">
+                    <span style="font-size:12.5px;font-weight:700;">{{ c.order }}</span>
+                    <span style="font-size:11px;color:#7d8798;flex-shrink:0;">{{ c.time }}</span>
+                  </div>
+                  <div style="font-size:12.5px;color:#3a3733;line-height:1.4;">{{ c.text }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isOtherTab }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:60px 32px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:10px;">📊</div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:6px;">Relatório em construção nesta demonstração</div>
+          <div style="font-size:13px;color:#7d8798;">O detalhamento de "{{ activeTabLabel }}" ainda não está disponível.</div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:28px;right:28px;background:#1a2233;color:#fff;padding:14px 20px;border-radius:10px;font-size:13.5px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.25);z-index:100;">{{ toastMsg }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const STATUS_STYLE = {
+  'Aguardando aprovação': {bg:'#fdedd3', color:'#8a5a0f'},
+  'Em preparação': {bg:'#dfeaff', color:'#1e4fa3'},
+  'Pronto para entrega': {bg:'#e6f5ec', color:'#1a7a4f'},
+  'Entregue': {bg:'#eef0ec', color:'#46526a'},
+  'Atrasado': {bg:'#fbe4e0', color:'#c0392b'},
+};
+
+const REPORT_NAV = [
+  {id:'geral', glyph:'📊', label:'Visão Geral'},
+  {id:'pedidos', glyph:'📋', label:'Pedidos'},
+  {id:'faturamento', glyph:'💳', label:'Faturamento'},
+  {id:'produtos', glyph:'🧾', label:'Produtos e Cardápios'},
+  {id:'satisfacao', glyph:'⭐', label:'Pesquisa de Satisfação'},
+  {id:'ocorrencias', glyph:'⚠', label:'Ocorrências'},
+  {id:'entrega', glyph:'🚚', label:'Performance de Entrega'},
+];
+
+const RECENT_ORDERS = [
+  {id:'#CB-15234', type:'Coffee Break', unidade:'Unidade Matriz', datetime:'24/07 • 09:30', status:'Em preparação'},
+  {id:'#LAN-15210', type:'Lanche', unidade:'Unidade Matriz', datetime:'24/07 • 10:00', status:'Pronto para entrega'},
+  {id:'#EVT-15188', type:'Evento', unidade:'Unidade RH', datetime:'23/07 • 18:40', status:'Entregue'},
+  {id:'#REF-15123', type:'Refeição', unidade:'Unidade Industrial', datetime:'23/07 • 12:30', status:'Entregue'},
+  {id:'#CB-15098', type:'Coffee Break', unidade:'Unidade Financeira', datetime:'23/07 • 09:00', status:'Aguardando aprovação'},
+];
+
+const FATURAS = [
+  {id:'FAT-3301', unidade:'Unidade Matriz', cc:'CC001 • Administrativo', dueDate:'05/08/2026', value:18540.20, status:'Pago'},
+  {id:'FAT-3298', unidade:'Unidade Financeira', cc:'CC002 • Comercial', dueDate:'02/08/2026', value:9430.10, status:'Pago'},
+  {id:'FAT-3287', unidade:'Unidade Comercial', cc:'CC003 • Operações', dueDate:'30/07/2026', value:12920.90, status:'Pendente'},
+  {id:'FAT-3271', unidade:'Unidade RH', cc:'CC004 • Recursos Humanos', dueDate:'25/07/2026', value:6850.30, status:'Vencido'},
+  {id:'FAT-3260', unidade:'Unidade Industrial', cc:'CC005 • Industrial', dueDate:'20/07/2026', value:5209.10, status:'Pago'},
+  {id:'FAT-3245', unidade:'Unidade Matriz', cc:'CC001 • Administrativo', dueDate:'15/07/2026', value:14320.00, status:'Pago'},
+  {id:'FAT-3230', unidade:'Unidade Comercial', cc:'CC003 • Operações', dueDate:'08/07/2026', value:3980.50, status:'Vencido'},
+];
+
+const ALL_ORDERS = [
+  {id:'#CB-15234', type:'Coffee Break', unidade:'Unidade Matriz', datetime:'24/07 • 09:30', people:20, value:240, status:'Em preparação'},
+  {id:'#LAN-15210', type:'Lanche', unidade:'Unidade Matriz', datetime:'24/07 • 10:00', people:15, value:187.5, status:'Pronto para entrega'},
+  {id:'#EVT-15188', type:'Evento', unidade:'Unidade RH', datetime:'23/07 • 18:40', people:30, value:1250, status:'Entregue'},
+  {id:'#REF-15123', type:'Refeição', unidade:'Unidade Industrial', datetime:'23/07 • 12:30', people:25, value:550, status:'Entregue'},
+  {id:'#CB-15098', type:'Coffee Break', unidade:'Unidade Financeira', datetime:'23/07 • 09:00', people:18, value:320, status:'Aguardando aprovação'},
+  {id:'#SA-15075', type:'Água', unidade:'Unidade Comercial', datetime:'22/07 • 08:00', people:12, value:72, status:'Entregue'},
+  {id:'#RM-15040', type:'Refeição Marmitex', unidade:'Unidade Industrial', datetime:'22/07 • 12:00', people:40, value:720, status:'Entregue'},
+  {id:'#CB-14990', type:'Coffee Break', unidade:'Unidade Matriz', datetime:'21/07 • 15:00', people:22, value:275, status:'Atrasado'},
+  {id:'#EE-14955', type:'Evento', unidade:'Unidade RH', datetime:'20/07 • 09:00', people:35, value:1480, status:'Entregue'},
+  {id:'#LAN-14920', type:'Lanche', unidade:'Unidade Financeira', datetime:'19/07 • 10:30', people:10, value:125, status:'Entregue'},
+];
+
+function makeSpark(seed) {
+  const pts = [];
+  let v = 14;
+  for (let i = 0; i < 10; i++) {
+    v += (Math.sin(seed + i) * 6);
+    pts.push(Math.max(2, Math.min(26, 14 + v * 0.4)));
+  }
+  return pts.map((y, i) => (i * (100 / 9)).toFixed(1) + ',' + (28 - y).toFixed(1)).join(' ');
+}
+
+class Component extends DCLogic {
+  state = {
+    activeTab: 'geral', pedidosSearch: '', pedidosStatusFilter: 'todos',
+    faturaFilter: 'todas',
+    exportOpen: false,
+    exportFields: { id: true, type: true, unidade: true, datetime: true, people: true, value: true, status: true },
+    toast: null,
+  };
+
+  toastMsg(msg) {
+    this.setState({ toast: true, toastMsg: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: null }), 2200);
+  }
+
+  selectTab = (id) => this.setState({ activeTab: id });
+
+  openExport = () => this.setState({ exportOpen: true });
+  closeExport = () => this.setState({ exportOpen: false });
+  toggleExportField = (key) => this.setState(s => ({ exportFields: { ...s.exportFields, [key]: !s.exportFields[key] } }));
+
+  doExport = () => {
+    const money = (v) => 'R$ ' + v.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?=,))/g, '.');
+    const FIELD_DEFS = [
+      {key:'id', label:'Pedido'}, {key:'type', label:'Tipo'}, {key:'unidade', label:'Unidade'},
+      {key:'datetime', label:'Data/Hora'}, {key:'people', label:'Pessoas'}, {key:'value', label:'Valor'}, {key:'status', label:'Status'},
+    ];
+    const active = FIELD_DEFS.filter(f => this.state.exportFields[f.key]);
+    if (active.length === 0) return;
+    const rows = [active.map(f => f.label).join(';')];
+    ALL_ORDERS.forEach(o => {
+      rows.push(active.map(f => f.key === 'value' ? money(o.value) : o[f.key]).join(';'));
+    });
+    const csv = '\uFEFF' + rows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'relatorio-pedidos.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    this.setState({ exportOpen: false });
+    this.toastMsg('Exportação gerada com sucesso!');
+  };
+
+  renderVals() {
+    const s = this.state;
+
+    const reportNav = REPORT_NAV.map(rn => {
+      const active = s.activeTab === rn.id;
+      return { ...rn, select: () => this.selectTab(rn.id), bg: active ? '#e9edf9' : 'transparent', color: active ? '#283897' : '#46526a' };
+    });
+    const tabs = REPORT_NAV.map(t => {
+      const active = s.activeTab === t.id;
+      return { ...t, select: () => this.selectTab(t.id), borderColor: active ? '#283897' : 'transparent', color: active ? '#1a2233' : '#7d8798' };
+    });
+
+    const values = [24000, 31000, 20000, 38000, 42000, 29000, 45000, 36000];
+    const w = 320, h = 100, pad = 4, gap = 6;
+    const barW = (w - pad * 2) / values.length - gap;
+    const max = Math.max(...values);
+    const barChart = values.map((v, i) => {
+      const bh = (v / max) * h;
+      return { x: (pad + i * (barW + gap)).toFixed(1), y: (h - bh + 10).toFixed(1), w: barW.toFixed(1), h: bh.toFixed(1) };
+    });
+
+    const serviceBreakdown = [
+      {label:'Coffee Break', pct:45, color:'#283897', valueLabel:'R$ 111.938,27', orders:72, trend:'↑ 18%', trendColor:'#1a7a4f'},
+      {label:'Lanches', pct:25, color:'#1e4fa3', valueLabel:'R$ 62.187,65', orders:48, trend:'↑ 8,4%', trendColor:'#1a7a4f'},
+      {label:'Refeições', pct:20, color:'#1a7a4f', valueLabel:'R$ 49.750,12', orders:24, trend:'↑ 10,2%', trendColor:'#1a7a4f'},
+      {label:'Eventos', pct:10, color:'#b5690f', valueLabel:'R$ 24.874,56', orders:12, trend:'↓ 2,1%', trendColor:'#c0392b'},
+    ];
+
+    const recentOrders = RECENT_ORDERS.map(o => {
+      const st = STATUS_STYLE[o.status];
+      return { ...o, statusBg: st.bg, statusColor: st.color };
+    });
+
+    const activeLabel = (REPORT_NAV.find(r => r.id === s.activeTab) || {}).label || '';
+
+    const money = (v) => 'R$ ' + v.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?=,))/g, '.');
+    let allOrders = ALL_ORDERS;
+    const pq = s.pedidosSearch.trim().toLowerCase();
+    if (pq) allOrders = allOrders.filter(o => o.id.toLowerCase().includes(pq) || o.type.toLowerCase().includes(pq) || o.unidade.toLowerCase().includes(pq));
+    if (s.pedidosStatusFilter !== 'todos') allOrders = allOrders.filter(o => o.status === s.pedidosStatusFilter);
+    allOrders = allOrders.map(o => {
+      const st = STATUS_STYLE[o.status];
+      return { ...o, statusBg: st.bg, statusColor: st.color, valueLabel: money(o.value) };
+    });
+
+    const FATURA_STATUS = { 'Pago': {bg:'#e6f5ec', color:'#1a7a4f'}, 'Pendente': {bg:'#fdedd3', color:'#8a5a0f'}, 'Vencido': {bg:'#fbe4e0', color:'#c0392b'} };
+    let faturas = FATURAS;
+    if (s.faturaFilter !== 'todas') faturas = faturas.filter(f => f.status === s.faturaFilter);
+    faturas = faturas.map(f => {
+      const st = FATURA_STATUS[f.status];
+      return { ...f, statusBg: st.bg, statusColor: st.color, valueLabel: money(f.value) };
+    });
+    const faturaFilterDefs = [
+      {id:'todas', label:'Todas (' + FATURAS.length + ')'},
+      {id:'Pago', label:'Pagas (' + FATURAS.filter(f=>f.status==='Pago').length + ')'},
+      {id:'Pendente', label:'Pendentes (' + FATURAS.filter(f=>f.status==='Pendente').length + ')'},
+      {id:'Vencido', label:'Vencidas (' + FATURAS.filter(f=>f.status==='Vencido').length + ')'},
+    ];
+    const faturaFilterTabs = faturaFilterDefs.map(f => {
+      const active = s.faturaFilter === f.id;
+      return { ...f, select: () => this.setState({ faturaFilter: f.id }), bg: active ? '#283897' : '#fff', color: active ? '#fff' : '#46526a', border: active ? '#283897' : '#d3dae6' };
+    });
+
+    return {
+      reportNav, tabs,
+      goDashboard: () => { window.location.href = './Painel Administrativo.dc.html'; },
+      periodLabel: '01/07/2026 — 24/07/2026',
+      exportReport: this.openExport,
+      exportOpen: s.exportOpen,
+      closeExport: this.closeExport,
+      stopProp: (e) => e.stopPropagation(),
+      exportFields: [
+        {key:'id', label:'Pedido'}, {key:'type', label:'Tipo'}, {key:'unidade', label:'Unidade'},
+        {key:'datetime', label:'Data/Hora'}, {key:'people', label:'Pessoas'}, {key:'value', label:'Valor'}, {key:'status', label:'Status'},
+      ].map(f => ({ ...f, checked: !!s.exportFields[f.key], toggle: () => this.toggleExportField(f.key) })),
+      exportCountLabel: Object.values(s.exportFields).filter(Boolean).length + ' campo(s) selecionado(s) • ' + ALL_ORDERS.length + ' pedidos no período',
+      noFieldsSelected: Object.values(s.exportFields).every(v => !v),
+      exportBtnBg: Object.values(s.exportFields).every(v => !v) ? '#b9c2e2' : '#283897',
+      exportBtnCursor: Object.values(s.exportFields).every(v => !v) ? 'not-allowed' : 'pointer',
+      doExport: this.doExport,
+
+      isVisaoGeral: s.activeTab === 'geral',
+      isPedidos: s.activeTab === 'pedidos',
+      isFaturamento: s.activeTab === 'faturamento',
+      isProdutos: s.activeTab === 'produtos',
+      isSatisfacao: s.activeTab === 'satisfacao',
+      isOtherTab: s.activeTab !== 'geral' && s.activeTab !== 'pedidos' && s.activeTab !== 'faturamento' && s.activeTab !== 'produtos' && s.activeTab !== 'satisfacao',
+      activeTabLabel: activeLabel,
+
+      kpis: [
+        {glyph:'💰', label:'Faturamento total', value:'R$ 248.750,60', trend:'↑ 18,0% vs período anterior', trendColor:'#1a7a4f', spark: makeSpark(1), sparkColor:'#283897'},
+        {glyph:'📦', label:'Pedidos realizados', value:'156', trend:'↑ 12,4% vs período anterior', trendColor:'#1a7a4f', spark: makeSpark(2), sparkColor:'#1e4fa3'},
+        {glyph:'🎟', label:'Ticket médio', value:'R$ 1.594,56', trend:'↑ 5,2% vs período anterior', trendColor:'#1a7a4f', spark: makeSpark(3), sparkColor:'#1a7a4f'},
+        {glyph:'👥', label:'Unidades atendidas', value:'24', trend:'↑ 9,1% vs período anterior', trendColor:'#1a7a4f', spark: makeSpark(4), sparkColor:'#b5690f'},
+        {glyph:'⭐', label:'Satisfação (NPS)', value:'59', trend:'↑ 7 pts vs período anterior', trendColor:'#1a7a4f', spark: makeSpark(5), sparkColor:'#c99a1f'},
+      ],
+
+      barChart,
+      barLabels: ['01/07','04/07','08/07','12/07','15/07','19/07','21/07','24/07'],
+
+      serviceBreakdown,
+      serviceTotalLabel: 'R$ 248.750,60',
+
+      topUnits: [
+        {rank:1, name:'CC001 • Administrativo', pct:100, valueLabel:'R$ 78.540,20'},
+        {rank:2, name:'CC002 • Comercial', pct:67, valueLabel:'R$ 52.430,10'},
+        {rank:3, name:'CC003 • Operações', pct:50, valueLabel:'R$ 38.920,90'},
+        {rank:4, name:'CC004 • Recursos Humanos', pct:37, valueLabel:'R$ 28.850,30'},
+        {rank:5, name:'CC005 • Industrial', pct:31, valueLabel:'R$ 24.209,10'},
+      ],
+
+      statusCards: [
+        {glyph:'🕓', label:'Aguardando aprovação', value:'8 pedidos', bg:'#fdf6ea', border:'#f0d49a', color:'#8a5a0f', action: () => this.toastMsg('Filtrando pedidos aguardando aprovação...')},
+        {glyph:'🔥', label:'Em produção', value:'12 pedidos', bg:'#eef4fc', border:'#c7dcf5', color:'#1e4fa3', action: () => this.toastMsg('Filtrando pedidos em produção...')},
+        {glyph:'📬', label:'Prontos para entrega', value:'5 pedidos', bg:'#eef8f1', border:'#bfe4cc', color:'#1a7a4f', action: () => this.toastMsg('Filtrando pedidos prontos...')},
+        {glyph:'⏰', label:'Atrasados', value:'2 pedidos', bg:'#fdf1ef', border:'#f0c6bd', color:'#c0392b', action: () => this.toastMsg('Filtrando pedidos atrasados...')},
+        {glyph:'⚠', label:'Ocorrências abertas', value:'3 ocorrências', bg:'#f6f0fb', border:'#ddc7ee', color:'#5a4a8a', action: () => this.toastMsg('Filtrando ocorrências abertas...')},
+      ],
+
+      recentOrders,
+
+      pedidosKpis: [
+        {glyph:'📦', label:'Total de pedidos', value:'156', trend:'↑ 12,4% vs período anterior', trendColor:'#1a7a4f'},
+        {glyph:'🎟', label:'Ticket médio', value:'R$ 1.594,56', trend:'↑ 5,2% vs período anterior', trendColor:'#1a7a4f'},
+        {glyph:'✕', label:'Taxa de cancelamento', value:'3,8%', trend:'↓ 0,6 pt vs período anterior', trendColor:'#1a7a4f'},
+        {glyph:'⏱', label:'Tempo médio de produção', value:'2h 10min', trend:'↑ 12min vs período anterior', trendColor:'#c0392b'},
+      ],
+
+      pedidosBarChart: (() => {
+        const vals = [14, 19, 11, 22, 26, 17, 24, 23];
+        const w = 320, h = 100, pad = 4, gap = 6;
+        const bw = (w - pad * 2) / vals.length - gap;
+        const max = Math.max(...vals);
+        return vals.map((v, i) => {
+          const bh = (v / max) * h;
+          return { x: (pad + i * (bw + gap)).toFixed(1), y: (h - bh + 10).toFixed(1), w: bw.toFixed(1), h: bh.toFixed(1) };
+        });
+      })(),
+
+      pedidosStatusBreakdown: [
+        {label:'Aguardando aprovação', count:8, pct:5, color:'#e0a83a'},
+        {label:'Em preparação', count:15, pct:10, color:'#1e4fa3'},
+        {label:'Pronto para entrega', count:5, pct:3, color:'#1a7a4f'},
+        {label:'Entregues', count:122, pct:78, color:'#46526a'},
+        {label:'Atrasados/Cancelados', count:6, pct:4, color:'#c0392b'},
+      ],
+
+      pedidosSearch: s.pedidosSearch, onPedidosSearch: (e) => this.setState({ pedidosSearch: e.target.value }),
+      pedidosStatusFilter: s.pedidosStatusFilter, onPedidosStatusFilter: (e) => this.setState({ pedidosStatusFilter: e.target.value }),
+      statusOptions: ['Aguardando aprovação', 'Em preparação', 'Pronto para entrega', 'Entregue', 'Atrasado'],
+      allOrders,
+      noOrdersFiltered: allOrders.length === 0,
+      allOrdersCount: allOrders.length,
+      totalOrdersInPeriod: ALL_ORDERS.length,
+
+      faturamentoKpis: [
+        {glyph:'💰', label:'Faturamento total', value:'R$ 248.750,60', trend:'↑ 18,0% vs período anterior', trendColor:'#1a7a4f'},
+        {glyph:'✓', label:'Recebido', value:'R$ 218.410,80', trend:'87,8% do total', trendColor:'#1a7a4f'},
+        {glyph:'🕓', label:'Pendente', value:'R$ 12.920,90', trend:'1 fatura a vencer', trendColor:'#8a5a0f'},
+        {glyph:'⚠', label:'Vencido', value:'R$ 10.830,80', trend:'2 faturas em atraso', trendColor:'#c0392b'},
+      ],
+      faturamentoPorCC: [
+        {code:'CC001 • Administrativo', pct:100, valueLabel:'R$ 78.540,20'},
+        {code:'CC002 • Comercial', pct:67, valueLabel:'R$ 52.430,10'},
+        {code:'CC003 • Operações', pct:50, valueLabel:'R$ 38.920,90'},
+        {code:'CC004 • Recursos Humanos', pct:37, valueLabel:'R$ 28.850,30'},
+        {code:'CC005 • Industrial', pct:31, valueLabel:'R$ 24.209,10'},
+      ],
+      faturaFilterTabs,
+      faturas,
+      noFaturas: faturas.length === 0,
+
+      produtosKpis: [
+        {glyph:'📦', label:'Itens no catálogo', value:'86', trend:'12 categorias ativas', trendColor:'#7d8798'},
+        {glyph:'🏆', label:'Mais vendido', value:'Coffee Executivo', trend:'312 pedidos no período', trendColor:'#1a7a4f'},
+        {glyph:'📉', label:'Menos vendido', value:'Torta de Limão', trend:'2 pedidos no período', trendColor:'#c0392b'},
+        {glyph:'⚠', label:'Sem pedidos há 30+ dias', value:'6 itens', trend:'Candidatos a remoção', trendColor:'#c0392b'},
+      ],
+
+      topProducts: [
+        {rank:1, name:'Coffee Executivo', pct:100, qtyLabel:'312 un.', valueLabel:'R$ 74.880,00'},
+        {rank:2, name:'Água Mineral 500ml', pct:88, qtyLabel:'274 un.', valueLabel:'R$ 1.644,00'},
+        {rank:3, name:'Lanche Individual', pct:76, qtyLabel:'238 un.', valueLabel:'R$ 2.975,00'},
+        {rank:4, name:'Coffee Premium', pct:64, qtyLabel:'201 un.', valueLabel:'R$ 64.320,00'},
+        {rank:5, name:'Mini Salgados (100un)', pct:58, qtyLabel:'182 un.', valueLabel:'R$ 16.380,00'},
+        {rank:6, name:'Suco Natural 300ml', pct:47, qtyLabel:'148 un.', valueLabel:'R$ 1.184,00'},
+        {rank:7, name:'Refeição Marmitex', pct:39, qtyLabel:'122 un.', valueLabel:'R$ 2.196,00'},
+        {rank:8, name:'Coca-Cola lata 350ml', pct:34, qtyLabel:'107 un.', valueLabel:'R$ 1.070,00'},
+        {rank:9, name:'Mini Pães (50un)', pct:28, qtyLabel:'88 un.', valueLabel:'R$ 123,20'},
+        {rank:10, name:'Fruta Picada', pct:21, qtyLabel:'66 un.', valueLabel:'R$ 264,00'},
+      ],
+
+      bottomProducts: [
+        {rank:1, name:'Torta de Limão', qtyLabel:'2 un.', lastOrdered:'há 18 dias'},
+        {rank:2, name:'Refeição Vegana Especial', qtyLabel:'3 un.', lastOrdered:'há 22 dias'},
+        {rank:3, name:'Chá Gelado 300ml', qtyLabel:'4 un.', lastOrdered:'há 9 dias'},
+        {rank:4, name:'Brownie Sem Glúten', qtyLabel:'5 un.', lastOrdered:'há 15 dias'},
+        {rank:5, name:'Kit Evento Premium XL', qtyLabel:'6 un.', lastOrdered:'há 27 dias'},
+      ],
+      staleProducts: [
+        {name:'Torta de Limão', lastOrdered:'há 35 dias'},
+        {name:'Salada de Frutas Gourmet', lastOrdered:'há 41 dias'},
+        {name:'Suco Detox 300ml', lastOrdered:'há 33 dias'},
+      ],
+
+      categoryBreakdown: [
+        {label:'Coffee Break', pct:45, color:'#283897'},
+        {label:'Bebidas', pct:22, color:'#1e4fa3'},
+        {label:'Salgados e Lanches', pct:18, color:'#1a7a4f'},
+        {label:'Refeições', pct:11, color:'#b5690f'},
+        {label:'Doces e Sobremesas', pct:4, color:'#c99a1f'},
+      ],
+
+      suggestions: [
+        {glyph:'📈', bg:'#eef8f1', color:'#1a7a4f', text:'"Coffee Executivo" lidera com folga — considere destacá-lo como sugestão padrão no fluxo de novo pedido.'},
+        {glyph:'🗑', bg:'#fdf1ef', color:'#c0392b', text:'6 itens sem pedidos há 30+ dias (ex: Torta de Limão, Chá Gelado). Avalie remover ou promover do catálogo.'},
+        {glyph:'🍰', bg:'#fdf6ea', color:'#8a5a0f', text:'Categoria "Doces e Sobremesas" responde por só 4% do faturamento — pode ser oportunidade de combo promocional.'},
+        {glyph:'🔁', bg:'#eef4fc', color:'#1e4fa3', text:'Itens com alta repetição (Água, Suco) são bons candidatos a kits fixos para agilizar novos pedidos.'},
+      ],
+
+      satisfacaoKpis: [
+        {glyph:'⭐', label:'NPS geral', value:'59', trend:'↑ 7 pts vs período anterior', trendColor:'#1a7a4f'},
+        {glyph:'📝', label:'Taxa de resposta', value:'68%', trend:'106 de 156 pedidos avaliados', trendColor:'#7d8798'},
+        {glyph:'😊', label:'Promotores', value:'74%', trend:'↑ 5 pts vs período anterior', trendColor:'#1a7a4f'},
+        {glyph:'😞', label:'Detratores', value:'15%', trend:'↓ 2 pts vs período anterior', trendColor:'#1a7a4f'},
+      ],
+
+      npsBreakdown: [
+        {glyph:'😊', label:'Promotores (9-10)', count:78, pct:74, color:'#1a7a4f'},
+        {glyph:'😐', label:'Neutros (7-8)', count:12, pct:11, color:'#e0a83a'},
+        {glyph:'😞', label:'Detratores (0-6)', count:16, pct:15, color:'#c0392b'},
+      ],
+
+      npsChartPoints: (() => {
+        const vals = [48, 51, 53, 55, 52, 57, 59];
+        const w = 320, h = 100, pad = 6;
+        const max = Math.max(...vals), min = Math.min(...vals);
+        const stepX = (w - pad * 2) / (vals.length - 1);
+        return vals.map((v, i) => (pad + i * stepX).toFixed(1) + ',' + (pad + (1 - (v - min) / (max - min || 1)) * (h - pad * 2)).toFixed(1)).join(' ');
+      })(),
+      npsChartDots: (() => {
+        const vals = [48, 51, 53, 55, 52, 57, 59];
+        const w = 320, h = 100, pad = 6;
+        const max = Math.max(...vals), min = Math.min(...vals);
+        const stepX = (w - pad * 2) / (vals.length - 1);
+        return vals.map((v, i) => ({ x: (pad + i * stepX).toFixed(1), y: (pad + (1 - (v - min) / (max - min || 1)) * (h - pad * 2)).toFixed(1) }));
+      })(),
+
+      satisfacaoPorTipo: [
+        {label:'Coffee Break', score:'4.7', color:'#1a7a4f'},
+        {label:'Lanches', score:'4.5', color:'#1a7a4f'},
+        {label:'Refeições', score:'4.1', color:'#8a5a0f'},
+        {label:'Eventos', score:'4.8', color:'#1a7a4f'},
+      ],
+
+      commentsCount: 42,
+      comments: [
+        {score:10, bg:'#e6f5ec', color:'#1a7a4f', order:'#CB-15234 • Coffee Break Diretoria', time:'há 2 dias', text:'Atendimento excelente e entrega no horário combinado. Recomendo!'},
+        {score:9, bg:'#e6f5ec', color:'#1a7a4f', order:'#EVT-15188 • Evento Especial RH', time:'há 3 dias', text:'Evento muito bem organizado, só senti falta de mais opções de doces.'},
+        {score:6, bg:'#fdedd3', color:'#8a5a0f', order:'#LAN-15210 • Lanche Reunião Comercial', time:'há 4 dias', text:'Entrega atrasou cerca de 20 minutos, mas os itens estavam bons.'},
+        {score:3, bg:'#fbe4e0', color:'#c0392b', order:'#RM-15040 • Refeição Marmitex', time:'há 5 dias', text:'Pedido chegou frio e faltou um dos itens solicitados.'},
+        {score:10, bg:'#e6f5ec', color:'#1a7a4f', order:'#CB-15098 • Coffee Break Financeiro', time:'há 6 dias', text:'Como sempre, tudo perfeito. Equipe muito atenciosa.'},
+      ],
+
+      toast: s.toast, toastMsg: s.toastMsg,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

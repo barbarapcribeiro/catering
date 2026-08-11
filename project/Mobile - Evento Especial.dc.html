@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet data-dc-atomics>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="min-height:100vh;background:#2a2f3a;display:flex;align-items:flex-start;justify-content:center;padding:28px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="430px,900px">
+  <div style="height:100%;display:flex;flex-direction:column;background:#f5f7fa;color:#1a2233;">
+
+    <div style="display:flex;align-items:center;gap:10px;padding:56px 16px 12px;background:#fff;border-bottom:1px solid #e3e8f0;flex-shrink:0;">
+      <a href="./Mobile - Home.dc.html" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;border:1px solid #e3e8f0;color:#46526a;text-decoration:none;flex-shrink:0;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <div style="flex:1;">
+        <div style="font-size:14.5px;font-weight:800;">Eventos Especiais</div>
+        <div style="font-size:11px;color:#7d8798;">Pedido #EE-15235 &bull; {{ stepLabel }}</div>
+      </div>
+      <div style="width:34px;height:34px;border-radius:10px;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11.5px;flex-shrink:0;">EE</div>
+    </div>
+
+    <div style="display:flex;gap:6px;padding:10px 16px;background:#fff;border-bottom:1px solid #e3e8f0;flex-shrink:0;">
+      <sc-for list="{{ dots }}" as="d" hint-placeholder-count="3">
+        <div style="flex:1;height:4px;border-radius:2px;background:{{ d.bg }};"></div>
+      </sc-for>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;padding:16px 16px 120px;">
+
+      <!-- STEP 1 -->
+      <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size:14px;font-weight:800;margin-bottom:10px;">Qual é a ocasião?</div>
+        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;">
+          <sc-for list="{{ occasions }}" as="oc" hint-placeholder-count="5">
+            <button onClick="{{ oc.select }}" style="flex-shrink:0;display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:20px;font-size:12.5px;font-weight:700;cursor:pointer;border:2px solid {{ oc.border }};background:{{ oc.bg }};color:{{ oc.color }};white-space:nowrap;">
+              <span>{{ oc.emoji }}</span> {{ oc.label }}
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="font-size:14px;font-weight:800;margin-bottom:10px;">Kits temáticos</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <sc-for list="{{ kits }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;border:2px solid {{ k.border }};border-radius:14px;overflow:hidden;">
+              <div style="position:relative;">
+                <image-slot id="{{ k.imgId }}" shape="rect" placeholder="Imagem do kit" style="width:100%;height:110px;"></image-slot>
+                <span style="position:absolute;top:10px;left:10px;background:{{ k.badgeBg }};color:#fff;font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:8px;">{{ k.badge }}</span>
+              </div>
+              <div style="padding:13px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:4px;">
+                  <div style="font-size:13.5px;font-weight:700;">{{ k.name }}</div>
+                  <div style="font-size:14.5px;font-weight:800;white-space:nowrap;">{{ k.priceLabel }}</div>
+                </div>
+                <div style="font-size:11.5px;color:#7d8798;line-height:1.4;margin-bottom:10px;">{{ k.desc }}</div>
+                <button onClick="{{ k.select }}" style="width:100%;padding:10px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid {{ k.btnBorder }};background:{{ k.btnBg }};color:{{ k.btnColor }};">{{ k.btnLabel }}</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- STEP 2 -->
+      <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:14px;font-weight:800;">Informações do evento</div>
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
+            <input type="checkbox" checked="{{ needsApproval }}" onChange="{{ onNeedsApprovalChange }}" style="width:17px;height:17px;cursor:pointer;" />
+            <span style="font-weight:600;">Requer aprovação</span>
+          </label>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;background:#fdedd3;border:1px solid #f0d49a;border-radius:11px;padding:10px 12px;margin-bottom:14px;">
+          <span style="font-size:14px;">⏱️</span>
+          <div style="font-size:11.5px;color:#8a5a0f;font-weight:600;line-height:1.4;">Esse pedido precisa de no mínimo 48h úteis para ser aceito para produção.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <label style="display:block;background:#fff;border:1px solid #d3dae6;border-radius:12px;padding:11px 13px;font-size:11px;font-weight:700;color:#46526a;">Nome do evento
+            <input value="{{ eventName }}" onChange="{{ onEventName }}" placeholder="Ex.: Festa Junina da equipe" style="display:block;width:100%;margin-top:5px;border:none;font-size:14px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;background:none;" />
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <label style="background:#fff;border:1px solid #d3dae6;border-radius:12px;padding:11px 13px;font-size:11px;font-weight:700;color:#46526a;">Data do evento
+              <input type="date" value="{{ eventDate }}" onChange="{{ onEventDate }}" style="display:block;width:100%;margin-top:5px;border:none;font-size:13.5px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;background:none;" />
+            </label>
+            <label style="background:#fff;border:1px solid #d3dae6;border-radius:12px;padding:11px 13px;font-size:11px;font-weight:700;color:#46526a;">Horário
+              <input type="time" value="{{ eventTime }}" onChange="{{ onEventTime }}" style="display:block;width:100%;margin-top:5px;border:none;font-size:13.5px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;background:none;" />
+            </label>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#46526a;margin-bottom:7px;">Local de entrega</div>
+            <div style="display:flex;gap:8px;">
+              <sc-for list="{{ localOptions }}" as="lo" hint-placeholder-count="3">
+                <button onClick="{{ lo.select }}" style="flex:1;padding:10px;border-radius:11px;font-size:12.5px;font-weight:700;cursor:pointer;border:2px solid {{ lo.border }};background:{{ lo.bg }};color:{{ lo.color }};">{{ lo.name }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <label style="background:#fff;border:1px solid #d3dae6;border-radius:12px;padding:11px 13px;font-size:11px;font-weight:700;color:#46526a;">Nº de pessoas
+            <input type="number" min="1" value="{{ people }}" onChange="{{ onPeopleChange }}" style="display:block;width:100%;margin-top:5px;border:none;font-size:13.5px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;background:none;" />
+          </label>
+          <label style="background:#fff;border:1px solid #d3dae6;border-radius:12px;padding:11px 13px;font-size:11px;font-weight:700;color:#46526a;">Observações (opcional)
+            <textarea value="{{ obs }}" onChange="{{ onObsChange }}" rows="3" placeholder="Ex: decorar o refeitório, montar às 14h..." style="display:block;width:100%;margin-top:5px;border:none;font-size:13.5px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;background:none;font-family:inherit;resize:none;"></textarea>
+          </label>
+        </div>
+      </sc-if>
+
+      <!-- STEP 3 -->
+      <sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:14px;font-weight:800;margin-bottom:12px;">Revisão do pedido</div>
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:16px;margin-bottom:12px;">
+          <sc-for list="{{ cartItems }}" as="ci" hint-placeholder-count="2">
+            <div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:8px 0;border-bottom:1px solid #f3f5fa;">
+              <div style="font-weight:600;">{{ ci.name }} <span style="color:#7d8798;font-weight:400;">×{{ ci.qty }}</span></div>
+              <div style="font-weight:700;">{{ ci.priceLabel }}</div>
+            </div>
+          </sc-for>
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#46526a;padding-top:10px;"><span>Subtotal</span><span>{{ subtotalLabel }}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#46526a;margin-top:6px;"><span>Taxa de serviço e/ou frete</span><input value="{{ feeInput }}" onChange="{{ onFeeChange }}" placeholder="R$ 0,00" style="width:90px;text-align:right;padding:5px 8px;border-radius:8px;border:1px solid #d3dae6;font-size:13px;box-sizing:border-box;" /></div>
+          <div style="display:flex;justify-content:space-between;font-size:15.5px;font-weight:800;border-top:2px dashed #e3e8f0;padding-top:10px;margin-top:10px;"><span>Total</span><span style="color:#283897;">{{ totalLabel }}</span></div>
+        </div>
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:16px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12.5px;">
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Evento</div><div style="font-weight:700;">{{ summaryName }}</div></div>
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Ocasião</div><div style="font-weight:700;">{{ summaryOccasion }}</div></div>
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Data e horário</div><div style="font-weight:700;">{{ summaryDate }} &bull; {{ summaryTime }}</div></div>
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Local</div><div style="font-weight:700;">{{ summaryLocal }}</div></div>
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Pessoas</div><div style="font-weight:700;">{{ people }}</div></div>
+            <div><div style="color:#7d8798;font-size:10.5px;margin-bottom:2px;">Requer aprovação</div><div style="font-weight:700;">{{ summaryApproval }}</div></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- STEP 4 -->
+      <sc-if value="{{ isStep4 }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;padding:40px 10px 20px;">
+          <div style="width:64px;height:64px;border-radius:50%;background:#e6f5ec;color:#1a7a4f;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 16px;">✓</div>
+          <div style="font-size:18px;font-weight:800;margin-bottom:6px;">Pedido enviado!</div>
+          <div style="font-size:13px;color:#7d8798;line-height:1.5;">Pedido #EE-15235 enviado para produção.<br/>Acompanhe o status pelo painel.</div>
+
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:16px;padding:18px;margin:22px auto 0;max-width:280px;text-align:center;">
+            <div style="font-size:13px;font-weight:800;margin-bottom:3px;">Pesquisa de satisfação</div>
+            <div style="font-size:11.5px;color:#7d8798;line-height:1.4;margin-bottom:12px;">Escaneie o QR Code para avaliar o serviço</div>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&amp;data=https://sodexo.example/pesquisa-satisfacao?pedido=EE-15235" alt="QR Code da pesquisa de satisfação" style="width:140px;height:140px;display:block;margin:0 auto;" />
+            <div style="font-size:10px;color:#a6afc0;margin-top:10px;">Pedido #EE-15235</div>
+          </div>
+
+          <a href="./Mobile - Home.dc.html" style="display:inline-block;margin-top:20px;padding:13px 28px;border-radius:12px;background:#283897;color:#fff;font-size:13.5px;font-weight:700;text-decoration:none;">Voltar para o início</a>
+        </div>
+      </sc-if>
+
+    </div>
+
+    <sc-if value="{{ showBottomBar }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e3e8f0;padding:12px 16px 26px;display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;">
+          <div style="font-size:10.5px;color:#7d8798;">Total estimado</div>
+          <div style="font-size:17px;font-weight:800;color:#283897;">{{ totalLabel }}</div>
+        </div>
+        <sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ goBack }}" style="padding:13px 16px;border-radius:12px;border:1px solid #d3dae6;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#1a2233;">Voltar</button>
+        </sc-if>
+        <button onClick="{{ goNext }}" disabled="{{ nextDisabled }}" style="padding:13px 22px;border-radius:12px;border:none;background:{{ nextBg }};color:#fff;font-size:13px;font-weight:700;cursor:{{ nextCursor }};">{{ nextLabel }}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;bottom:110px;left:20px;right:20px;background:#1a2233;color:#fff;padding:12px 16px;border-radius:12px;font-size:12.5px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.3);z-index:100;text-align:center;">{{ toastMsg }}</div>
+    </sc-if>
+
+  </div>
+</x-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:480,&quot;height&quot;:950}}">
+
+const OCCASIONS = [
+  {id:'aniversariantes', label:'Aniversariantes', emoji:'🎂'},
+  {id:'pais', label:'Dia dos Pais', emoji:'👔'},
+  {id:'junina', label:'Festa Junina', emoji:'🌽'},
+  {id:'natal', label:'Natal', emoji:'🎄'},
+  {id:'happyhour', label:'Happy Hour', emoji:'🍻'},
+  {id:'outro', label:'Outro', emoji:'🎉'},
+];
+const KITS = [
+  {id:'happyhour', name:'Kit Happy Hour', desc:'Petiscos, cervejas e drinks sem álcool para uma confraternização descontraída.', price:300, badge:'HAPPY HOUR', badgeBg:'#b5690f', imgId:'kit-happyhour'},
+  {id:'aniversariantes', name:'Kit Aniversariantes do Mês', desc:'Bolo confeitado, salgadinhos, sucos e decoração para os aniversariantes.', price:250, badge:'ANIVERSARIANTES', badgeBg:'#283897', imgId:'kit-aniversariantes'},
+  {id:'pais', name:'Kit Dia dos Pais', desc:'Petiscos, cervejas sem álcool e sobremesas para homenagear os pais.', price:280, badge:'DIA DOS PAIS', badgeBg:'#1a7a4f', imgId:'kit-pais'},
+  {id:'junina', name:'Kit Festa Junina', desc:'Quentão, pipoca, canjica, pé-de-moleque e milho cozido.', price:260, badge:'FESTA JUNINA', badgeBg:'#b5690f', imgId:'kit-junina'},
+  {id:'natal', name:'Kit Natal', desc:'Panetone, ceia leve, espumante sem álcool e decoração natalina.', price:340, badge:'NATAL', badgeBg:'#c0392b', imgId:'kit-natal'},
+];
+const money = (v) => 'R$ ' + v.toFixed(2).replace('.', ',');
+
+class Component extends DCLogic {
+  state = {
+    step: 1, occasion: null, qtys: {},
+    people: 15, eventDate: '', eventTime: '', eventLocal: '', eventName: '',
+    needsApproval: false, obs: '', feeInput: '', toast: null,
+  };
+
+  toastMsg(msg) {
+    this.setState({ toast: true, toastMsg: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: null }), 2200);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const occasions = OCCASIONS.map(o => {
+      const sel = s.occasion === o.id;
+      return { ...o, select: () => this.setState({ occasion: sel ? null : o.id }),
+        border: sel ? '#283897' : '#d3dae6', bg: sel ? '#e9edf9' : '#fff', color: sel ? '#283897' : '#46526a' };
+    });
+    const shownKits = s.occasion && s.occasion !== 'outro' ? KITS.filter(k => k.id === s.occasion).concat(KITS.filter(k => k.id !== s.occasion)) : KITS;
+    const kits = shownKits.map(k => {
+      const qty = s.qtys[k.id] || 0;
+      const sel = qty > 0;
+      return { ...k, priceLabel: money(k.price),
+        border: sel ? '#283897' : '#e3e8f0',
+        btnLabel: sel ? '✓ Adicionado — remover' : 'Adicionar ao pedido',
+        btnBg: sel ? '#e9edf9' : '#283897', btnColor: sel ? '#283897' : '#fff', btnBorder: sel ? '#283897' : '#283897',
+        select: () => this.setState(st => ({ qtys: { ...st.qtys, [k.id]: sel ? 0 : 1 } })) };
+    });
+
+    const cartItems = KITS.filter(k => (s.qtys[k.id] || 0) > 0).map(k => ({ name: k.name, qty: s.qtys[k.id], priceLabel: money(k.price * s.qtys[k.id]) }));
+    const subtotal = KITS.reduce((sum, k) => sum + k.price * (s.qtys[k.id] || 0), 0);
+    const fee = parseFloat((s.feeInput || '').replace(',', '.')) || 0;
+    const total = subtotal + fee;
+    const cartEmpty = cartItems.length === 0;
+
+    const stepLabels = {1:'Kits', 2:'Informações', 3:'Revisão', 4:'Confirmado'};
+    const nextLabels = {1:'Continuar', 2:'Revisar pedido', 3:'Enviar pedido'};
+    const nextDisabled = s.step === 1 && cartEmpty;
+    const occ = OCCASIONS.find(o => o.id === s.occasion);
+
+    return {
+      occasions, kits, cartItems,
+      dots: [1,2,3].map(n => ({ bg: n <= s.step ? '#283897' : '#e3e8f0' })),
+      stepLabel: stepLabels[s.step],
+      isStep1: s.step === 1, isStep2: s.step === 2, isStep3: s.step === 3, isStep4: s.step === 4,
+      showBottomBar: s.step < 4, showBack: s.step > 1,
+      goBack: () => this.setState(st => ({ step: st.step - 1 })),
+      goNext: () => {
+        if (s.step === 3) { this.setState({ step: 4 }); this.toastMsg('Pedido enviado com sucesso!'); }
+        else this.setState(st => ({ step: st.step + 1 }));
+      },
+      nextLabel: nextLabels[s.step] || '', nextDisabled,
+      nextBg: nextDisabled ? '#b9c2e2' : '#283897',
+      nextCursor: nextDisabled ? 'not-allowed' : 'pointer',
+      subtotalLabel: money(subtotal), totalLabel: money(total),
+      feeInput: s.feeInput, onFeeChange: (e) => this.setState({ feeInput: e.target.value }),
+      people: s.people, onPeopleChange: (e) => this.setState({ people: Math.max(1, parseInt(e.target.value) || 1) }),
+      eventName: s.eventName, onEventName: (e) => this.setState({ eventName: e.target.value }),
+      eventDate: s.eventDate, onEventDate: (e) => this.setState({ eventDate: e.target.value }),
+      eventTime: s.eventTime, onEventTime: (e) => this.setState({ eventTime: e.target.value }),
+      localOptions: ['Sala 1', 'Sala 2', 'Sala 3'].map(name => {
+        const sel = s.eventLocal === name;
+        return { name, select: () => this.setState({ eventLocal: name }),
+          border: sel ? '#283897' : '#d3dae6', bg: sel ? '#e9edf9' : '#fff', color: sel ? '#283897' : '#46526a' };
+      }),
+      needsApproval: s.needsApproval,
+      onNeedsApprovalChange: (e) => this.setState({ needsApproval: e.target.checked }),
+      obs: s.obs, onObsChange: (e) => this.setState({ obs: e.target.value }),
+      summaryName: s.eventName || 'Não informado',
+      summaryOccasion: occ ? occ.label : 'Não informada',
+      summaryDate: s.eventDate || 'Não informado',
+      summaryTime: s.eventTime || '—',
+      summaryLocal: s.eventLocal || 'Não informado',
+      summaryApproval: s.needsApproval ? 'Sim' : 'Não',
+      toast: s.toast, toastMsg: s.toastMsg,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

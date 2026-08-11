@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>body { margin:0; }</style>
+</helmet>
+<div style="min-height:100vh;display:flex;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a2233;">
+
+  <!-- Sidebar -->
+  <div style="width:220px;flex-shrink:0;background:#fff;border-right:1px solid #e3e8f0;padding:20px 14px;display:flex;flex-direction:column;gap:22px;">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 6px;">
+      <div style="width:32px;height:32px;border-radius:8px;background:#283897;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;">S</div>
+      <div style="font-size:14px;font-weight:800;">Sodexo Direct</div>
+    </div>
+    <div>
+      <button style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;border:none;background:transparent;color:#46526a;font-size:12.5px;font-weight:600;cursor:pointer;text-align:left;width:100%;box-sizing:border-box;" onClick="{{ goDashboard }}">
+        <span style="width:16px;text-align:center;flex-shrink:0;">🏠</span>Dashboard
+      </button>
+      <button style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;border:none;background:transparent;color:#46526a;font-size:12.5px;font-weight:600;cursor:pointer;text-align:left;width:100%;box-sizing:border-box;" onClick="{{ goRelatorios }}">
+        <span style="width:16px;text-align:center;flex-shrink:0;">📊</span>Relatórios
+      </button>
+      <button style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;border:none;background:#e9edf9;color:#283897;font-size:12.5px;font-weight:600;cursor:pointer;text-align:left;width:100%;box-sizing:border-box;">
+        <span style="width:16px;text-align:center;flex-shrink:0;">⭐</span>Pesquisa de Satisfação
+      </button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div style="flex:1;min-width:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:#fff;border-bottom:1px solid #e3e8f0;">
+      <div style="font-size:14px;font-weight:700;">Configurar Pesquisa de Satisfação</div>
+      <div style="display:flex;align-items:center;gap:16px;flex-shrink:0;">
+        <a href="./Painel Administrativo.dc.html" style="font-size:12.5px;color:#283897;font-weight:600;text-decoration:none;white-space:nowrap;">← Voltar ao painel</a>
+      </div>
+    </div>
+
+    <div style="padding:24px 28px 48px;max-width:920px;">
+      <div style="margin-bottom:20px;">
+        <h1 style="font-size:22px;font-weight:800;margin:0 0 4px;letter-spacing:-0.3px;">Pesquisa de Satisfação</h1>
+        <div style="font-size:13px;color:#7d8798;">Configure as perguntas enviadas após a entrega de cada pedido. Elas alimentam o relatório de satisfação.</div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <div style="font-size:14px;font-weight:700;">Perguntas ativas</div>
+          <span style="background:#e9edf9;color:#283897;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;">{{ activeCount }} de {{ totalCount }}</span>
+        </div>
+        <div style="font-size:12px;color:#7d8798;margin-bottom:16px;">Reordene com as setas, edite o texto, ou desative sem perder o histórico.</div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ questions }}" as="q" hint-placeholder-count="4">
+            <div style="border:1px solid {{ q.borderColor }};background:{{ q.cardBg }};border-radius:12px;padding:14px 16px;">
+              <div style="display:flex;align-items:flex-start;gap:12px;">
+                <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;padding-top:2px;">
+                  <button onClick="{{ q.moveUp }}" disabled="{{ q.isFirst }}" style="width:22px;height:18px;border:1px solid #d3dae6;background:#fff;border-radius:5px 5px 0 0;cursor:pointer;font-size:10px;color:{{ q.upColor }};line-height:1;">▲</button>
+                  <button onClick="{{ q.moveDown }}" disabled="{{ q.isLast }}" style="width:22px;height:18px;border:1px solid #d3dae6;border-top:none;background:#fff;border-radius:0 0 5px 5px;cursor:pointer;font-size:10px;color:{{ q.downColor }};line-height:1;">▼</button>
+                </div>
+
+                <div style="flex:1;min-width:0;">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                    <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:{{ q.typeBg }};color:{{ q.typeColor }};white-space:nowrap;">{{ q.typeLabel }}</span>
+                    <sc-if value="{{ q.isCore }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:10px;color:#7d8798;font-weight:600;">Usada no relatório de satisfação</span>
+                    </sc-if>
+                  </div>
+                  <textarea value="{{ q.text }}" onChange="{{ q.onTextChange }}" rows="2" style="width:100%;border:1px solid #d3dae6;border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;box-sizing:border-box;resize:none;margin-bottom:8px;"></textarea>
+                  <sc-if value="{{ q.hasOptions }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:11px;color:#7d8798;">Escala: {{ q.scaleLabel }}</div>
+                  </sc-if>
+                </div>
+
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
+                  <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#46526a;cursor:pointer;white-space:nowrap;">
+                    <input type="checkbox" checked="{{ q.active }}" onChange="{{ q.toggleActive }}" style="width:15px;height:15px;accent-color:#283897;cursor:pointer;" />
+                    Ativa
+                  </label>
+                  <button onClick="{{ q.remove }}" style="border:none;background:none;color:#c0392b;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap;">Remover</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ noQuestions }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:32px 0;color:#7d8798;font-size:13px;">Nenhuma pergunta cadastrada ainda.</div>
+        </sc-if>
+      </div>
+
+      <!-- Add new question -->
+      <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;">
+        <div style="font-size:14px;font-weight:700;margin-bottom:14px;">Adicionar nova pergunta</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <label style="font-size:12px;font-weight:700;color:#46526a;">Texto da pergunta
+            <textarea value="{{ newText }}" onChange="{{ onNewText }}" rows="2" placeholder="Ex: O quanto você recomendaria nosso serviço a um colega?" style="display:block;width:100%;margin-top:6px;border:1px solid #d3dae6;border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;box-sizing:border-box;resize:none;"></textarea>
+          </label>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:#46526a;margin-bottom:8px;">Tipo de resposta</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <sc-for list="{{ typeOptions }}" as="to" hint-placeholder-count="3">
+                <button onClick="{{ to.select }}" style="padding:8px 14px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid {{ to.border }};background:{{ to.bg }};color:{{ to.color }};">{{ to.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <button onClick="{{ addQuestion }}" disabled="{{ newTextEmpty }}" style="align-self:flex-start;padding:11px 20px;border-radius:9px;border:none;background:{{ addBtnBg }};color:#fff;font-size:13px;font-weight:700;cursor:{{ addBtnCursor }};">+ Adicionar pergunta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:28px;right:28px;background:#1a2233;color:#fff;padding:14px 20px;border-radius:10px;font-size:13.5px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.25);z-index:100;">{{ toastMsg }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const TYPE_STYLE = {
+  nps: {label:'Escala NPS (0-10)', bg:'#e9edf9', color:'#283897', scale:'0 a 10'},
+  estrelas: {label:'Estrelas (1-5)', bg:'#fdf6ea', color:'#8a5a0f', scale:'1 a 5 estrelas'},
+  texto: {label:'Resposta em texto', bg:'#eef4fc', color:'#1e4fa3', scale:null},
+};
+
+let QUESTIONS = [
+  {id:'q1', type:'nps', text:'O quanto você recomendaria nosso serviço a um colega?', active:true, core:true},
+  {id:'q2', type:'estrelas', text:'Como você avalia o Coffee Break recebido?', active:true, core:true},
+  {id:'q3', type:'estrelas', text:'Como você avalia a pontualidade da entrega?', active:true, core:true},
+  {id:'q4', type:'texto', text:'Deixe um comentário sobre sua experiência (opcional).', active:true, core:true},
+  {id:'q5', type:'estrelas', text:'Como você avalia o atendimento da nossa equipe?', active:false, core:false},
+];
+let qCounter = 5;
+
+class Component extends DCLogic {
+  state = { questions: QUESTIONS, newText: '', newType: 'nps', toast: null };
+
+  toastMsg(msg) {
+    this.setState({ toast: true, toastMsg: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: null }), 2200);
+  }
+
+  toggleActive = (id) => this.setState(s => ({ questions: s.questions.map(q => q.id === id ? { ...q, active: !q.active } : q) }));
+  removeQuestion = (id) => {
+    this.setState(s => ({ questions: s.questions.filter(q => q.id !== id) }));
+    this.toastMsg('Pergunta removida.');
+  };
+  moveQuestion = (id, dir) => {
+    this.setState(s => {
+      const arr = [...s.questions];
+      const idx = arr.findIndex(q => q.id === id);
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= arr.length) return {};
+      [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+      return { questions: arr };
+    });
+  };
+  updateText = (id, text) => this.setState(s => ({ questions: s.questions.map(q => q.id === id ? { ...q, text } : q) }));
+  setNewType = (type) => this.setState({ newType: type });
+
+  addQuestion = () => {
+    const text = this.state.newText.trim();
+    if (!text) return;
+    qCounter++;
+    this.setState(s => ({
+      questions: [...s.questions, { id: 'q' + qCounter, type: s.newType, text, active: true, core: false }],
+      newText: '',
+    }));
+    this.toastMsg('Pergunta adicionada com sucesso!');
+  };
+
+  renderVals() {
+    const s = this.state;
+
+    const questions = s.questions.map((q, i) => {
+      const ts = TYPE_STYLE[q.type];
+      return {
+        ...q,
+        typeLabel: ts.label, typeBg: ts.bg, typeColor: ts.color,
+        hasOptions: !!ts.scale, scaleLabel: ts.scale,
+        isCore: q.core,
+        borderColor: q.active ? '#e3e8f0' : '#f0eee9',
+        cardBg: q.active ? '#fff' : '#f5f7fa',
+        isFirst: i === 0, isLast: i === s.questions.length - 1,
+        upColor: i === 0 ? '#d3dae6' : '#46526a', downColor: i === s.questions.length - 1 ? '#d3dae6' : '#46526a',
+        moveUp: () => this.moveQuestion(q.id, -1),
+        moveDown: () => this.moveQuestion(q.id, 1),
+        toggleActive: () => this.toggleActive(q.id),
+        remove: () => this.removeQuestion(q.id),
+        onTextChange: (e) => this.updateText(q.id, e.target.value),
+      };
+    });
+
+    const typeOptions = Object.keys(TYPE_STYLE).map(key => {
+      const active = s.newType === key;
+      return { id: key, label: TYPE_STYLE[key].label, select: () => this.setNewType(key), bg: active ? '#283897' : '#fff', color: active ? '#fff' : '#46526a', border: active ? '#283897' : '#d3dae6' };
+    });
+
+    const newTextEmpty = !s.newText.trim();
+
+    return {
+      goDashboard: () => { window.location.href = './Painel Administrativo.dc.html'; },
+      goRelatorios: () => { window.location.href = './Relatórios.dc.html'; },
+
+      questions,
+      noQuestions: questions.length === 0,
+      activeCount: s.questions.filter(q => q.active).length,
+      totalCount: s.questions.length,
+
+      newText: s.newText, onNewText: (e) => this.setState({ newText: e.target.value }),
+      typeOptions,
+      addQuestion: this.addQuestion,
+      newTextEmpty,
+      addBtnBg: newTextEmpty ? '#b9c2e2' : '#283897',
+      addBtnCursor: newTextEmpty ? 'not-allowed' : 'pointer',
+
+      toast: s.toast, toastMsg: s.toastMsg,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

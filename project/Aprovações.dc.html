@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet data-dc-atomics>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</helmet>
+
+<div style="min-height:100vh;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a2233;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:#fff;border-bottom:1px solid #e3e8f0;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:#283897;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">B</div>
+      <div>
+        <div style="font-weight:700;font-size:14.5px;">Olá, Bárbara C. Ribeiro</div>
+        <div style="font-size:12px;color:#7d8798;">Sodexo &bull; Demonstração</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:18px;">
+      <a href="./Fique por Dentro.dc.html" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Fique por dentro</a>
+      <a href="./Gerenciar Pedidos.dc.html" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Pedidos</a>
+      <a href="./Produção.dc.html" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Produção</a>
+      <div style="width:1px;height:22px;background:#e3e8f0;"></div>
+      <a href="./Painel Administrativo.dc.html" style="padding:9px 16px;border-radius:8px;border:1px solid #1a2233;background:#fff;color:#1a2233;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block;" style-hover="background:#eff2f8;">Painel Administrativo</a>
+    </div>
+  </div>
+
+  <div style="max-width:1200px;margin:0 auto;padding:24px 32px 64px;">
+
+    <a href="./Gerenciar Pedidos.dc.html" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#46526a;text-decoration:none;margin-bottom:18px;" style-hover="color:#283897;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      Voltar para pedidos
+    </a>
+
+    <h1 style="font-size:24px;font-weight:800;margin:0 0 24px;letter-spacing:-0.3px;">Aprovações Pendentes</h1>
+
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:24px;">
+
+      <!-- Lista de pedidos -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <sc-for list="{{ pendingOrders }}" as="p" hint-placeholder-count="2">
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;overflow:hidden;">
+
+            <!-- Header -->
+            <div style="padding:18px;border-bottom:1px solid #edf1f7;display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:50%;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;">{{ p.badge }}</div>
+                <div>
+                  <div style="font-weight:700;font-size:13.5px;">{{ p.orderName }}</div>
+                  <div style="font-size:12px;color:#7d8798;">Pedido #{{ p.orderCode }}</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;padding:4px 10px;border-radius:6px;background:#e9edf9;color:#283897;font-weight:700;">{{ p.status }}</span>
+              </div>
+            </div>
+
+            <!-- Resumo -->
+            <div style="padding:18px;border-bottom:1px solid #edf1f7;">
+              <div style="font-size:12px;font-weight:600;color:#7d8798;text-transform:uppercase;letter-spacing:.03em;margin-bottom:12px;">Resumo do pedido</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;">
+                <div>
+                  <div style="color:#7d8798;margin-bottom:3px;">Data do evento</div>
+                  <div style="font-weight:700;">{{ p.eventDate }}</div>
+                </div>
+                <div>
+                  <div style="color:#7d8798;margin-bottom:3px;">Local</div>
+                  <div style="font-weight:700;">{{ p.eventLocal }}</div>
+                </div>
+                <div>
+                  <div style="color:#7d8798;margin-bottom:3px;">Pessoas</div>
+                  <div style="font-weight:700;">{{ p.people }} pessoas</div>
+                </div>
+                <div>
+                  <div style="color:#7d8798;margin-bottom:3px;">Horário</div>
+                  <div style="font-weight:700;">{{ p.eventTime }}</div>
+                </div>
+              </div>
+              <div style="margin-top:12px;padding-top:12px;border-top:1px solid #edf1f7;font-size:13px;">
+                <div style="color:#7d8798;margin-bottom:3px;">Itens selecionados</div>
+                <div style="font-weight:700;">{{ p.itemsCount }} itens</div>
+              </div>
+              <div style="margin-top:8px;font-size:13px;">
+                <div style="color:#7d8798;margin-bottom:3px;">Total</div>
+                <div style="font-size:16px;font-weight:700;color:#283897;">{{ p.totalLabel }}</div>
+              </div>
+            </div>
+
+            <!-- Aprovações -->
+            <div style="padding:18px;">
+              <div style="font-size:12px;font-weight:600;color:#7d8798;text-transform:uppercase;letter-spacing:.03em;margin-bottom:14px;">Aprovações</div>
+              
+              <!-- Gestor -->
+              <div style="margin-bottom:14px;padding:12px;border-radius:10px;border:1px solid #e3e8f0;display:flex;align-items:flex-start;gap:10px;">
+                <div style="flex:1;">
+                  <div style="font-size:13px;font-weight:700;margin-bottom:4px;">Aprovação do Gestor</div>
+                  <div style="font-size:12px;color:#7d8798;">{{ p.gestorName }}</div>
+                </div>
+                <div style="display:flex;gap:6px;">
+                  <button onClick="{{ p.approveGestor }}" style="padding:6px 12px;border-radius:7px;border:1px solid {{ p.gestorApprovedBorder }};background:{{ p.gestorApprovedBg }};color:{{ p.gestorApprovedColor }};font-size:12px;font-weight:700;cursor:pointer;transition:0.2s;">{{ p.gestorApprovedText }}</button>
+                  <button onClick="{{ p.rejectGestor }}" style="padding:6px 12px;border-radius:7px;border:1px solid #d3dae6;background:#fff;color:#46526a;font-size:12px;font-weight:700;cursor:pointer;" style-hover="background:#eff2f8;">Rejeitar</button>
+                </div>
+              </div>
+
+              <!-- GU Produção -->
+              <sc-if value="{{ p.gestorApproved }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:12px;border-radius:10px;border:1px solid #e3e8f0;display:flex;align-items:flex-start;gap:10px;">
+                  <div style="flex:1;">
+                    <div style="font-size:13px;font-weight:700;margin-bottom:4px;">Aprovação GU Produção</div>
+                    <div style="font-size:12px;color:#7d8798;">{{ p.guName }}</div>
+                  </div>
+                  <div style="display:flex;gap:6px;">
+                    <button onClick="{{ p.approveGU }}" style="padding:6px 12px;border-radius:7px;border:1px solid {{ p.guApprovedBorder }};background:{{ p.guApprovedBg }};color:{{ p.guApprovedColor }};font-size:12px;font-weight:700;cursor:pointer;transition:0.2s;">{{ p.guApprovedText }}</button>
+                    <button onClick="{{ p.rejectGU }}" style="padding:6px 12px;border-radius:7px;border:1px solid #d3dae6;background:#fff;color:#46526a;font-size:12px;font-weight:700;cursor:pointer;" style-hover="background:#eff2f8;">Rejeitar</button>
+                  </div>
+                </div>
+              </sc-if>
+
+            </div>
+
+          </div>
+        </sc-for>
+
+        <sc-if value="{{ pendingOrders.length === 0 }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:40px 20px;color:#7d8798;">
+            <div style="font-size:14px;margin-bottom:8px;">Nenhuma aprovação pendente</div>
+            <div style="font-size:12px;">Todos os pedidos já foram aprovados.</div>
+          </div>
+        </sc-if>
+
+      </div>
+
+      <!-- Resumo lateral -->
+      <div style="position:sticky;top:24px;height:fit-content;">
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:20px;">
+          <div style="font-size:12px;font-weight:600;color:#7d8798;text-transform:uppercase;letter-spacing:.03em;margin-bottom:12px;">Resumo de pendências</div>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;">
+            <div style="display:flex;justify-content:space-between;">
+              <span>Aguardando Gestor</span>
+              <span style="font-weight:700;">{{ pendingGestor }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span>Aguardando GU</span>
+              <span style="font-weight:700;">{{ pendingGU }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;padding-top:10px;border-top:1px solid #edf1f7;">
+              <span>Total pendente</span>
+              <span style="font-weight:700;color:#283897;">{{ totalPending }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+class Component extends DCLogic {
+  state = {
+    orders: [
+      {id:1, badge:'CB', orderName:'Coffee Break Diretoria', orderCode:'CB-15234', status:'Pendente', eventDate:'28/08/2026', eventLocal:'Sala 1', people:20, eventTime:'10:00', itemsCount:3, total:450, gestorApproved:false, guApproved:false, gestorName:'Carlos Santos', guName:'Marina Silva'},
+      {id:2, badge:'EE', orderName:'Evento Especial - Aniversariantes', orderCode:'EE-15235', status:'Pendente', eventDate:'15/09/2026', eventLocal:'Sala 2', people:30, eventTime:'14:30', itemsCount:5, total:680, gestorApproved:false, guApproved:false, gestorName:'Paula Costa', guName:'Marina Silva'},
+    ]
+  };
+
+  approveOrder(orderId, stage) {
+    this.setState(s => ({
+      orders: s.orders.map(o => o.id === orderId ? { ...o, [stage]: true } : o)
+    }));
+  }
+
+  rejectOrder(orderId, stage) {
+    this.setState(s => ({
+      orders: s.orders.map(o => o.id === orderId ? { ...o, [stage]: false } : o)
+    }));
+  }
+
+  renderVals() {
+    const { orders } = this.state;
+    const pendingOrders = orders.map(o => ({
+      ...o,
+      totalLabel: `R$ ${o.total.toFixed(2).replace('.', ',')}`,
+      approveGestor: () => this.approveOrder(o.id, 'gestorApproved'),
+      rejectGestor: () => this.rejectOrder(o.id, 'gestorApproved'),
+      approveGU: () => this.approveOrder(o.id, 'guApproved'),
+      rejectGU: () => this.rejectOrder(o.id, 'guApproved'),
+      gestorApprovedText: o.gestorApproved ? '✓ Aprovado' : 'Aprovar',
+      gestorApprovedBg: o.gestorApproved ? '#e6f5ec' : '#fff',
+      gestorApprovedColor: o.gestorApproved ? '#1a7a4f' : '#46526a',
+      gestorApprovedBorder: o.gestorApproved ? '#b8ddd0' : '#d3dae6',
+      guApprovedText: o.guApproved ? '✓ Aprovado' : 'Aprovar',
+      guApprovedBg: o.guApproved ? '#e6f5ec' : '#fff',
+      guApprovedColor: o.guApproved ? '#1a7a4f' : '#46526a',
+      guApprovedBorder: o.guApproved ? '#b8ddd0' : '#d3dae6',
+    }));
+
+    const pendingGestor = orders.filter(o => !o.gestorApproved).length;
+    const pendingGU = orders.filter(o => o.gestorApproved && !o.guApproved).length;
+
+    return {
+      pendingOrders,
+      pendingGestor,
+      pendingGU,
+      totalPending: pendingGestor + pendingGU,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
