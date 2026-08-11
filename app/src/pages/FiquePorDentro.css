@@ -1,0 +1,179 @@
+.fpd-title-block {
+  margin-bottom: 28px;
+}
+.fpd-title {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0 0 6px;
+  letter-spacing: -0.3px;
+}
+.fpd-subtitle {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.fpd-section {
+  margin-bottom: 36px;
+}
+.fpd-section:last-child {
+  margin-bottom: 0;
+}
+.fpd-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.fpd-section-title {
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.fpd-promo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.fpd-promo-card {
+  border-radius: 16px;
+  padding: 22px;
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 20px;
+  align-items: center;
+}
+@media (max-width: 760px) {
+  .fpd-promo-card {
+    grid-template-columns: 1fr;
+  }
+}
+.fpd-promo-card__tags {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.fpd-promo-card__tag {
+  background: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 12px;
+}
+.fpd-promo-card__discount {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 11px;
+  border-radius: 12px;
+}
+.fpd-promo-card__title {
+  font-size: 19px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.fpd-promo-card__desc {
+  font-size: 13.5px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 10px;
+  max-width: 440px;
+}
+.fpd-promo-card__valid {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: 16px;
+}
+.fpd-promo-card__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.fpd-promo-card__cta {
+  padding: 11px 20px;
+  border-radius: 9px;
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.fpd-promo-card__toggle {
+  padding: 11px 16px;
+  border-radius: 9px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.fpd-promo-card__terms {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.fpd-week-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.fpd-week-subtitle {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 18px;
+}
+
+.fpd-activity-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 8px 22px;
+}
+.fpd-activity-day {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+.fpd-activity-day:last-child {
+  border-bottom: none;
+}
+.fpd-activity-day__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 10px;
+}
+.fpd-activity-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+}
+.fpd-activity-row__icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.fpd-activity-row__text {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.fpd-activity-row__time {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}
