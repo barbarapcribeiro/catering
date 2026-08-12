@@ -7,6 +7,7 @@ export const SERVICES: Service[] = [
     desc: "Solicite abastecimentos simples.",
     mono: "AS",
     iconPath: "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+    route: "/pedido/abastecimento-simples",
   },
   {
     id: "cb",

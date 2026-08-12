@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AppDataProvider } from "./mock/AppDataContext";
 import { Home } from "./pages/Home";
 import { CoffeeBreakOrder } from "./pages/CoffeeBreakOrder";
+import { AbastecimentoOrder } from "./pages/AbastecimentoOrder";
 import { EventoEspecialOrder } from "./pages/EventoEspecialOrder";
 import { AguaOrder } from "./pages/AguaOrder";
 import { Surpreenda } from "./pages/Surpreenda";
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/pedido/coffee-break" element={<CoffeeBreakOrder />} />
           <Route path="/pedido/evento-especial" element={<EventoEspecialOrder />} />
           <Route path="/pedido/agua" element={<AguaOrder />} />
+          <Route path="/pedido/abastecimento-simples" element={<AbastecimentoOrder />} />
           <Route path="/surpreenda" element={<Surpreenda />} />
           <Route path="/pedidos" element={<GerenciarPedidos />} />
           <Route path="/producao" element={<Producao />} />
