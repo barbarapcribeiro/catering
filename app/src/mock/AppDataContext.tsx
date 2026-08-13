@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { ChatMessage, Notification, Order, SurveyQuestion } from "../types";
+import type { ChatMessage, Kit, Notification, Order, Product, ServiceCatalogItem, Supplier, SurveyQuestion } from "../types";
 
 const STORAGE_KEY = "sodexo-eventos-mock-v1";
 
@@ -9,6 +9,10 @@ interface StoredState {
   favorites: string[];
   chatMessages: ChatMessage[];
   surveyQuestions: SurveyQuestion[];
+  suppliers: Supplier[];
+  products: Product[];
+  kits: Kit[];
+  serviceCatalog: ServiceCatalogItem[];
   nextOrderNum: number;
 }
 
@@ -84,21 +88,53 @@ const initialChat: ChatMessage[] = [
   { id: "c1", from: "them", text: "Oi, eu sou a responsável Sodexo da sua unidade, em que posso ajudar?" },
 ];
 
+const initialSuppliers: Supplier[] = [
+  { id: "sup1", name: "Distribuidora Boa Mesa Ltda.", category: "Alimentos e Bebidas", cnpj: "12.345.678/0001-90", contactName: "Roberto Alves", phone: "(11) 4002-8922", email: "contato@boamesa.com.br", active: true },
+  { id: "sup2", name: "EcoPack Descartáveis", category: "Descartáveis", cnpj: "23.456.789/0001-01", contactName: "Fernanda Lima", phone: "(11) 3333-4455", email: "vendas@ecopack.com.br", active: true },
+  { id: "sup3", name: "Higienize Serviços de Limpeza", category: "Limpeza", cnpj: "34.567.890/0001-12", contactName: "Marcos Vinícius", phone: "(11) 2222-1199", email: "marcos@higienize.com.br", active: true },
+];
+
+const initialProducts: Product[] = [
+  { id: "prod1", name: "Coca-Cola lata 350ml", type: "Bebida", unit: "un", price: 10, description: "Refrigerante em lata.", supplierId: "sup1", active: true },
+  { id: "prod2", name: "Água Mineral 500ml", type: "Bebida", unit: "un", price: 6, description: "Sem gás.", supplierId: "sup1", active: true },
+  { id: "prod3", name: "Mini Salgados (100 unidades)", type: "Salgado", unit: "pacote", price: 90, description: "Sortidos, assados.", supplierId: "sup1", active: true },
+  { id: "prod4", name: "Copo descartável 200ml", type: "Descartável", unit: "pacote", price: 12, description: "Pacote com 100 unidades.", supplierId: "sup2", active: true },
+];
+
+const initialKits: Kit[] = [
+  { id: "kit1", name: "Combo Reunião Rápida", description: "Água e salgados para reuniões curtas.", items: [{ productId: "prod2", qty: 10 }, { productId: "prod3", qty: 1 }], active: true },
+];
+
+const initialServiceCatalog: ServiceCatalogItem[] = [
+  { id: "svc1", name: "Limpeza pós-evento", description: "Limpeza do espaço após o término do evento.", category: "Limpeza", active: true },
+  { id: "svc2", name: "Retirada de itens", description: "Recolhimento de utensílios e equipamentos.", category: "Logística", active: true },
+  { id: "svc3", name: "Organização de eventos", description: "Apoio completo na montagem e organização.", category: "Organização de Eventos", active: true },
+  { id: "svc4", name: "Recepção de convidados", description: "Equipe de recepção na entrada do evento.", category: "Recepção", active: true },
+];
+
+const defaultState: StoredState = {
+  orders: initialOrders,
+  notifications: initialNotifications,
+  favorites: ["cb", "la", "sa", "rn"],
+  chatMessages: initialChat,
+  surveyQuestions: initialSurveyQuestions,
+  suppliers: initialSuppliers,
+  products: initialProducts,
+  kits: initialKits,
+  serviceCatalog: initialServiceCatalog,
+  nextOrderNum: 300,
+};
+
 function loadState(): StoredState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    // Merge over defaults so fields added after a user's browser already
+    // saved state (e.g. suppliers/products) don't come back undefined.
+    if (raw) return { ...defaultState, ...JSON.parse(raw) };
   } catch {
     // ignore corrupt storage
   }
-  return {
-    orders: initialOrders,
-    notifications: initialNotifications,
-    favorites: ["cb", "la", "sa", "rn"],
-    chatMessages: initialChat,
-    surveyQuestions: initialSurveyQuestions,
-    nextOrderNum: 300,
-  };
+  return defaultState;
 }
 
 interface AppDataValue {
@@ -122,6 +158,26 @@ interface AppDataValue {
   updateSurveyQuestion: (id: string, patch: Partial<SurveyQuestion>) => void;
   removeSurveyQuestion: (id: string) => void;
   reorderSurveyQuestion: (id: string, dir: -1 | 1) => void;
+
+  suppliers: Supplier[];
+  addSupplier: (supplier: Omit<Supplier, "id">) => void;
+  updateSupplier: (id: string, patch: Partial<Supplier>) => void;
+  removeSupplier: (id: string) => void;
+
+  products: Product[];
+  addProduct: (product: Omit<Product, "id">) => void;
+  updateProduct: (id: string, patch: Partial<Product>) => void;
+  removeProduct: (id: string) => void;
+
+  kits: Kit[];
+  addKit: (kit: Omit<Kit, "id">) => void;
+  updateKit: (id: string, patch: Partial<Kit>) => void;
+  removeKit: (id: string) => void;
+
+  serviceCatalog: ServiceCatalogItem[];
+  addServiceCatalogItem: (item: Omit<ServiceCatalogItem, "id">) => void;
+  updateServiceCatalogItem: (id: string, patch: Partial<ServiceCatalogItem>) => void;
+  removeServiceCatalogItem: (id: string) => void;
 
   toast: string | null;
   showToast: (msg: string) => void;
@@ -256,6 +312,46 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const addSupplier: AppDataValue["addSupplier"] = (supplier) => {
+    setState((s) => ({ ...s, suppliers: [{ ...supplier, id: `sup${Date.now()}` }, ...s.suppliers] }));
+  };
+  const updateSupplier: AppDataValue["updateSupplier"] = (id, patch) => {
+    setState((s) => ({ ...s, suppliers: s.suppliers.map((sup) => (sup.id === id ? { ...sup, ...patch } : sup)) }));
+  };
+  const removeSupplier = (id: string) => {
+    setState((s) => ({ ...s, suppliers: s.suppliers.filter((sup) => sup.id !== id) }));
+  };
+
+  const addProduct: AppDataValue["addProduct"] = (product) => {
+    setState((s) => ({ ...s, products: [{ ...product, id: `prod${Date.now()}` }, ...s.products] }));
+  };
+  const updateProduct: AppDataValue["updateProduct"] = (id, patch) => {
+    setState((s) => ({ ...s, products: s.products.map((p) => (p.id === id ? { ...p, ...patch } : p)) }));
+  };
+  const removeProduct = (id: string) => {
+    setState((s) => ({ ...s, products: s.products.filter((p) => p.id !== id) }));
+  };
+
+  const addKit: AppDataValue["addKit"] = (kit) => {
+    setState((s) => ({ ...s, kits: [{ ...kit, id: `kit${Date.now()}` }, ...s.kits] }));
+  };
+  const updateKit: AppDataValue["updateKit"] = (id, patch) => {
+    setState((s) => ({ ...s, kits: s.kits.map((k) => (k.id === id ? { ...k, ...patch } : k)) }));
+  };
+  const removeKit = (id: string) => {
+    setState((s) => ({ ...s, kits: s.kits.filter((k) => k.id !== id) }));
+  };
+
+  const addServiceCatalogItem: AppDataValue["addServiceCatalogItem"] = (item) => {
+    setState((s) => ({ ...s, serviceCatalog: [{ ...item, id: `svc${Date.now()}` }, ...s.serviceCatalog] }));
+  };
+  const updateServiceCatalogItem: AppDataValue["updateServiceCatalogItem"] = (id, patch) => {
+    setState((s) => ({ ...s, serviceCatalog: s.serviceCatalog.map((it) => (it.id === id ? { ...it, ...patch } : it)) }));
+  };
+  const removeServiceCatalogItem = (id: string) => {
+    setState((s) => ({ ...s, serviceCatalog: s.serviceCatalog.filter((it) => it.id !== id) }));
+  };
+
   const value = useMemo<AppDataValue>(
     () => ({
       orders: state.orders,
@@ -274,6 +370,22 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       updateSurveyQuestion,
       removeSurveyQuestion,
       reorderSurveyQuestion,
+      suppliers: state.suppliers,
+      addSupplier,
+      updateSupplier,
+      removeSupplier,
+      products: state.products,
+      addProduct,
+      updateProduct,
+      removeProduct,
+      kits: state.kits,
+      addKit,
+      updateKit,
+      removeKit,
+      serviceCatalog: state.serviceCatalog,
+      addServiceCatalogItem,
+      updateServiceCatalogItem,
+      removeServiceCatalogItem,
       toast,
       showToast,
     }),

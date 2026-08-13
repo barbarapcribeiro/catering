@@ -14,6 +14,10 @@ import { AdminLayout } from "./pages/admin/AdminLayout";
 import { AdminOperacao } from "./pages/admin/AdminOperacao";
 import { Relatorios } from "./pages/admin/Relatorios";
 import { ConfigurarPesquisa } from "./pages/admin/ConfigurarPesquisa";
+import { Fornecedores } from "./pages/admin/Fornecedores";
+import { Produtos } from "./pages/admin/Produtos";
+import { Kits } from "./pages/admin/Kits";
+import { Servicos } from "./pages/admin/Servicos";
 import { AdminStub } from "./pages/admin/AdminStub";
 
 export default function App() {
@@ -37,8 +41,10 @@ export default function App() {
             <Route path="relatorios" element={<Relatorios />} />
             <Route path="pesquisa-satisfacao" element={<ConfigurarPesquisa />} />
             <Route path="ocorrencias" element={<AdminStub title="Ocorrências" />} />
-            <Route path="produtos" element={<AdminStub title="Produtos e serviços" />} />
-            <Route path="fornecedores" element={<AdminStub title="Fornecedores" />} />
+            <Route path="produtos" element={<Produtos />} />
+            <Route path="kits" element={<Kits />} />
+            <Route path="servicos" element={<Servicos />} />
+            <Route path="fornecedores" element={<Fornecedores />} />
             <Route path="usuarios" element={<AdminStub title="Usuários" />} />
             <Route path="permissoes" element={<AdminStub title="Perfis e permissões" />} />
             <Route path="faturamento" element={<AdminStub title="Faturamento" />} />

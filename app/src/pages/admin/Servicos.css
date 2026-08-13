@@ -1,0 +1,100 @@
+.servicos-page {
+  max-width: 1000px;
+}
+
+.servicos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.servicos-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
+}
+.servicos-subtitle {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.servicos-table-card {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.servicos-table__head,
+.servicos-table__row {
+  display: grid;
+  grid-template-columns: 1.8fr 1.1fr 0.8fr 1.4fr;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 20px;
+  min-width: 640px;
+}
+.servicos-table__head {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--color-border);
+}
+.servicos-table__row {
+  border-bottom: 1px solid var(--color-border-soft);
+  font-size: 13px;
+}
+.servicos-table__row:last-child {
+  border-bottom: none;
+}
+.servicos-table__name {
+  font-weight: 700;
+}
+.servicos-table__desc {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}
+.servicos-table__actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.servicos-table__actions button.link {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.servicos-remove-btn {
+  border: none;
+  background: none;
+  color: var(--color-danger);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+.servicos-remove-btn:hover {
+  text-decoration: underline;
+}
+
+.servicos-active-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.servicos-active-check input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}

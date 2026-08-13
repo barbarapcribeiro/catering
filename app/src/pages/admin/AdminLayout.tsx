@@ -26,7 +26,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Catálogos",
     items: [
-      { label: "Produtos e serviços", to: "/admin/produtos", glyph: "📦" },
+      { label: "Produtos", to: "/admin/produtos", glyph: "📦" },
+      { label: "Kits", to: "/admin/kits", glyph: "🎁" },
+      { label: "Serviços", to: "/admin/servicos", glyph: "🧰" },
       { label: "Fornecedores", to: "/admin/fornecedores", glyph: "🚚" },
     ],
   },

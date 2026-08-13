@@ -97,3 +97,59 @@ export interface WeeklyActivity {
   text: string;
   time: string;
 }
+
+export const SUPPLIER_CATEGORIES = ["Alimentos e Bebidas", "Descartáveis", "Limpeza", "Decoração", "Serviços Gerais", "Outros"] as const;
+export type SupplierCategory = (typeof SUPPLIER_CATEGORIES)[number];
+
+export interface Supplier {
+  id: string;
+  name: string;
+  category: SupplierCategory;
+  cnpj?: string;
+  contactName?: string;
+  phone?: string;
+  email?: string;
+  active: boolean;
+}
+
+export const PRODUCT_TYPES = ["Bebida", "Salgado", "Doce", "Pão e Bolo", "Fruta", "Descartável", "Outro"] as const;
+export type ProductType = (typeof PRODUCT_TYPES)[number];
+
+export const PRODUCT_UNITS = ["un", "kg", "L", "pacote", "caixa"] as const;
+export type ProductUnit = (typeof PRODUCT_UNITS)[number];
+
+export interface Product {
+  id: string;
+  name: string;
+  type: ProductType;
+  unit: ProductUnit;
+  price: number;
+  description?: string;
+  supplierId?: string;
+  active: boolean;
+}
+
+export interface KitItem {
+  productId: string;
+  qty: number;
+}
+
+export interface Kit {
+  id: string;
+  name: string;
+  description?: string;
+  items: KitItem[];
+  price?: number;
+  active: boolean;
+}
+
+export const SERVICE_CATALOG_CATEGORIES = ["Limpeza", "Logística", "Organização de Eventos", "Recepção", "Outros"] as const;
+export type ServiceCatalogCategory = (typeof SERVICE_CATALOG_CATEGORIES)[number];
+
+export interface ServiceCatalogItem {
+  id: string;
+  name: string;
+  description?: string;
+  category: ServiceCatalogCategory;
+  active: boolean;
+}
