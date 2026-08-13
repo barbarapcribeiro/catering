@@ -1,0 +1,112 @@
+:root {
+  --color-primary: #283897;
+  --color-primary-hover: #1f2d78;
+  --color-primary-soft: #e9edf9;
+  --color-primary-soft-2: #f1eef9;
+
+  --color-text: #1a2233;
+  --color-text-secondary: #46526a;
+  --color-text-muted: #7d8798;
+
+  --color-border: #e3e8f0;
+  --color-border-input: #d3dae6;
+  --color-border-soft: #edf1f7;
+
+  --color-bg: #f5f7fa;
+  --color-bg-hover: #eff2f8;
+  --color-white: #ffffff;
+
+  --color-danger: #c0392b;
+  --color-danger-soft: #fdf1ef;
+  --color-danger-soft-2: #fbe4e0;
+
+  --color-success: #1a7a4f;
+  --color-success-soft: #e6f5ec;
+  --color-success-dark: #14603e;
+
+  --color-warning: #b5690f;
+  --color-warning-dark: #8a5a0f;
+  --color-warning-soft: #fdedd3;
+
+  --color-info: #1e4fa3;
+  --color-info-soft: #dfeaff;
+
+  --color-purple-status: #5a4a8a;
+  --color-purple-status-soft: #e9e5f4;
+
+  --color-star: #c99a1f;
+
+  --radius-sm: 7px;
+  --radius-md: 9px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --shadow-dropdown: 0 12px 32px rgba(0, 0, 0, 0.12);
+  --shadow-menu: 0 10px 28px rgba(0, 0, 0, 0.14);
+  --shadow-modal: 0 16px 40px rgba(0, 0, 0, 0.18);
+  --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.05);
+  --shadow-toast: 0 12px 30px rgba(0, 0, 0, 0.25);
+
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg);
+  font-family: var(--font-family);
+  color: var(--color-text);
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 32px 32px 64px;
+}
+
+@media (max-width: 860px) {
+  .page-container {
+    padding: 20px 16px 48px;
+  }
+}

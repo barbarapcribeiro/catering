@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<script src="./image-slot.js"></script>
+<style>body { margin:0; }</style>
+</helmet>
+<div style="min-height:100vh;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a2233;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:#fff;border-bottom:1px solid #e3e8f0;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:#283897;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">B</div>
+      <div>
+        <div style="font-weight:700;font-size:14.5px;">Olá, Bárbara C. Ribeiro</div>
+        <div style="font-size:12px;color:#7d8798;">Sodexo &bull; Demonstração</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:18px;">
+      <a href="./Home.dc.html" style="font-size:13.5px;color:#283897;font-weight:700;text-decoration:none;">Pedidos</a>
+      <a href="./Produção.dc.html" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Produção</a>
+      <a href="#" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Fique por dentro</a>
+      <div style="width:1px;height:22px;background:#e3e8f0;"></div>
+      <button style="position:relative;width:38px;height:38px;border-radius:50%;border:1px solid #e3e8f0;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" style-hover="background:#eff2f8;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#46526a" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span style="position:absolute;top:-2px;right:-2px;background:#c0392b;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;">3</span>
+      </button>
+      <a href="./Painel Administrativo.dc.html" style="padding:9px 16px;border-radius:8px;border:1px solid #1a2233;background:#fff;color:#1a2233;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block;" style-hover="background:#eff2f8;">Painel Administrativo</a>
+    </div>
+  </div>
+
+  <div style="max-width:1400px;margin:0 auto;padding:24px 28px 48px;">
+
+    <!-- Title + search -->
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:20px;flex-wrap:wrap;">
+      <div>
+        <h1 style="font-size:24px;font-weight:800;margin:0 0 4px;letter-spacing:-0.3px;">Gerenciar pedidos</h1>
+        <div style="font-size:13.5px;color:#7d8798;">Acompanhe, edite e gerencie todos os seus pedidos.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div style="position:relative;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2" style="position:absolute;left:13px;top:11px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <input value="{{ topSearch }}" onChange="{{ onTopSearch }}" placeholder="Buscar pedido, descrição ou número" style="width:280px;padding:10px 14px 10px 36px;border-radius:9px;border:1px solid #d3dae6;font-size:13px;outline:none;box-sizing:border-box;" />
+        </div>
+        <button style="padding:10px 16px;border-radius:9px;border:1px solid #d3dae6;background:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#46526a" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+          Filtros
+        </button>
+        <a href="./Novo Pedido - Coffee Break.dc.html" style="padding:10px 18px;border-radius:9px;border:none;background:#283897;color:#fff;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;">+ Novo pedido</a>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:240px minmax(0,1.7fr) 260px;gap:16px;align-items:start;">
+
+      <!-- LEFT: order list -->
+      <div style="min-width:0;background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:14px;">
+        <div style="display:flex;border-bottom:1px solid #e3e8f0;margin-bottom:12px;">
+          <sc-for list="{{ listTabs }}" as="lt" hint-placeholder-count="3">
+            <button onClick="{{ lt.select }}" style="flex:1;padding:8px 4px;border:none;background:none;border-bottom:2px solid {{ lt.borderColor }};color:{{ lt.color }};font-size:12.5px;font-weight:700;cursor:pointer;">{{ lt.label }}</button>
+          </sc-for>
+        </div>
+        <div style="position:relative;margin-bottom:10px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2" style="position:absolute;left:11px;top:10px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <input value="{{ listSearch }}" onChange="{{ onListSearch }}" placeholder="Buscar nos pedidos..." style="width:100%;padding:8px 12px 8px 32px;border-radius:8px;border:1px solid #d3dae6;font-size:12.5px;outline:none;box-sizing:border-box;" />
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;max-height:520px;overflow-y:auto;">
+          <sc-for list="{{ visibleOrders }}" as="o" hint-placeholder-count="3">
+            <div onClick="{{ o.select }}" style="cursor:pointer;border:1px solid {{ o.cardBorder }};background:{{ o.cardBg }};border-radius:10px;padding:12px;">
+              <div style="display:flex;gap:10px;align-items:flex-start;">
+                <div style="width:34px;height:34px;border-radius:9px;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;">{{ o.mono }}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:700;">{{ o.name }}</div>
+                  <div style="font-size:11.5px;color:#7d8798;">{{ o.dateRel }} &bull; {{ o.time }} &bull; {{ o.people }} pessoas</div>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c3bfb6" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><path d="M9 6l6 6-6 6"/></svg>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+                <div style="font-size:11px;color:#a6afc0;">#{{ o.id }}</div>
+                <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:{{ o.statusBg }};color:{{ o.statusColor }};">{{ o.status }}</span>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noOrdersInList }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:24px 0;color:#7d8798;font-size:12.5px;">Nenhum pedido nessa categoria.</div>
+          </sc-if>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;border-top:1px solid #edf1f7;margin-top:12px;padding-top:12px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          <div style="font-size:11.5px;color:#46526a;">Não encontrou o que procura?<br/><a href="#" style="color:#283897;font-weight:600;text-decoration:none;">Ver todos os pedidos com outros filtros</a></div>
+        </div>
+      </div>
+
+      <!-- MIDDLE: detail -->
+      <div style="min-width:0;background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:20px;">
+        <sc-if value="{{ hasSelected }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
+          <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+            <div style="width:38px;height:38px;border-radius:9px;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">{{ selMono }}</div>
+            <div style="min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span style="font-size:15px;font-weight:800;">{{ selName }}</span>
+                <span style="font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:20px;background:{{ selStatusBg }};color:{{ selStatusColor }};white-space:nowrap;">{{ selStatus }}</span>
+              </div>
+              <div style="font-size:12px;color:#7d8798;">Pedido #{{ selId }}</div>
+            </div>
+          </div>
+          <div style="position:relative;">
+            <button onClick="{{ toggleQuickActions }}" style="padding:9px 14px;border-radius:8px;border:1px solid #d3dae6;background:#fff;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">Ações rápidas
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#46526a" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <sc-if value="{{ quickActionsOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:40px;right:0;width:180px;background:#fff;border:1px solid #e3e8f0;border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.14);z-index:30;overflow:hidden;">
+                <button onClick="{{ actEdit }}" style="display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:none;font-size:12.5px;cursor:pointer;" style-hover="background:#eff2f8;">Editar pedido</button>
+                <button onClick="{{ actDuplicate }}" style="display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:none;font-size:12.5px;cursor:pointer;" style-hover="background:#eff2f8;">Duplicar pedido</button>
+                <button onClick="{{ actCancel }}" style="display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:none;font-size:12.5px;cursor:pointer;color:#c0392b;" style-hover="background:#fdf1ef;">Cancelar pedido</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px 10px;background:#f5f7fa;border-radius:10px;padding:14px 16px;margin:16px 0;">
+          <div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#7d8798;margin-bottom:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>Data/Hora</div>
+            <div style="font-size:13px;font-weight:700;">{{ selDate }}<br/>{{ selTime }}</div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#7d8798;margin-bottom:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Local</div>
+            <div style="font-size:13px;font-weight:700;">{{ selLocation }}</div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#7d8798;margin-bottom:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Pessoas</div>
+            <div style="font-size:13px;font-weight:700;">{{ selPeople }} pessoas</div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#7d8798;margin-bottom:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5c0-1 1-2 3-2s3 1 3 2-1 1.5-3 2-3 1-3 2 1 2 3 2 3-1 3-2"/></svg>Valor total</div>
+            <div style="font-size:13px;font-weight:800;color:#283897;">{{ selTotalLabel }}</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:14px;border-bottom:1px solid #e3e8f0;margin-bottom:16px;overflow-x:auto;">
+          <sc-for list="{{ detailTabs }}" as="dt" hint-placeholder-count="5">
+            <button onClick="{{ dt.select }}" style="padding:8px 2px;border:none;background:none;border-bottom:2px solid {{ dt.borderColor }};color:{{ dt.color }};font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;">{{ dt.label }}</button>
+          </sc-for>
+        </div>
+
+        <!-- Resumo -->
+        <sc-if value="{{ isTabResumo }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ selItems }}" as="it" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #f3f5fa;">
+                <div>
+                  <div style="font-size:13px;font-weight:700;">{{ it.name }}</div>
+                  <div style="font-size:11.5px;color:#7d8798;">{{ it.sub }}</div>
+                </div>
+                <div><div style="font-size:10.5px;color:#7d8798;">Qtd.</div><div style="font-size:13px;font-weight:600;">{{ it.qtyLabel }}</div></div>
+                <div><div style="font-size:10.5px;color:#7d8798;">Valor unit.</div><div style="font-size:13px;font-weight:600;">{{ it.unitLabel }}</div></div>
+                <div><div style="font-size:10.5px;color:#7d8798;">Subtotal</div><div style="font-size:13px;font-weight:700;">{{ it.totalLabel }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+            <button onClick="{{ actEdit }}" style="padding:9px 14px;border-radius:8px;border:1px solid #d3dae6;background:#fff;font-size:12.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">✎ Editar itens</button>
+            <div style="display:flex;gap:22px;align-items:center;">
+              <div style="text-align:right;"><div style="font-size:10.5px;color:#7d8798;">Subtotal</div><div style="font-size:13px;font-weight:600;">{{ selSubtotalLabel }}</div></div>
+              <div style="text-align:right;"><div style="font-size:10.5px;color:#7d8798;">Taxa (10%)</div><div style="font-size:13px;font-weight:600;">{{ selFeeLabel }}</div></div>
+              <div style="text-align:right;"><div style="font-size:11px;color:#7d8798;">Total</div><div style="font-size:16px;font-weight:800;color:#283897;">{{ selTotalLabel }}</div></div>
+            </div>
+          </div>
+          <div style="background:#e9edf9;border-radius:9px;padding:10px 14px;margin-top:14px;font-size:12px;color:#2c3a8c;">Pedido criado em {{ selCreatedAt }} por você. Última atualização em {{ selUpdatedAt }}.</div>
+        </sc-if>
+
+        <!-- Itens -->
+        <sc-if value="{{ isTabItens }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ selItems }}" as="it" hint-placeholder-count="4">
+              <div style="display:flex;gap:12px;align-items:center;border:1px solid #e3e8f0;border-radius:10px;padding:10px 12px;">
+                <div style="flex:1;">
+                  <div style="font-size:13.5px;font-weight:700;">{{ it.name }}</div>
+                  <div style="font-size:11.5px;color:#7d8798;">{{ it.sub }} &bull; {{ it.unitLabel }}/un.</div>
+                </div>
+                <div style="font-size:14px;font-weight:800;">{{ it.totalLabel }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- Informações -->
+        <sc-if value="{{ isTabInfo }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;">
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Data e horário</div><div style="font-weight:600;">{{ selDate }} &bull; {{ selTime }}</div></div>
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Local de entrega</div><div style="font-weight:600;">{{ selLocation }}</div></div>
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Nº de pessoas</div><div style="font-weight:600;">{{ selPeople }}</div></div>
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Centro de custo</div><div style="font-weight:600;">{{ selCostCenter }}</div></div>
+            <div style="grid-column:1/-1;"><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Observações</div><div style="font-weight:600;">{{ selNotes }}</div></div>
+          </div>
+        </sc-if>
+
+        <!-- Anexos -->
+        <sc-if value="{{ isTabAnexos }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ selAttachments }}" as="att" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:12px;border:1px solid #e3e8f0;border-radius:10px;padding:12px 14px;">
+                <div style="width:36px;height:36px;border-radius:8px;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">📄</div>
+                <div style="flex:1;">
+                  <div style="font-size:13px;font-weight:700;">{{ att.name }}</div>
+                  <div style="font-size:11.5px;color:#7d8798;">{{ att.meta }}</div>
+                </div>
+                <button style="border:none;background:none;color:#283897;font-size:12.5px;font-weight:600;cursor:pointer;">Baixar</button>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- Histórico -->
+        <sc-if value="{{ isTabHistorico }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:0;">
+            <sc-for list="{{ selHistory }}" as="h" hint-placeholder-count="3">
+              <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f3f5fa;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#283897;margin-top:6px;flex-shrink:0;"></div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;">{{ h.text }}</div>
+                  <div style="font-size:11.5px;color:#7d8798;">{{ h.time }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ noSelected }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:60px 0;color:#7d8798;font-size:13.5px;">Selecione um pedido na lista ao lado.</div>
+        </sc-if>
+      </div>
+
+      <!-- RIGHT: status + conversas -->
+      <div style="min-width:0;display:flex;flex-direction:column;gap:16px;">
+        <sc-if value="{{ hasSelected }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:16px 18px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div style="font-size:13.5px;font-weight:700;">Status do pedido</div>
+            <a href="#" style="font-size:12px;color:#283897;font-weight:600;text-decoration:none;">Ver detalhes</a>
+          </div>
+          <div style="display:flex;flex-direction:column;">
+            <sc-for list="{{ selTimeline }}" as="ts" hint-placeholder-count="5">
+              <div style="display:flex;gap:10px;">
+                <div style="display:flex;flex-direction:column;align-items:center;">
+                  <div style="width:20px;height:20px;border-radius:50%;background:{{ ts.dotBg }};color:{{ ts.dotColor }};display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">{{ ts.dotGlyph }}</div>
+                  <sc-if value="{{ ts.showLine }}" hint-placeholder-val="{{ true }}">
+                    <div style="width:2px;flex:1;background:{{ ts.lineColor }};min-height:22px;"></div>
+                  </sc-if>
+                </div>
+                <div style="padding-bottom:16px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:12.5px;font-weight:700;color:{{ ts.textColor }};">{{ ts.label }}</span>
+                    <sc-if value="{{ ts.isYou }}" hint-placeholder-val="{{ false }}">
+                      <span style="background:#e6f5ec;color:#1a7a4f;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:10px;">Você</span>
+                    </sc-if>
+                  </div>
+                  <div style="font-size:11px;color:#7d8798;">{{ ts.sub }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div style="font-size:13.5px;font-weight:700;">Conversas</div>
+            <a href="#" style="font-size:12px;color:#283897;font-weight:600;text-decoration:none;">Ver todas</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;max-height:260px;overflow-y:auto;margin-bottom:12px;">
+            <sc-for list="{{ selConversation }}" as="m" hint-placeholder-count="3">
+              <div style="display:flex;gap:8px;">
+                <div style="width:26px;height:26px;border-radius:50%;background:{{ m.avatarBg }};color:{{ m.avatarColor }};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">{{ m.avatarGlyph }}</div>
+                <div>
+                  <div style="font-size:11.5px;font-weight:700;">{{ m.author }} <span style="font-weight:400;color:#a6afc0;">&bull; {{ m.time }}</span></div>
+                  <div style="font-size:12.5px;color:#3a3733;margin-top:2px;">{{ m.text }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:8px;border-top:1px solid #edf1f7;padding-top:12px;">
+            <input value="{{ convInput }}" onChange="{{ onConvInput }}" onKeyDown="{{ onConvKeyDown }}" placeholder="Digite sua mensagem..." style="flex:1;padding:8px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:12.5px;outline:none;box-sizing:border-box;" />
+            <button onClick="{{ sendConv }}" style="width:34px;height:34px;border-radius:8px;border:none;background:#283897;color:#fff;cursor:pointer;font-size:13px;flex-shrink:0;">&#10148;</button>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <!-- Bottom action bar -->
+    <sc-if value="{{ hasSelected }}" hint-placeholder-val="{{ true }}">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:18px;">
+      <button onClick="{{ actViewDetails }}" style="padding:12px;border-radius:9px;border:1px solid #d3dae6;background:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">👁 Ver detalhes</button>
+      <button onClick="{{ actEdit }}" style="padding:12px;border-radius:9px;border:1px solid #283897;background:#fff;color:#283897;font-size:12.5px;font-weight:700;cursor:pointer;">✎ Editar pedido</button>
+      <button onClick="{{ actConverse }}" style="padding:12px;border-radius:9px;border:1px solid #d3dae6;background:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">💬 Conversar</button>
+      <button onClick="{{ actDuplicate }}" style="padding:12px;border-radius:9px;border:1px solid #d3dae6;background:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">⧉ Duplicar pedido</button>
+      <button onClick="{{ actCancel }}" style="padding:12px;border-radius:9px;border:1px solid #f0c6bd;background:#fff;color:#c0392b;font-size:12.5px;font-weight:700;cursor:pointer;">✕ Cancelar pedido</button>
+    </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:28px;right:28px;background:#1a2233;color:#fff;padding:14px 20px;border-radius:10px;font-size:13.5px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.25);z-index:100;">{{ toastMsg }}</div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const money = (v) => 'R$ ' + v.toFixed(2).replace('.', ',');
+
+const STATUS_STYLE = {
+  'Aguardando aprovação': {bg:'#fdedd3', color:'#8a5a0f'},
+  'Em preparação': {bg:'#dfeaff', color:'#1e4fa3'},
+  'Solicitado': {bg:'#e9e5f4', color:'#5a4a8a'},
+  'Entregue': {bg:'#e6f5ec', color:'#1a7a4f'},
+  'Cancelado': {bg:'#fbe4e0', color:'#c0392b'},
+};
+
+const STAGES = ['Pedido recebido', 'Aguardando aprovação', 'Aguardando aprovação do restaurante', 'Em preparação', 'Entrega'];
+
+let ORDERS = [
+  {
+    id:'CB-15234', name:'Coffee Break Diretoria', mono:'CB', tab:'andamento', date:'23/07/2026', dateRel:'Hoje', time:'14:00', people:20,
+    location:'Sala 402 • Unidade Matriz', status:'Aguardando aprovação', stage:1, youStep:1,
+    items:[
+      {name:'Coffee Executivo', sub:'Serve até 20 pessoas', qty:1, unit:240, unitLabel:'kit', imgId:'kit-exec'},
+      {name:'Água Mineral sem gás 500ml', sub:'6 unidades', qty:6, unit:6, unitLabel:'un.', imgId:'av-agua'},
+      {name:'Coca-Cola lata 350ml', sub:'12 unidades', qty:12, unit:10, unitLabel:'un.', imgId:'av-coca'},
+      {name:'Suco Natural 300ml', sub:'6 unidades', qty:6, unit:8, unitLabel:'un.', imgId:'av-suco'},
+    ],
+    createdAt:'22/07/2026 às 09:15', updatedAt:'22/07/2026 às 11:32',
+    costCenter:'CC001 • Administrativo (100%)', notes:'Sem observações adicionais.',
+    attachments:[{name:'Ata da reunião.pdf', meta:'240 KB • enviado por você'}, {name:'Layout da sala.jpg', meta:'1.1 MB • enviado por você'}],
+    history:[{text:'Pedido criado', time:'22/07/2026 às 09:15'}, {text:'Aprovado internamente por você', time:'22/07/2026 às 09:16'}, {text:'Mensagem enviada ao restaurante', time:'22/07/2026 às 11:18'}],
+    conversation:[
+      {author:'Restaurante Central', text:'Seu pedido foi recebido com sucesso! 👍', time:'22/07/2026 • 09:15', me:false},
+      {author:'Você', text:'Oi! Poderia confirmar se teremos opção sem açúcar no suco?', time:'22/07/2026 • 11:18', me:true},
+      {author:'Restaurante Central', text:'Sim! Teremos sim. Já está confirmado no seu pedido. 😊', time:'22/07/2026 • 11:21', me:false},
+    ],
+  },
+  {
+    id:'LAN-15210', name:'Lanche Reunião Comercial', mono:'LA', tab:'andamento', date:'24/07/2026', dateRel:'Amanhã', time:'10:00', people:15,
+    location:'Sala 210 • Unidade Matriz', status:'Em preparação', stage:3, youStep:1,
+    items:[{name:'Lanche Individual', sub:'15 unidades', qty:15, unit:12.5, unitLabel:'un.', imgId:'av-lanche'}],
+    createdAt:'20/07/2026 às 14:02', updatedAt:'23/07/2026 às 08:40',
+    costCenter:'CC002 • Comercial (100%)', notes:'Entregar em bandejas individuais.',
+    attachments:[{name:'Pauta comercial.pdf', meta:'96 KB • enviado por você'}],
+    history:[{text:'Pedido criado', time:'20/07/2026 às 14:02'}, {text:'Em preparação pelo restaurante', time:'23/07/2026 às 08:40'}],
+    conversation:[{author:'Restaurante Central', text:'Pedido em preparação, tudo certo para amanhã às 10h.', time:'23/07/2026 • 08:40', me:false}],
+  },
+  {
+    id:'EVT-15188', name:'Evento Especial RH', mono:'EE', tab:'andamento', date:'28/07/2026', dateRel:'28/07', time:'09:00', people:30,
+    location:'Auditório • Unidade Matriz', status:'Solicitado', stage:0, youStep:1,
+    items:[{name:'Evento Especial', sub:'Pacote completo', qty:1, unit:1250, unitLabel:'pacote', imgId:'av-evento'}],
+    createdAt:'15/07/2026 às 08:30', updatedAt:'15/07/2026 às 08:30',
+    costCenter:'CC003 • Operações (100%)', notes:'Confirmar decoração temática.',
+    attachments:[],
+    history:[{text:'Pedido criado', time:'15/07/2026 às 08:30'}],
+    conversation:[],
+  },
+  {id:'RN-15102', name:'Refeição Normal - Diretoria', mono:'RN', tab:'finalizado', date:'10/07/2026', dateRel:'10/07', time:'12:00', people:8, location:'Sala VIP', status:'Entregue', stage:4, youStep:1,
+    items:[{name:'Refeição Normal', sub:'8 marmitex', qty:8, unit:22, unitLabel:'un.', imgId:'av-refeicao'}], createdAt:'08/07/2026 às 10:00', updatedAt:'10/07/2026 às 12:30', costCenter:'CC001 • Administrativo (100%)', notes:'—', attachments:[], history:[{text:'Pedido entregue', time:'10/07/2026 às 12:30'}], conversation:[]},
+  {id:'SA-15098', name:'Solicitação de Água - Treinamento', mono:'SA', tab:'finalizado', date:'08/07/2026', dateRel:'08/07', time:'09:00', people:25, location:'Auditório', status:'Entregue', stage:4, youStep:1,
+    items:[{name:'Água Mineral', sub:'25 unidades', qty:25, unit:6, unitLabel:'un.', imgId:'av-agua'}], createdAt:'06/07/2026 às 09:00', updatedAt:'08/07/2026 às 09:30', costCenter:'CC002 • Comercial (100%)', notes:'—', attachments:[], history:[{text:'Pedido entregue', time:'08/07/2026 às 09:30'}], conversation:[]},
+  {id:'RM-15075', name:'Refeição Marmitex - Operações', mono:'RM', tab:'finalizado', date:'01/07/2026', dateRel:'01/07', time:'12:30', people:12, location:'Refeitório', status:'Entregue', stage:4, youStep:1,
+    items:[{name:'Refeição Marmitex', sub:'12 unidades', qty:12, unit:18, unitLabel:'un.', imgId:'av-refeicao'}], createdAt:'28/06/2026 às 11:00', updatedAt:'01/07/2026 às 12:45', costCenter:'CC003 • Operações (100%)', notes:'—', attachments:[], history:[{text:'Pedido entregue', time:'01/07/2026 às 12:45'}], conversation:[]},
+  {id:'CB-15040', name:'Coffee Break - Onboarding', mono:'CB', tab:'finalizado', date:'25/06/2026', dateRel:'25/06', time:'09:00', people:18, location:'Sala 305', status:'Entregue', stage:4, youStep:1,
+    items:[{name:'Coffee Premium', sub:'Serve até 20 pessoas', qty:1, unit:320, unitLabel:'kit', imgId:'kit-premium'}], createdAt:'20/06/2026 às 15:00', updatedAt:'25/06/2026 às 09:30', costCenter:'CC001 • Administrativo (100%)', notes:'—', attachments:[], history:[{text:'Pedido entregue', time:'25/06/2026 às 09:30'}], conversation:[]},
+  {id:'LA-14990', name:'Lanche - Reunião Cancelada', mono:'LA', tab:'cancelado', date:'18/06/2026', dateRel:'18/06', time:'15:00', people:10, location:'Sala 101', status:'Cancelado', stage:0, youStep:1,
+    items:[{name:'Lanche Individual', sub:'10 unidades', qty:10, unit:12.5, unitLabel:'un.', imgId:'av-lanche'}], createdAt:'16/06/2026 às 10:00', updatedAt:'17/06/2026 às 09:00', costCenter:'CC002 • Comercial (100%)', notes:'Reunião cancelada pelo solicitante.', attachments:[], history:[{text:'Pedido cancelado', time:'17/06/2026 às 09:00'}], conversation:[]},
+  {id:'SD-14955', name:'Serviços Diversos - Evento Externo', mono:'SD', tab:'cancelado', date:'10/06/2026', dateRel:'10/06', time:'08:00', people:40, location:'Externo', status:'Cancelado', stage:0, youStep:1,
+    items:[{name:'Serviços Diversos', sub:'Pacote', qty:1, unit:800, unitLabel:'pacote', imgId:'av-evento'}], createdAt:'01/06/2026 às 08:00', updatedAt:'05/06/2026 às 17:00', costCenter:'CC003 • Operações (100%)', notes:'Orçamento reprovado.', attachments:[], history:[{text:'Pedido cancelado', time:'05/06/2026 às 17:00'}], conversation:[]},
+];
+
+let dupCounter = 0;
+
+class Component extends DCLogic {
+  state = {
+    listTab: 'andamento',
+    listSearch: '',
+    topSearch: '',
+    selectedId: 'CB-15234',
+    detailTab: 'resumo',
+    quickActionsOpen: false,
+    convInput: '',
+    orders: ORDERS,
+    toast: null,
+  };
+
+  toastMsg(msg) {
+    this.setState({ toast: true, toastMsg: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: null }), 2400);
+  }
+
+  selectOrder = (id) => this.setState({ selectedId: id, detailTab: 'resumo', quickActionsOpen: false });
+  selectListTab = (tab) => this.setState({ listTab: tab });
+  selectDetailTab = (tab) => this.setState({ detailTab: tab });
+
+  editOrder = () => { this.setState({ quickActionsOpen: false }); this.toastMsg('Abrindo edição do pedido...'); };
+  duplicateOrder = () => {
+    const sel = this.state.orders.find(o => o.id === this.state.selectedId);
+    if (!sel) return;
+    dupCounter++;
+    const copy = { ...sel, id: 'DUP-' + (16000 + dupCounter), name: sel.name + ' (cópia)', status: 'Solicitado', stage: 0, tab: 'andamento' };
+    this.setState(s => ({ orders: [copy, ...s.orders], quickActionsOpen: false }));
+    this.toastMsg('Pedido duplicado com sucesso!');
+  };
+  cancelOrder = () => {
+    this.setState(s => ({
+      orders: s.orders.map(o => o.id === s.selectedId ? { ...o, tab: 'cancelado', status: 'Cancelado' } : o),
+      quickActionsOpen: false,
+    }));
+    this.toastMsg('Pedido cancelado.');
+  };
+  converse = () => { this.setState({ detailTab: 'resumo' }); this.toastMsg('Use o painel de Conversas à direita.'); };
+
+  sendConv = () => {
+    const text = this.state.convInput.trim();
+    if (!text) return;
+    this.setState(s => ({
+      orders: s.orders.map(o => o.id === s.selectedId ? { ...o, conversation: [...o.conversation, { author: 'Você', text, time: 'agora', me: true }] } : o),
+      convInput: '',
+    }));
+  };
+
+  renderVals() {
+    const s = this.state;
+    const q = s.listSearch.trim().toLowerCase();
+
+    const listTabDefs = [
+      {id:'andamento', label:'Em andamento (' + s.orders.filter(o=>o.tab==='andamento').length + ')'},
+      {id:'finalizado', label:'Finalizados (' + s.orders.filter(o=>o.tab==='finalizado').length + ')'},
+      {id:'cancelado', label:'Cancelados (' + s.orders.filter(o=>o.tab==='cancelado').length + ')'},
+    ];
+    const listTabs = listTabDefs.map(lt => {
+      const active = s.listTab === lt.id;
+      return { ...lt, select: () => this.selectListTab(lt.id), borderColor: active ? '#283897' : 'transparent', color: active ? '#283897' : '#7d8798' };
+    });
+
+    let filteredOrders = s.orders.filter(o => o.tab === s.listTab);
+    if (q) filteredOrders = filteredOrders.filter(o => o.name.toLowerCase().includes(q) || o.id.toLowerCase().includes(q));
+
+    const visibleOrders = filteredOrders.map(o => {
+      const st = STATUS_STYLE[o.status] || {bg:'#eee', color:'#555'};
+      const active = o.id === s.selectedId;
+      return {
+        ...o, statusBg: st.bg, statusColor: st.color,
+        select: () => this.selectOrder(o.id),
+        cardBorder: active ? '#283897' : '#e3e8f0',
+        cardBg: active ? '#f4f6fc' : '#fff',
+      };
+    });
+
+    const sel = s.orders.find(o => o.id === s.selectedId);
+    const hasSelected = !!sel;
+
+    let selVals = {};
+    if (sel) {
+      const items = sel.items.map(it => ({
+        ...it, qtyLabel: it.qty + ' ' + it.unitLabel, unitLabel: money(it.unit), totalLabel: money(it.qty * it.unit),
+      }));
+      const subtotal = sel.items.reduce((sum, it) => sum + it.qty * it.unit, 0);
+      const fee = subtotal * 0.1;
+      const total = subtotal + fee;
+      const st = STATUS_STYLE[sel.status] || {bg:'#eee', color:'#555'};
+
+      const detailTabDefs = [
+        {id:'resumo', label:'Resumo do pedido'},
+        {id:'itens', label:'Itens (' + sel.items.length + ')'},
+        {id:'informacoes', label:'Informações'},
+        {id:'anexos', label:'Anexos (' + sel.attachments.length + ')'},
+        {id:'historico', label:'Histórico'},
+      ];
+      const detailTabs = detailTabDefs.map(dt => {
+        const active = s.detailTab === dt.id;
+        return { ...dt, select: () => this.selectDetailTab(dt.id), borderColor: active ? '#283897' : 'transparent', color: active ? '#1a2233' : '#7d8798' };
+      });
+
+      const timeline = STAGES.map((label, i) => {
+        const done = i < sel.stage || (sel.status === 'Entregue' && i <= sel.stage) || (sel.status === 'Cancelado');
+        const current = i === sel.stage && sel.status !== 'Entregue' && sel.status !== 'Cancelado';
+        return {
+          label,
+          isYou: i === sel.youStep && (done || current),
+          dotBg: sel.status === 'Cancelado' ? '#fbe4e0' : (done ? '#1a7a4f' : (current ? '#283897' : '#eaeef5')),
+          dotColor: sel.status === 'Cancelado' ? '#c0392b' : (done || current ? '#fff' : '#a6afc0'),
+          dotGlyph: sel.status === 'Cancelado' ? '✕' : ((done) ? '✓' : (i + 1)),
+          textColor: (done || current) ? '#1a2233' : '#7d8798',
+          sub: done ? sel.updatedAt : (current ? 'Em andamento' : 'Previsão: ' + sel.date + ' às ' + sel.time),
+          showLine: i < STAGES.length - 1,
+          lineColor: done ? '#1a7a4f' : '#e3e8f0',
+        };
+      });
+
+      selVals = {
+        selMono: sel.mono, selName: sel.name, selId: sel.id, selStatus: sel.status, selStatusBg: st.bg, selStatusColor: st.color,
+        selDate: sel.date, selTime: sel.time, selLocation: sel.location, selPeople: sel.people,
+        selTotalLabel: money(total), selSubtotalLabel: money(subtotal), selFeeLabel: money(fee),
+        selCreatedAt: sel.createdAt, selUpdatedAt: sel.updatedAt, selCostCenter: sel.costCenter, selNotes: sel.notes,
+        selItems: items,
+        selAttachments: sel.attachments,
+        selHistory: sel.history,
+        selTimeline: timeline,
+        selConversation: sel.conversation.map(m => ({
+          ...m, avatarBg: m.me ? '#283897' : '#e9edf9', avatarColor: m.me ? '#fff' : '#283897', avatarGlyph: m.me ? 'B' : 'R',
+        })),
+        detailTabs,
+        isTabResumo: s.detailTab === 'resumo', isTabItens: s.detailTab === 'itens', isTabInfo: s.detailTab === 'informacoes',
+        isTabAnexos: s.detailTab === 'anexos', isTabHistorico: s.detailTab === 'historico',
+      };
+    }
+
+    return {
+      topSearch: s.topSearch, onTopSearch: (e) => this.setState({ topSearch: e.target.value }),
+      listTabs,
+      listSearch: s.listSearch, onListSearch: (e) => this.setState({ listSearch: e.target.value }),
+      visibleOrders, noOrdersInList: visibleOrders.length === 0,
+
+      hasSelected, noSelected: !hasSelected,
+      ...selVals,
+
+      quickActionsOpen: s.quickActionsOpen,
+      toggleQuickActions: () => this.setState(st => ({ quickActionsOpen: !st.quickActionsOpen })),
+      actEdit: this.editOrder, actDuplicate: this.duplicateOrder, actCancel: this.cancelOrder,
+      actViewDetails: () => this.selectDetailTab('informacoes'), actConverse: this.converse,
+
+      convInput: s.convInput, onConvInput: (e) => this.setState({ convInput: e.target.value }),
+      onConvKeyDown: (e) => { if (e.key === 'Enter') this.sendConv(); },
+      sendConv: this.sendConv,
+
+      toast: s.toast, toastMsg: s.toastMsg,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

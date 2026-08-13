@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#283897"/><text x="100" y="115" font-size="60" fill="#fff" text-anchor="middle" font-family="sans-serif" font-weight="800">H</text></svg></template>
+<helmet data-dc-atomics>
+<script src="./image-slot.js"></script>
+<style>
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px);} to { opacity:1; transform:translateY(0);} }
+@keyframes toastIn { from { opacity:0; transform:translateY(12px);} to { opacity:1; transform:translateY(0);} }
+body { margin:0; }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a2233;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:#fff;border-bottom:1px solid #e3e8f0;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:#283897;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">B</div>
+      <div>
+        <div style="font-weight:700;font-size:14.5px;">Olá, Bárbara C. Ribeiro</div>
+        <div style="font-size:12px;color:#7d8798;">Sodexo &bull; Demonstração</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:18px;">
+      <a href="./Fique por Dentro.dc.html" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Fique por dentro</a>
+      <a href="./Gerenciar Pedidos.dc.html" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Pedidos</a>
+      <a href="./Produção.dc.html" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Produção</a>
+      <div style="width:1px;height:22px;background:#e3e8f0;"></div>
+      <a href="./Painel Administrativo.dc.html" style="padding:9px 16px;border-radius:8px;border:1px solid #1a2233;background:#fff;color:#1a2233;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block;" style-hover="background:#eff2f8;">Painel Administrativo</a>
+      <div style="position:relative;">
+        <button onClick="{{ toggleNotif }}" style="position:relative;width:38px;height:38px;border-radius:50%;border:1px solid #e3e8f0;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" style-hover="background:#eff2f8;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#46526a" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <sc-if value="{{ hasNotifs }}" hint-placeholder-val="{{ true }}">
+            <span style="position:absolute;top:-2px;right:-2px;background:#c0392b;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;">{{ notifCount }}</span>
+          </sc-if>
+        </button>
+        <sc-if value="{{ notifOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:46px;right:0;width:320px;background:#fff;border:1px solid #e3e8f0;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.12);z-index:40;animation:fadeIn .15s ease-out;">
+            <div style="padding:14px 16px;border-bottom:1px solid #eaeef5;font-weight:700;font-size:13.5px;">Notificações</div>
+            <sc-for list="{{ notifications }}" as="n" hint-placeholder-count="3">
+              <div style="padding:12px 16px;border-bottom:1px solid #f6f4ef;font-size:13px;color:#3a3733;">
+                <div style="font-weight:600;margin-bottom:2px;">{{ n.title }}</div>
+                <div style="color:#7d8798;font-size:12px;">{{ n.time }}</div>
+              </div>
+            </sc-for>
+            <div style="padding:10px 16px;text-align:center;">
+              <button onClick="{{ markAllRead }}" style="border:none;background:none;color:#283897;font-size:12.5px;font-weight:600;cursor:pointer;">Marcar todas como lidas</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1240px;margin:0 auto;padding:32px 32px 64px;">
+
+    <!-- Title + search -->
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:28px;flex-wrap:wrap;">
+      <div>
+        <h1 style="font-size:27px;font-weight:800;margin:0 0 6px;letter-spacing:-0.3px;">O que você deseja solicitar hoje?</h1>
+        <div style="font-size:14px;color:#7d8798;">Escolha uma opção para iniciar seu pedido.</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div style="position:relative;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2" style="position:absolute;left:14px;top:12px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <input value="{{ searchQuery }}" onChange="{{ onSearchChange }}" placeholder="Buscar serviço ou pedido" style="width:290px;padding:11px 16px 11px 40px;border-radius:9px;border:1px solid #d3dae6;font-size:13.5px;outline:none;" />
+        </div>
+        <button onClick="{{ toggleFilter }}" style="width:42px;height:42px;border-radius:9px;border:1px solid #d3dae6;background:{{ filterBtnBg }};cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#46526a" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <sc-if value="{{ filterOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;gap:10px;margin:-16px 0 24px;">
+        <button onClick="{{ setFilterAll }}" style="padding:7px 16px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid {{ allChipBorder }};background:{{ allChipBg }};color:{{ allChipColor }};">Todos os serviços</button>
+        <button onClick="{{ setFilterFav }}" style="padding:7px 16px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid {{ favChipBorder }};background:{{ favChipBg }};color:{{ favChipColor }};">★ Favoritos</button>
+      </div>
+    </sc-if>
+
+    <!-- Hero + Recentes -->
+    <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:24px;">
+      <div style="position:relative;overflow:hidden;border-radius:16px;background:linear-gradient(135deg,#e9edf9,#dfe6f7);padding:32px;">
+        <div style="position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(40,56,151,.10),transparent 70%);top:-60px;right:-40px;"></div>
+        <div style="position:absolute;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(40,56,151,.08),transparent 70%);bottom:-30px;right:60px;"></div>
+        <span style="position:relative;display:inline-block;background:#fff;color:#283897;font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:20px;margin-bottom:20px;">Mais solicitado</span>
+        <div style="position:relative;display:flex;align-items:flex-start;gap:18px;margin-bottom:24px;">
+          <div style="width:56px;height:56px;border-radius:50%;background:#283897;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"></path><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="2" x2="6" y2="4"></line><line x1="10" y1="2" x2="10" y2="4"></line><line x1="14" y1="2" x2="14" y2="4"></line></svg>
+          </div>
+          <div>
+            <div style="font-size:21px;font-weight:800;margin-bottom:6px;">Coffee Break</div>
+            <div style="font-size:14px;color:#46526a;line-height:1.5;max-width:320px;">Solicite coffee break para reuniões, treinamentos e eventos.</div>
+          </div>
+        </div>
+        <button onClick="{{ openHeroModal }}" style="position:relative;padding:12px 22px;border-radius:9px;border:none;background:#283897;color:#fff;font-size:14px;font-weight:700;cursor:pointer;" style-hover="background:#4f1a7a;">Novo pedido</button>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e3e8f0;border-radius:16px;padding:22px 24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#283897" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            Pedidos recentes
+          </div>
+          <a href="./Gerenciar Pedidos.dc.html" style="font-size:12.5px;color:#283897;font-weight:600;text-decoration:none;">Ver todos</a>
+        </div>
+        <sc-for list="{{ recentOrders }}" as="r" hint-placeholder-count="3">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #edf1f7;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:36px;height:36px;border-radius:50%;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">{{ r.mono }}</div>
+              <div>
+                <div style="font-size:13.5px;font-weight:600;">{{ r.name }}</div>
+                <div style="font-size:12px;color:#7d8798;">{{ r.date }}</div>
+              </div>
+            </div>
+            <button onClick="{{ r.repeat }}" style="padding:7px 13px;border-radius:7px;border:1px solid #283897;background:#fff;color:#283897;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;" style-hover="background:#e9edf9;">Repetir pedido</button>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- Pedidos em aberto -->
+    <div style="background:#fff;border:1px solid #e3e8f0;border-radius:16px;padding:22px 24px;margin-top:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-weight:700;font-size:16px;">Pedidos em aberto</span>
+          <span style="background:#f1eef9;color:#5c4a8a;font-size:12px;font-weight:700;padding:2px 9px;border-radius:12px;">{{ openCount }}</span>
+        </div>
+        <a href="./Gerenciar Pedidos.dc.html" style="font-size:13px;color:#283897;font-weight:600;text-decoration:none;">Ver todos os pedidos &rsaquo;</a>
+      </div>
+      <div style="font-size:13px;color:#7d8798;margin-bottom:16px;">Acompanhe e gerencie seus pedidos em andamento.</div>
+
+      <div style="display:grid;grid-template-columns:1.1fr 1.7fr 1fr 1.1fr 0.9fr 1.3fr;padding:0 8px 10px;border-bottom:1px solid #e3e8f0;font-size:12px;font-weight:700;color:#7d8798;text-transform:uppercase;letter-spacing:.03em;">
+        <div>Pedido</div><div>Tipo</div><div>Data/Hora</div><div>Status</div><div>Valor</div><div>Ações</div>
+      </div>
+
+      <sc-for list="{{ openOrders }}" as="o" hint-placeholder-count="3">
+        <div style="display:grid;grid-template-columns:1.1fr 1.7fr 1fr 1.1fr 0.9fr 1.3fr;align-items:center;padding:14px 8px;border-bottom:1px solid #edf1f7;" style-hover="background:#fafaf8;">
+          <div>
+            <div style="font-weight:700;font-size:13.5px;">{{ o.id }}</div>
+            <div style="font-size:12px;color:#7d8798;">{{ o.category }}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;">{{ o.mono }}</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;">{{ o.type }}</div>
+              <div style="font-size:12px;color:#7d8798;">{{ o.qty }}</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:#3a3733;">{{ o.datetime }}</div>
+          <div>
+            <span style="font-size:12px;font-weight:700;padding:5px 11px;border-radius:20px;background:{{ o.statusBg }};color:{{ o.statusColor }};">{{ o.status }}</span>
+          </div>
+          <div style="font-size:13.5px;font-weight:700;">{{ o.value }}</div>
+          <div style="display:flex;align-items:center;gap:8px;position:relative;">
+            <button onClick="{{ o.view }}" style="padding:7px 14px;border-radius:7px;border:1px solid #d3dae6;background:#fff;font-size:12.5px;font-weight:600;cursor:pointer;" style-hover="background:#eff2f8;">Visualizar</button>
+            <button onClick="{{ o.toggleMenu }}" style="width:30px;height:30px;border-radius:7px;border:1px solid transparent;background:none;cursor:pointer;font-size:16px;color:#7d8798;">&#8942;</button>
+            <sc-if value="{{ o.menuOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:36px;right:0;width:160px;background:#fff;border:1px solid #e3e8f0;border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.14);z-index:30;overflow:hidden;">
+                <button onClick="{{ o.duplicate }}" style="display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:none;font-size:13px;cursor:pointer;" style-hover="background:#eff2f8;">Duplicar pedido</button>
+                <button onClick="{{ o.cancel }}" style="display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:none;font-size:13px;cursor:pointer;color:#c0392b;" style-hover="background:#fdf1ef;">Cancelar pedido</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-for>
+
+      <sc-if value="{{ noOpenOrders }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;padding:32px 0;color:#7d8798;font-size:13.5px;">Nenhum pedido em aberto no momento.</div>
+      </sc-if>
+    </div>
+
+    <!-- Novidades e Promoções -->
+    <div style="margin-top:28px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-weight:700;font-size:16px;">Novidades e Promoções</span>
+          <span style="background:#e9edf9;color:#283897;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:12px;">Novidades da semana</span>
+        </div>
+        <a href="#" style="font-size:13px;color:#283897;font-weight:600;text-decoration:none;">Ver todas</a>
+      </div>
+      <div style="font-size:13px;color:#7d8798;margin-bottom:16px;">Aproveite oportunidades exclusivas para você.</div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+        <div style="background:#e9edf9;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;">
+          <span style="align-self:flex-start;background:#fff;color:#283897;font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px;">NOVIDADE</span>
+          <div style="font-size:15.5px;font-weight:800;">Combo Reunião</div>
+          <div style="font-size:12.5px;color:#46526a;line-height:1.4;flex:1;">Novas opções de coffee break para reuniões produtivas.</div>
+          <image-slot id="promo-combo" shape="rounded" radius="10" placeholder="Imagem do combo" style="width:100%;height:110px;"></image-slot>
+          <button style="margin-top:4px;padding:10px;border-radius:8px;border:none;background:#283897;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;" style-hover="background:#4f1a7a;">Conhecer opções</button>
+        </div>
+
+        <div style="background:#e6f5ec;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;position:relative;">
+          <span style="align-self:flex-start;background:#fff;color:#1a7a4f;font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px;">PROMOÇÃO</span>
+          <span style="position:absolute;top:16px;right:16px;background:#1a7a4f;color:#fff;font-size:11px;font-weight:800;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;">10%<br/>OFF</span>
+          <div style="font-size:15.5px;font-weight:800;">Desconto no Coffee Break</div>
+          <div style="font-size:12.5px;color:#46526a;line-height:1.4;flex:1;">Peça para grupos acima de 20 pessoas e ganhe 10% OFF.</div>
+          <image-slot id="promo-coffee" shape="rounded" radius="10" placeholder="Imagem do coffee break" style="width:100%;height:110px;"></image-slot>
+          <button style="margin-top:4px;padding:10px;border-radius:8px;border:none;background:#1a7a4f;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;" style-hover="background:#14603e;">Aproveitar agora</button>
+        </div>
+
+        <div style="background:#faf0e3;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;">
+          <span style="align-self:flex-start;background:#fff;color:#b5690f;font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px;">NOVIDADE</span>
+          <div style="font-size:15.5px;font-weight:800;">Lanche Saudável</div>
+          <div style="font-size:12.5px;color:#46526a;line-height:1.4;flex:1;">Novas opções de lanches saudáveis no cardápio.</div>
+          <image-slot id="promo-lanche" shape="rounded" radius="10" placeholder="Imagem do lanche" style="width:100%;height:110px;"></image-slot>
+          <button style="margin-top:4px;padding:10px;border-radius:8px;border:none;background:#e07a1f;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;" style-hover="background:#c5650f;">Ver opções</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Favoritos -->
+    <sc-if value="{{ hasFavorites }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:36px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <span style="font-size:16px;color:#c99a1f;">★</span>
+          <div style="font-weight:700;font-size:18px;">Favoritos</div>
+          <div style="font-size:13.5px;color:#7d8798;">&bull; serviços mais solicitados por você</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+          <sc-for list="{{ favoriteServices }}" as="f" hint-placeholder-count="4">
+            <div onClick="{{ f.open }}" style="position:relative;display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e3e8f0;border-radius:12px;padding:16px;cursor:pointer;" style-hover="border-color:#c9a8dc;box-shadow:0 4px 14px rgba(0,0,0,.05);">
+              <div style="width:42px;height:42px;border-radius:50%;background:#283897;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ f.iconPath }}"></path></svg></div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:14px;font-weight:700;">{{ f.name }}</div>
+                <div style="font-size:12.5px;color:#7d8798;">{{ f.desc }}</div>
+              </div>
+              <button onClick="{{ f.toggleFav }}" style="position:absolute;top:8px;right:8px;border:none;background:none;cursor:pointer;font-size:14px;color:#c99a1f;">★</button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Todos os serviços -->
+    <div style="margin-top:36px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-weight:700;font-size:18px;margin-bottom:4px;">Todos os serviços</div>
+          <div style="font-size:13.5px;color:#7d8798;">Explore todas as opções disponíveis.</div>
+        </div>
+        <div style="display:flex;gap:6px;border:1px solid #d3dae6;border-radius:9px;padding:3px;">
+          <button onClick="{{ setViewGrid }}" style="width:34px;height:32px;border-radius:6px;border:none;cursor:pointer;background:{{ gridBtnBg }};display:flex;align-items:center;justify-content:center;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ gridIconColor }}" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button onClick="{{ setViewList }}" style="width:34px;height:32px;border-radius:6px;border:none;cursor:pointer;background:{{ listBtnBg }};display:flex;align-items:center;justify-content:center;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ listIconColor }}" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;padding:48px 0;color:#7d8798;font-size:14px;">Nenhum serviço encontrado para "{{ searchQuery }}".</div>
+      </sc-if>
+
+      <sc-if value="{{ isGrid }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+          <sc-for list="{{ filteredServices }}" as="s" hint-placeholder-count="12">
+            <div onClick="{{ s.open }}" style="position:relative;display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e3e8f0;border-radius:12px;padding:16px;cursor:pointer;" style-hover="border-color:#c9d9d1;box-shadow:0 4px 14px rgba(0,0,0,.05);">
+              <div style="width:42px;height:42px;border-radius:50%;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ s.iconPath }}"></path></svg></div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:14px;font-weight:700;">{{ s.name }}</div>
+                <div style="font-size:12.5px;color:#7d8798;">{{ s.desc }}</div>
+              </div>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c3bfb6" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+              <button onClick="{{ s.toggleFav }}" style="position:absolute;top:8px;right:8px;border:none;background:none;cursor:pointer;font-size:14px;color:{{ s.starColor }};">{{ s.starGlyph }}</button>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ filteredServices }}" as="s" hint-placeholder-count="12">
+            <div onClick="{{ s.open }}" style="position:relative;display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #e3e8f0;border-radius:12px;padding:14px 18px;cursor:pointer;" style-hover="border-color:#c9d9d1;">
+              <div style="width:40px;height:40px;border-radius:50%;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ s.iconPath }}"></path></svg></div>
+              <div style="flex:1;">
+                <div style="font-size:14px;font-weight:700;">{{ s.name }}</div>
+                <div style="font-size:12.5px;color:#7d8798;">{{ s.desc }}</div>
+              </div>
+              <button onClick="{{ s.toggleFav }}" style="border:none;background:none;cursor:pointer;font-size:14px;color:{{ s.starColor }};margin-right:6px;">{{ s.starGlyph }}</button>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c3bfb6" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- Dica -->
+    <div style="display:flex;align-items:center;gap:12px;background:#edf1f7;border-radius:12px;padding:16px 20px;margin-top:28px;">
+      <span style="font-size:16px;">&#128161;</span>
+      <div style="font-size:13.5px;color:#46526a;"><strong>Dica:</strong> Use os pedidos recentes ou em aberto para repetir solicitações com mais rapidez.</div>
+    </div>
+  </div>
+
+  <!-- Chat -->
+  <div style="position:fixed;bottom:24px;right:24px;z-index:110;display:flex;flex-direction:column;align-items:flex-end;gap:12px;">
+    <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="width:320px;height:420px;background:#fff;border:1px solid #e3e8f0;border-radius:16px;box-shadow:0 16px 40px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#283897;color:#fff;">
+          <div>
+            <div style="font-size:13.5px;font-weight:700;">Fale com o time Sodexo</div>
+            <div style="font-size:11px;opacity:.85;">Prazos, itens especiais e dúvidas</div>
+          </div>
+          <button onClick="{{ toggleChat }}" style="border:none;background:none;color:#fff;font-size:18px;cursor:pointer;line-height:1;">&times;</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;background:#f5f7fa;">
+          <sc-for list="{{ chatMessages }}" as="m" hint-placeholder-count="2">
+            <div style="align-self:{{ m.align }};max-width:80%;background:{{ m.bg }};color:{{ m.color }};padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.4;">{{ m.text }}</div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:8px;padding:12px;border-top:1px solid #e3e8f0;">
+          <input value="{{ chatInput }}" onChange="{{ onChatInput }}" onKeyDown="{{ onChatKeyDown }}" placeholder="Escreva sua mensagem..." style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13px;outline:none;box-sizing:border-box;" />
+          <button onClick="{{ sendChat }}" style="width:38px;height:38px;border-radius:8px;border:none;background:#283897;color:#fff;cursor:pointer;font-size:14px;flex-shrink:0;">&#10148;</button>
+        </div>
+      </div>
+    </sc-if>
+    <button onClick="{{ toggleChat }}" style="position:relative;width:56px;height:56px;border-radius:50%;border:none;background:#283897;color:#fff;cursor:pointer;box-shadow:0 10px 26px rgba(40,56,151,.35);display:flex;align-items:center;justify-content:center;font-size:22px;">
+      💬
+      <sc-if value="{{ chatUnread }}" hint-placeholder-val="{{ false }}">
+        <span style="position:absolute;top:-2px;right:-2px;background:#c0392b;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;">1</span>
+      </sc-if>
+    </button>
+  </div>
+
+  <!-- Toast -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:28px;right:28px;background:#1a2233;color:#fff;padding:14px 20px;border-radius:10px;font-size:13.5px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.25);z-index:100;animation:toastIn .2s ease-out;">{{ toastMsg }}</div>
+  </sc-if>
+
+  <!-- Modal -->
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:fixed;inset:0;background:rgba(20,18,15,.45);z-index:90;display:flex;align-items:center;justify-content:center;padding:20px;">
+      <div onClick="{{ stopProp }}" style="background:#fff;border-radius:16px;width:440px;max-width:100%;max-height:90vh;overflow:auto;padding:28px;">
+
+        <sc-if value="{{ isServiceModal }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;font-weight:700;">{{ modalMono }}</div>
+            <div>
+              <div style="font-size:17px;font-weight:800;">Solicitar {{ modalServiceName }}</div>
+              <div style="font-size:12.5px;color:#7d8798;">Preencha os dados do pedido</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <label style="font-size:12.5px;font-weight:700;color:#46526a;">Quantidade de pessoas
+              <input type="number" value="{{ formPeople }}" onChange="{{ onFormPeople }}" min="1" style="display:block;width:100%;margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13.5px;box-sizing:border-box;" />
+            </label>
+            <div style="display:flex;gap:10px;">
+              <label style="font-size:12.5px;font-weight:700;color:#46526a;flex:1;">Data
+                <input type="date" value="{{ formDate }}" onChange="{{ onFormDate }}" style="display:block;width:100%;margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13.5px;box-sizing:border-box;" />
+              </label>
+              <label style="font-size:12.5px;font-weight:700;color:#46526a;flex:1;">Horário
+                <input type="time" value="{{ formTime }}" onChange="{{ onFormTime }}" style="display:block;width:100%;margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13.5px;box-sizing:border-box;" />
+              </label>
+            </div>
+            <label style="font-size:12.5px;font-weight:700;color:#46526a;">Observações
+              <textarea value="{{ formNotes }}" onChange="{{ onFormNotes }}" rows="3" placeholder="Opcional" style="display:block;width:100%;margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13.5px;box-sizing:border-box;font-family:inherit;resize:none;"></textarea>
+            </label>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:22px;">
+            <button onClick="{{ closeModal }}" style="flex:1;padding:12px;border-radius:9px;border:1px solid #d3dae6;background:#fff;font-size:13.5px;font-weight:700;cursor:pointer;">Cancelar</button>
+            <button onClick="{{ submitOrder }}" style="flex:1;padding:12px;border-radius:9px;border:none;background:#283897;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;">Confirmar pedido</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isOrderModal }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;">
+            <div>
+              <div style="font-size:17px;font-weight:800;">{{ modalOrder.id }}</div>
+              <div style="font-size:12.5px;color:#7d8798;">{{ modalOrder.category }}</div>
+            </div>
+            <span style="font-size:12px;font-weight:700;padding:5px 11px;border-radius:20px;background:{{ modalOrder.statusBg }};color:{{ modalOrder.statusColor }};">{{ modalOrder.status }}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;font-size:13.5px;">
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid #edf1f7;padding-bottom:10px;"><span style="color:#7d8798;">Tipo</span><span style="font-weight:600;">{{ modalOrder.type }}</span></div>
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid #edf1f7;padding-bottom:10px;"><span style="color:#7d8798;">Quantidade</span><span style="font-weight:600;">{{ modalOrder.qty }}</span></div>
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid #edf1f7;padding-bottom:10px;"><span style="color:#7d8798;">Data/Hora</span><span style="font-weight:600;">{{ modalOrder.datetime }}</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#7d8798;">Valor</span><span style="font-weight:700;">{{ modalOrder.value }}</span></div>
+          </div>
+          <button onClick="{{ closeModal }}" style="width:100%;margin-top:22px;padding:12px;border-radius:9px;border:none;background:#283897;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;">Fechar</button>
+        </sc-if>
+
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SERVICES = [
+  {id:'as', name:'Abastecimento Simples', desc:'Solicite abastecimentos simples.', mono:'AS', iconPath:'M13 2L3 14h9l-1 8 10-12h-9l1-8z'},
+  {id:'cb', name:'Coffee Break', desc:'Solicite coffee break para eventos e reuniões.', mono:'CB', iconPath:'M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3'},
+  {id:'cc', name:'Consumo Catraca', desc:'Registre consumos realizados na catraca.', mono:'CC', iconPath:'M22 12h-4l-3 9L9 3l-3 9H2'},
+  {id:'ee', name:'Evento Especial', desc:'Solicite eventos especiais.', mono:'EE', iconPath:'M3 10h18M16 2v4M8 2v4M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z'},
+  {id:'la', name:'Lanche', desc:'Solicite lanches individuais.', mono:'LA', iconPath:'M3 10h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3zM3 10a9 6 0 0118 0M7 15v2M12 15v2M17 15v2'},
+  {id:'re', name:'Refeição Especial', desc:'Solicite refeições especiais.', mono:'RE', iconPath:'M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z'},
+  {id:'rm', name:'Refeição Marmitex', desc:'Solicite refeições marmitex.', mono:'RM', iconPath:'M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8'},
+  {id:'rn', name:'Refeição Normal', desc:'Solicite refeições normais.', mono:'RN', iconPath:'M6 2v7a2 2 0 004 0V2M8 9v13M16 2c-1.5 0-3 2-3 5s1.5 5 3 5 3-2 3-5-1.5-5-3-5zM16 12v10'},
+  {id:'rr', name:'Reserva de Refeição', desc:'Reserve refeições antecipadamente.', mono:'RR', iconPath:'M12 3a9 9 0 100 18 9 9 0 000-18zM12 7v5l3 3'},
+  {id:'sd', name:'Serviços Diversos', desc:'Outros serviços disponíveis.', mono:'SD', iconPath:'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z'},
+  {id:'sp', name:'Surpreenda', desc:'Kits prontos: café da manhã, tarde, hora extra e aniversariante.', mono:'SP', iconPath:'M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z'},
+  {id:'sa', name:'Solicitação de Água', desc:'Solicite água para eventos.', mono:'SA', iconPath:'M8 2h8l-1 9a4 4 0 01-3 3.9V21h3v2H9v-2h3v-6.1a4 4 0 01-3-3.9L8 2z'},
+  {id:'vv', name:'Venda à Vista', desc:'Solicite vendas à vista.', mono:'VV', iconPath:'M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0'},
+];
+
+const STATUS_STYLE = {
+  'Aguardando aprovação': {bg:'#fdedd3', color:'#8a5a0f'},
+  'Em preparação': {bg:'#dfeaff', color:'#1e4fa3'},
+  'Solicitado': {bg:'#e9e5f4', color:'#5a4a8a'},
+};
+
+let nextOrderNum = 300;
+
+class Component extends DCLogic {
+  state = {
+    notifOpen: false,
+    notifsRead: false,
+    searchQuery: '',
+    filterOpen: false,
+    activeFilter: 'all',
+    viewMode: 'grid',
+    favorites: new Set(['cb','la','sa','rn']),
+    kebabOpenId: null,
+    toast: null,
+    modal: null, // {type:'service', service} | {type:'order', order}
+    form: {people:'', date:'', time:'', notes:''},
+    chatOpen: false,
+    chatUnread: true,
+    chatInput: '',
+    chatMessages: [
+      { from: 'them', text: 'Oi, eu sou a responsável Sodexo da sua unidade, em que posso ajudar?' },
+    ],
+    orders: [
+      {id:'#CB-15234', category:'Coffee Break', type:'Coffee Break Executivo', mono:'CB', qty:'20 pessoas', datetime:'24/07/2026 14:00', status:'Aguardando aprovação', value:'R$ 240,00'},
+      {id:'#LAN-15210', category:'Lanche', type:'Lanche Individual', mono:'LA', qty:'15 unidades', datetime:'25/07/2026 12:30', status:'Em preparação', value:'R$ 187,50'},
+      {id:'#EVT-15188', category:'Evento', type:'Evento Especial', mono:'EE', qty:'30 pessoas', datetime:'28/07/2026 09:00', status:'Solicitado', value:'R$ 1.250,00'},
+    ],
+  };
+
+  toast(msg) {
+    this.setState({ toast: true, toastMsg: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: null }), 2600);
+  }
+
+  repeatOrder = (item) => {
+    nextOrderNum++;
+    const newOrder = {
+      id: '#REP-' + (15000 + nextOrderNum), category: item.category, type: item.name, mono: item.mono,
+      qty: '—', datetime: 'A definir', status: 'Solicitado', value: '—',
+    };
+    this.setState(s => ({ orders: [newOrder, ...s.orders] }));
+    this.toast('Pedido "' + item.name + '" repetido com sucesso!');
+  };
+
+  toggleMenu = (id) => this.setState(s => ({ kebabOpenId: s.kebabOpenId === id ? null : id }));
+  cancelOrder = (id) => { this.setState(s => ({ orders: s.orders.filter(o => o.id !== id), kebabOpenId: null })); this.toast('Pedido cancelado.'); };
+  duplicateOrder = (order) => {
+    nextOrderNum++;
+    const copy = { ...order, id: '#DUP-' + (15000 + nextOrderNum) };
+    this.setState(s => ({ orders: [copy, ...s.orders], kebabOpenId: null }));
+    this.toast('Pedido duplicado.');
+  };
+
+  toggleFav = (id) => this.setState(s => {
+    const favs = new Set(s.favorites);
+    favs.has(id) ? favs.delete(id) : favs.add(id);
+    return { favorites: favs };
+  });
+
+  openServiceModal = (svc) => this.setState({ modal: { type: 'service', service: svc }, form: {people:'', date:'', time:'', notes:''} });
+  openOrderModal = (order) => this.setState({ modal: { type: 'order', order } });
+  closeModal = () => this.setState({ modal: null });
+
+  toggleChat = () => this.setState(s => ({ chatOpen: !s.chatOpen, chatUnread: false }));
+  sendChat = () => {
+    const text = this.state.chatInput.trim();
+    if (!text) return;
+    this.setState(s => ({ chatMessages: [...s.chatMessages, { from: 'me', text }], chatInput: '' }));
+    setTimeout(() => {
+      this.setState(s => ({ chatMessages: [...s.chatMessages, { from: 'them', text: 'Recebido! Já te retorno por aqui.' }] }));
+    }, 900);
+  };
+
+  submitOrder = () => {
+    const svc = this.state.modal && this.state.modal.service;
+    if (!svc) return;
+    nextOrderNum++;
+    const f = this.state.form;
+    const newOrder = {
+      id: '#NEW-' + (15000 + nextOrderNum), category: svc.name, type: svc.name, mono: svc.mono,
+      qty: (f.people || '1') + ' pessoas', datetime: (f.date || 'A definir') + ' ' + (f.time || ''),
+      status: 'Solicitado', value: '—',
+    };
+    this.setState(s => ({ orders: [newOrder, ...s.orders], modal: null }));
+    this.toast('Pedido solicitado com sucesso!');
+  };
+
+  renderVals() {
+    const s = this.state;
+    const q = s.searchQuery.trim().toLowerCase();
+    let filtered = SERVICES.filter(sv => sv.name.toLowerCase().includes(q));
+    if (s.activeFilter === 'favorites') filtered = filtered.filter(sv => s.favorites.has(sv.id));
+
+    const services = filtered.map(sv => ({
+      ...sv,
+      starGlyph: s.favorites.has(sv.id) ? '★' : '☆',
+      starColor: s.favorites.has(sv.id) ? '#c99a1f' : '#c3bfb6',
+      toggleFav: (e) => { e.stopPropagation(); this.toggleFav(sv.id); },
+      open: () => sv.id === 'cb' ? (window.location.href = './Novo Pedido - Coffee Break.dc.html') : sv.id === 'sa' ? (window.location.href = './Novo Pedido - Água.dc.html') : sv.id === 'ee' ? (window.location.href = './Novo Pedido - Evento Especial.dc.html') : sv.id === 'sp' ? (window.location.href = './Surpreenda.dc.html') : this.openServiceModal(sv),
+    }));
+
+    const recentRaw = [
+      {name:'Coffee Break Diretoria', date:'22/07/2026 • 14:30', mono:'CB', category:'Coffee Break'},
+      {name:'Lanche Reunião Comercial', date:'18/07/2026 • 10:00', mono:'LA', category:'Lanche'},
+      {name:'Evento Especial', date:'15/07/2026 • 08:30', mono:'EE', category:'Evento Especial'},
+    ];
+    const recentOrders = recentRaw.map(r => ({ ...r, repeat: () => this.repeatOrder(r) }));
+
+    const openOrders = s.orders.map(o => {
+      const st = STATUS_STYLE[o.status] || {bg:'#eee', color:'#555'};
+      return {
+        ...o, statusBg: st.bg, statusColor: st.color,
+        menuOpen: s.kebabOpenId === o.id,
+        toggleMenu: () => this.toggleMenu(o.id),
+        view: () => this.openOrderModal(o),
+        cancel: () => this.cancelOrder(o.id),
+        duplicate: () => this.duplicateOrder(o),
+      };
+    });
+
+    const modal = s.modal;
+    const isServiceModal = !!modal && modal.type === 'service';
+    const isOrderModal = !!modal && modal.type === 'order';
+
+    return {
+      hasNotifs: !s.notifsRead,
+      notifCount: 3,
+      notifOpen: s.notifOpen,
+      toggleNotif: () => this.setState(st => ({ notifOpen: !st.notifOpen })),
+      markAllRead: () => this.setState({ notifsRead: true, notifOpen: false }),
+      notifications: [
+        {title:'Pedido #CB-15234 aguardando aprovação', time:'há 2 horas'},
+        {title:'Evento Especial confirmado para 28/07', time:'há 5 horas'},
+        {title:'Novo catálogo de refeições disponível', time:'ontem'},
+      ],
+
+      searchQuery: s.searchQuery,
+      onSearchChange: (e) => this.setState({ searchQuery: e.target.value }),
+
+      filterOpen: s.filterOpen,
+      toggleFilter: () => this.setState(st => ({ filterOpen: !st.filterOpen })),
+      filterBtnBg: s.filterOpen ? '#f1eef9' : '#fff',
+      setFilterAll: () => this.setState({ activeFilter: 'all' }),
+      setFilterFav: () => this.setState({ activeFilter: 'favorites' }),
+      allChipBg: s.activeFilter === 'all' ? '#283897' : '#fff',
+      allChipColor: s.activeFilter === 'all' ? '#fff' : '#46526a',
+      allChipBorder: s.activeFilter === 'all' ? '#283897' : '#d3dae6',
+      favChipBg: s.activeFilter === 'favorites' ? '#283897' : '#fff',
+      favChipColor: s.activeFilter === 'favorites' ? '#fff' : '#46526a',
+      favChipBorder: s.activeFilter === 'favorites' ? '#283897' : '#d3dae6',
+
+      hasFavorites: s.favorites.size > 0,
+      favoriteServices: SERVICES.filter(sv => s.favorites.has(sv.id)).map(sv => ({
+        ...sv,
+        open: () => sv.id === 'cb' ? (window.location.href = './Novo Pedido - Coffee Break.dc.html') : sv.id === 'sa' ? (window.location.href = './Novo Pedido - Água.dc.html') : sv.id === 'ee' ? (window.location.href = './Novo Pedido - Evento Especial.dc.html') : sv.id === 'sp' ? (window.location.href = './Surpreenda.dc.html') : this.openServiceModal(sv),
+        toggleFav: (e) => { e.stopPropagation(); this.toggleFav(sv.id); },
+      })),
+
+      recentOrders,
+      openCount: openOrders.length,
+      openOrders,
+      noOpenOrders: openOrders.length === 0,
+
+      isGrid: s.viewMode === 'grid',
+      isList: s.viewMode === 'list',
+      setViewGrid: () => this.setState({ viewMode: 'grid' }),
+      setViewList: () => this.setState({ viewMode: 'list' }),
+      gridBtnBg: s.viewMode === 'grid' ? '#283897' : 'transparent',
+      listBtnBg: s.viewMode === 'list' ? '#283897' : 'transparent',
+      gridIconColor: s.viewMode === 'grid' ? '#fff' : '#46526a',
+      listIconColor: s.viewMode === 'list' ? '#fff' : '#46526a',
+      filteredServices: services,
+      noResults: services.length === 0,
+
+      openHeroModal: () => { window.location.href = './Novo Pedido - Coffee Break.dc.html'; },
+
+      toast: s.toast,
+      toastMsg: s.toastMsg,
+
+      modalOpen: !!modal,
+      isServiceModal, isOrderModal,
+      modalMono: isServiceModal ? modal.service.mono : '',
+      modalServiceName: isServiceModal ? modal.service.name : '',
+      modalOrder: isOrderModal ? modal.order : {},
+      closeModal: this.closeModal,
+      stopProp: (e) => e.stopPropagation(),
+
+      formPeople: s.form.people, formDate: s.form.date, formTime: s.form.time, formNotes: s.form.notes,
+      onFormPeople: (e) => this.setState(st => ({ form: { ...st.form, people: e.target.value } })),
+      onFormDate: (e) => this.setState(st => ({ form: { ...st.form, date: e.target.value } })),
+      onFormTime: (e) => this.setState(st => ({ form: { ...st.form, time: e.target.value } })),
+      onFormNotes: (e) => this.setState(st => ({ form: { ...st.form, notes: e.target.value } })),
+      submitOrder: this.submitOrder,
+
+      chatOpen: s.chatOpen,
+      chatUnread: s.chatUnread,
+      toggleChat: this.toggleChat,
+      chatInput: s.chatInput,
+      onChatInput: (e) => this.setState({ chatInput: e.target.value }),
+      onChatKeyDown: (e) => { if (e.key === 'Enter') this.sendChat(); },
+      sendChat: this.sendChat,
+      chatMessages: s.chatMessages.map(m => ({
+        ...m,
+        align: m.from === 'me' ? 'flex-end' : 'flex-start',
+        bg: m.from === 'me' ? '#283897' : '#fff',
+        color: m.from === 'me' ? '#fff' : '#1a2233',
+      })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<script src="./image-slot.js"></script>
+<style>
+@media print {
+  [data-print-hide="true"] { display: none !important; }
+  [data-no-print="true"] { display: none !important; }
+  #print-area { display: block !important; }
+}
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a2233;">
+
+  <!-- Header (same as home) -->
+  <div data-print-hide="true" style="display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:#fff;border-bottom:1px solid #e3e8f0;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:#283897;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;">B</div>
+      <div>
+        <div style="font-weight:700;font-size:14.5px;">Olá, Bárbara C. Ribeiro</div>
+        <div style="font-size:12px;color:#7d8798;">Sodexo &bull; Demonstração</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:18px;">
+      <a href="./Home.dc.html" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Pedidos</a>
+      <a href="./Produção.dc.html" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Produção</a>
+      <a href="./Fique por Dentro.dc.html" style="font-size:13.5px;color:#46526a;text-decoration:none;" style-hover="color:#283897;">Fique por dentro</a>
+      <div style="width:1px;height:22px;background:#e3e8f0;"></div>
+      <button style="position:relative;width:38px;height:38px;border-radius:50%;border:1px solid #e3e8f0;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" style-hover="background:#eff2f8;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#46526a" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span style="position:absolute;top:-2px;right:-2px;background:#c0392b;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;">3</span>
+      </button>
+      <a href="./Painel Administrativo.dc.html" style="padding:9px 16px;border-radius:8px;border:1px solid #1a2233;background:#fff;color:#1a2233;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block;" style-hover="background:#eff2f8;">Painel Administrativo</a>
+    </div>
+  </div>
+
+  <div style="max-width:1240px;margin:0 auto;padding:24px 32px 64px;">
+
+    <a href="./Painel de Pedidos.dc.html" data-print-hide="true" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#46526a;text-decoration:none;margin-bottom:18px;" style-hover="color:#283897;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      Voltar para a página inicial
+    </a>
+
+    <!-- Title bar -->
+    <div data-print-hide="true" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap;gap:12px;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:52px;height:52px;border-radius:14px;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;">CB</div>
+        <div>
+          <h1 style="font-size:24px;font-weight:800;margin:0 0 4px;letter-spacing:-0.3px;">Novo Coffee Break</h1>
+          <div style="font-size:13.5px;color:#7d8798;">Organize seu evento em poucos passos.</div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <span style="display:inline-block;background:#e9edf9;color:#283897;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;margin-bottom:6px;">Rascunho salvo</span>
+        <div style="font-size:12px;color:#7d8798;">Pedido #CB-15234</div>
+      </div>
+    </div>
+
+    <!-- Stepper -->
+    <div data-print-hide="true" style="display:flex;align-items:center;background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:16px 22px;margin-bottom:24px;">
+      <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;">
+          <div style="width:30px;height:30px;border-radius:50%;background:{{ st.circleBg }};color:{{ st.circleColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">{{ st.num }}</div>
+          <div>
+            <div style="font-size:13.5px;font-weight:700;color:{{ st.titleColor }};">{{ st.title }}</div>
+            <div style="font-size:11.5px;color:#7d8798;">{{ st.sub }}</div>
+          </div>
+        </div>
+        <sc-if value="{{ st.showChevron }}" hint-placeholder-val="{{ true }}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d3dae6" stroke-width="2" style="margin:0 8px;flex-shrink:0;"><path d="M9 6l6 6-6 6"/></svg>
+        </sc-if>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+    <div style="display:grid;grid-template-columns:1.7fr 1fr;gap:24px;align-items:flex-start;">
+
+      <!-- Left: catalog -->
+      <div style="min-width:0;">
+        <div style="font-size:15.5px;font-weight:700;margin-bottom:14px;">1. Escolha um kit ou adicione itens avulsos</div>
+
+        <div style="display:flex;gap:10px;margin-bottom:14px;">
+          <div style="position:relative;flex:1;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2" style="position:absolute;left:13px;top:12px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+            <input value="{{ searchQuery }}" onChange="{{ onSearchChange }}" placeholder="Buscar produtos, kits ou ingredientes..." style="width:100%;padding:10px 14px 10px 36px;border-radius:9px;border:1px solid #d3dae6;font-size:13.5px;outline:none;box-sizing:border-box;" />
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:22px;overflow-x:auto;padding-bottom:4px;">
+          <sc-for list="{{ categories }}" as="c" hint-placeholder-count="7">
+            <button onClick="{{ c.select }}" style="padding:8px 16px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};">{{ c.label }}</button>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ showKits }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <div style="font-size:14.5px;font-weight:700;">Kits de Coffee Break</div>
+            <span style="background:#e9edf9;color:#283897;font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;">Kits prontos para facilitar sua escolha</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;">
+            <sc-for list="{{ kits }}" as="k" hint-placeholder-count="3">
+              <div style="border:1px solid #e3e8f0;border-radius:14px;overflow:hidden;background:#fff;">
+                <div style="position:relative;">
+                  <image-slot id="{{ k.imgId }}" shape="rect" placeholder="Imagem do kit" style="width:100%;height:120px;"></image-slot>
+                  <span style="position:absolute;top:10px;left:10px;background:{{ k.badgeBg }};color:#fff;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:10px;">{{ k.badge }}</span>
+                </div>
+                <div style="padding:14px;">
+                  <div style="font-size:14px;font-weight:700;margin-bottom:4px;">{{ k.name }}</div>
+                  <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:#7d8798;margin-bottom:6px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    {{ k.serves }}
+                  </div>
+                  <div style="font-size:12px;color:#46526a;line-height:1.4;margin-bottom:12px;min-height:32px;">{{ k.desc }}</div>
+                  <div style="display:flex;flex-direction:column;gap:8px;">
+                    <div style="font-size:15px;font-weight:800;">{{ k.priceLabel }}</div>
+                    <button onClick="{{ k.toggle }}" style="width:100%;box-sizing:border-box;padding:9px 10px;border-radius:8px;border:1px solid {{ k.btnBorder }};background:{{ k.btnBg }};color:{{ k.btnColor }};font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;">{{ k.btnLabel }}</button>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <div style="font-size:14.5px;font-weight:700;margin-bottom:14px;">{{ avulsosTitle }}</div>
+        <sc-if value="{{ noAvulsos }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:32px 0;color:#7d8798;font-size:13.5px;">Nenhum produto encontrado.</div>
+        </sc-if>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;">
+          <sc-for list="{{ avulsos }}" as="a" hint-placeholder-count="6">
+            <div style="display:flex;gap:12px;border:1px solid #e3e8f0;border-radius:12px;padding:12px;background:#fff;">
+              <image-slot id="{{ a.imgId }}" shape="rounded" radius="8" placeholder="Imagem" style="width:56px;height:56px;flex-shrink:0;"></image-slot>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13.5px;font-weight:700;">{{ a.name }}</div>
+                <div style="font-size:11.5px;color:#7d8798;margin-bottom:2px;">{{ a.unit }}</div>
+                <div style="font-size:11px;color:#a6afc0;margin-bottom:8px;">Mín. {{ a.min }} &bull; Máx. {{ a.max }}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="font-size:13.5px;font-weight:700;">{{ a.priceLabel }}</div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <button onClick="{{ a.dec }}" style="width:24px;height:24px;border-radius:6px;border:1px solid #d3dae6;background:#fff;cursor:pointer;font-size:14px;line-height:1;color:#46526a;">&minus;</button>
+                    <span style="font-size:13px;font-weight:700;min-width:16px;text-align:center;">{{ a.qty }}</span>
+                    <button onClick="{{ a.inc }}" style="width:24px;height:24px;border-radius:6px;border:1px solid #d3dae6;background:#fff;cursor:pointer;font-size:14px;line-height:1;color:#46526a;">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Informações rápidas -->
+        <div style="margin-top:30px;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;background:#fff;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="font-size:14px;font-weight:700;"><span>2. Informações rápidas do evento</span> <span style="font-weight:400;color:#7d8798;font-size:12px;">(preencha após escolher os produtos)</span></div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;white-space:nowrap;">
+              <input type="checkbox" checked="{{ needsApproval }}" onChange="{{ onNeedsApprovalChange }}" style="width:18px;height:18px;cursor:pointer;" />
+              <span style="font-weight:600;">Requer aprovação</span>
+            </label>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:#fdedd3;border:1px solid #f0d49a;border-radius:10px;padding:10px 14px;margin-bottom:16px;">
+            <span style="font-size:15px;">⏱️</span>
+            <div style="font-size:12.5px;color:#8a5a0f;font-weight:600;line-height:1.4;">Esse pedido precisa de no mínimo 48h úteis para serem aceitos para produção. Caso precise de outro prazo ou itens não constantes aqui, nos chame no chat ao lado.</div>
+          </div>
+          <label style="display:block;border:1px solid #d3dae6;border-radius:10px;padding:10px 12px;font-size:11.5px;font-weight:700;color:#46526a;margin-bottom:12px;">Nome do evento
+            <input value="{{ eventName }}" onChange="{{ onEventName }}" placeholder="Ex.: Reunião de Diretoria, Confraternização..." style="display:block;width:100%;margin-top:6px;border:none;font-size:12.5px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;" />
+          </label>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+            <label style="border:1px solid #d3dae6;border-radius:10px;padding:10px 12px;font-size:11.5px;font-weight:700;color:#46526a;">Data do evento
+              <input type="date" value="{{ eventDate }}" onChange="{{ onEventDate }}" style="display:block;width:100%;margin-top:6px;border:none;font-size:12.5px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;" />
+            </label>
+            <label style="border:1px solid #d3dae6;border-radius:10px;padding:10px 12px;font-size:11.5px;font-weight:700;color:#46526a;">
+              <span style="display:inline-flex;align-items:center;gap:5px;">Horário do evento
+                <span title="Esse é o horário que o evento será entregue, a montagem acontece 30min antes" style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#dde3ed;color:#46526a;font-size:10px;font-weight:700;cursor:help;">i</span>
+              </span>
+              <input type="time" value="{{ eventTime }}" onChange="{{ onEventTime }}" style="display:block;width:100%;margin-top:6px;border:none;font-size:12.5px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;" />
+            </label>
+            <div style="position:relative;">
+              <label style="display:block;border:1px solid #d3dae6;border-radius:10px;padding:10px 12px;font-size:11.5px;font-weight:700;color:#46526a;cursor:pointer;" onClick="{{ toggleLocalMenu }}">Local de entrega
+                <div style="margin-top:6px;font-size:12.5px;font-weight:400;color:{{ eventLocalColor }};">{{ eventLocalLabel }}</div>
+              </label>
+              <sc-if value="{{ localMenuOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:100%;left:0;right:0;margin-top:4px;background:#fff;border:1px solid #e3e8f0;border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.14);z-index:30;overflow:hidden;">
+                  <sc-for list="{{ localOptions }}" as="lo" hint-placeholder-count="3">
+                    <button onClick="{{ lo.select }}" style="display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:none;font-size:12.5px;cursor:pointer;box-sizing:border-box;" style-hover="background:#eff2f8;">{{ lo.name }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+            <label style="border:1px solid #d3dae6;border-radius:10px;padding:10px 12px;font-size:11.5px;font-weight:700;color:#46526a;">Nº de pessoas
+              <input type="number" min="1" value="{{ people }}" onChange="{{ onPeopleChange }}" style="display:block;width:100%;margin-top:6px;border:none;font-size:12.5px;font-weight:400;color:#1a2233;outline:none;box-sizing:border-box;padding:0;" />
+            </label>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:#e9edf9;border-radius:10px;padding:10px 14px;margin-top:14px;">
+            <span style="font-size:14px;">&#8505;</span>
+            <div style="font-size:12px;color:#2c3a8c;">Você poderá revisar todos os detalhes na próxima etapa.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: cart -->
+      <div style="position:sticky;top:20px;background:#fff;border:1px solid #e3e8f0;border-radius:16px;padding:20px 22px;min-width:0;box-sizing:border-box;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div style="font-size:15.5px;font-weight:700;">Seu pedido</div>
+          <button onClick="{{ clearAll }}" style="border:none;background:none;color:#c0392b;font-size:12.5px;font-weight:600;cursor:pointer;">Limpar tudo</button>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #edf1f7;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#46526a;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            {{ people }} pessoas
+          </div>
+        </div>
+
+        <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:28px 0;color:#7d8798;font-size:13px;">Seu carrinho está vazio.<br/>Adicione um kit ou itens avulsos.</div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column;gap:12px;max-height:340px;overflow-y:auto;">
+          <sc-for list="{{ cartItems }}" as="ci" hint-placeholder-count="4">
+            <div style="display:flex;gap:10px;align-items:center;padding-bottom:12px;border-bottom:1px solid #edf1f7;">
+              <image-slot id="{{ ci.imgId }}" shape="rounded" radius="8" placeholder="Imagem" style="width:44px;height:44px;flex-shrink:0;"></image-slot>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:700;">{{ ci.name }}</div>
+                <div style="font-size:11px;color:#7d8798;">{{ ci.sub }}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button onClick="{{ ci.dec }}" style="width:20px;height:20px;border-radius:5px;border:1px solid #d3dae6;background:#fff;cursor:pointer;font-size:12px;line-height:1;">&minus;</button>
+                    <span style="font-size:12px;font-weight:700;min-width:14px;text-align:center;">{{ ci.qty }}</span>
+                    <button onClick="{{ ci.inc }}" style="width:20px;height:20px;border-radius:5px;border:1px solid #d3dae6;background:#fff;cursor:pointer;font-size:12px;line-height:1;">+</button>
+                  </div>
+                  <div style="font-size:13px;font-weight:700;">{{ ci.priceLabel }}</div>
+                </div>
+              </div>
+              <button onClick="{{ ci.remove }}" style="border:none;background:none;color:#a6afc0;cursor:pointer;font-size:15px;flex-shrink:0;" style-hover="color:#c0392b;">&times;</button>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;margin-top:16px;padding-top:14px;border-top:1px solid #edf1f7;">
+          <div style="display:flex;justify-content:space-between;color:#46526a;"><span>Subtotal</span><span>{{ subtotalLabel }}</span></div>
+          <div style="display:flex;justify-content:space-between;color:#46526a;"><span>Taxa de serviço (10%)</span><span>{{ feeLabel }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-top:4px;"><span>Total estimado</span><span style="color:#283897;">{{ totalLabel }}</span></div>
+        </div>
+
+        <div style="font-size:11.5px;color:#7d8798;margin-top:10px;">O valor final poderá ser ajustado conforme confirmação do pedido.</div>
+
+        <button onClick="{{ continueOrder }}" disabled="{{ cartEmpty }}" style="width:100%;margin-top:16px;padding:13px;border-radius:9px;border:none;background:{{ continueBg }};color:#fff;font-size:14px;font-weight:700;cursor:{{ continueCursor }};">Continuar para informações</button>
+        <button onClick="{{ saveForLater }}" style="width:100%;margin-top:10px;padding:12px;border-radius:9px;border:1px solid #d3dae6;background:#fff;color:#1a2233;font-size:13.5px;font-weight:700;cursor:pointer;">Salvar para depois</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:640px;">
+        <div style="font-size:15.5px;font-weight:700;margin-bottom:14px;">2. Informações do evento</div>
+
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;margin-bottom:16px;">
+          <div style="font-size:12.5px;font-weight:700;color:#7d8798;margin-bottom:12px;text-transform:uppercase;letter-spacing:.03em;">Definidos na etapa anterior</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <label style="font-size:11.5px;color:#7d8798;font-weight:700;">Data do evento
+              <input type="date" value="{{ eventDate }}" onChange="{{ onEventDate }}" style="display:block;width:100%;margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13px;box-sizing:border-box;" />
+            </label>
+            <div style="position:relative;">
+              <label style="display:block;font-size:11.5px;color:#7d8798;font-weight:700;cursor:pointer;" onClick="{{ toggleLocalMenu }}">Local de entrega
+                <div style="margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13px;font-weight:600;color:{{ eventLocalColor }};box-sizing:border-box;">{{ eventLocalLabel }}</div>
+              </label>
+              <sc-if value="{{ localMenuOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:100%;left:0;right:0;margin-top:4px;background:#fff;border:1px solid #e3e8f0;border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.14);z-index:30;overflow:hidden;">
+                  <sc-for list="{{ localOptions }}" as="lo" hint-placeholder-count="3">
+                    <button onClick="{{ lo.select }}" style="display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:none;font-size:12.5px;cursor:pointer;box-sizing:border-box;" style-hover="background:#eff2f8;">{{ lo.name }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:16px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <label style="font-size:12.5px;font-weight:700;color:#46526a;">
+              <span style="display:inline-flex;align-items:center;gap:5px;">Horário do evento
+                <span title="Esse é o horário que o evento será entregue, a montagem acontece 30min antes" style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#dde3ed;color:#46526a;font-size:10px;font-weight:700;cursor:help;">i</span>
+              </span>
+              <input type="time" value="{{ eventTime }}" onChange="{{ onEventTime }}" style="display:block;width:100%;margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13px;box-sizing:border-box;" />
+            </label>
+          </div>
+
+          <div style="border-top:1px solid #edf1f7;padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <label style="font-size:12.5px;font-weight:700;color:#46526a;">Data de recolhimento dos utensílios
+              <input type="date" value="{{ pickupDate }}" onChange="{{ onPickupDate }}" style="display:block;width:100%;margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13px;box-sizing:border-box;" />
+            </label>
+            <label style="font-size:12.5px;font-weight:700;color:#46526a;">Horário de recolhimento
+              <input type="time" value="{{ pickupTime }}" onChange="{{ onPickupTime }}" style="display:block;width:100%;margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13px;box-sizing:border-box;" />
+            </label>
+          </div>
+
+          <label style="font-size:12.5px;font-weight:700;color:#46526a;border-top:1px solid #edf1f7;padding-top:16px;">Instruções para o café <span style="font-weight:400;color:#7d8798;">(opcional)</span>
+            <textarea value="{{ coffeeInstructions }}" onChange="{{ onCoffeeInstructions }}" rows="3" placeholder="Ex: montar às 8h30, servir gelo à parte..." style="display:block;width:100%;margin-top:6px;padding:10px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13px;box-sizing:border-box;font-family:inherit;resize:none;"></textarea>
+          </label>
+
+          <div style="border-top:1px solid #edf1f7;padding-top:16px;">
+            <div style="font-size:12.5px;font-weight:700;color:#46526a;margin-bottom:10px;">Há restrições alimentares?</div>
+            <div style="display:flex;gap:10px;margin-bottom:12px;">
+              <button onClick="{{ setDietaryYes }}" style="padding:8px 18px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid {{ dietaryYesBorder }};background:{{ dietaryYesBg }};color:{{ dietaryYesColor }};">Sim</button>
+              <button onClick="{{ setDietaryNo }}" style="padding:8px 18px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid {{ dietaryNoBorder }};background:{{ dietaryNoBg }};color:{{ dietaryNoColor }};">Não</button>
+            </div>
+            <sc-if value="{{ hasDietary }}" hint-placeholder-val="{{ false }}">
+              <textarea value="{{ dietaryDetails }}" onChange="{{ onDietaryDetails }}" rows="2" placeholder="Descreva as restrições (ex: vegetariano, sem lactose, alergia a nozes...)" style="display:block;width:100%;padding:10px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13px;box-sizing:border-box;font-family:inherit;resize:none;"></textarea>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:20px;">
+          <button onClick="{{ backToStep1 }}" style="flex:1;padding:12px;border-radius:9px;border:1px solid #d3dae6;background:#fff;font-size:13.5px;font-weight:700;cursor:pointer;">Voltar</button>
+          <button onClick="{{ continueToStep3 }}" style="flex:2;padding:12px;border-radius:9px;border:none;background:#283897;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;">Continuar para revisão</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:680px;">
+        <div style="font-size:15.5px;font-weight:700;margin-bottom:14px;">3. Revisão do pedido</div>
+
+        <!-- Resumo estilo nota fiscal -->
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:22px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px dashed #e3e8f0;padding-bottom:14px;margin-bottom:14px;">
+            <div>
+              <div style="font-size:15px;font-weight:800;">Resumo do pedido</div>
+              <div style="font-size:12px;color:#7d8798;">Pedido #CB-15234</div>
+            </div>
+            <div style="font-size:12px;color:#7d8798;text-align:right;">Emitido em<br/><strong style="color:#1a2233;">{{ todayLabel }}</strong></div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px 12px;font-size:11.5px;font-weight:700;color:#7d8798;text-transform:uppercase;letter-spacing:.03em;padding-bottom:8px;border-bottom:1px solid #edf1f7;margin-bottom:4px;">
+            <div>Item</div><div>Qtd.</div><div>Unit.</div><div>Total</div>
+          </div>
+          <sc-for list="{{ cartItems }}" as="ci" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px 12px;font-size:13px;padding:9px 0;border-bottom:1px solid #f3f5fa;align-items:center;">
+              <div style="font-weight:600;">{{ ci.name }}</div>
+              <div style="color:#46526a;">{{ ci.qty }}</div>
+              <div style="color:#46526a;">{{ ci.unitPriceLabel }}</div>
+              <div style="font-weight:700;text-align:right;">{{ ci.priceLabel }}</div>
+            </div>
+          </sc-for>
+
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;margin-top:14px;padding-top:12px;">
+            <div style="display:flex;justify-content:space-between;color:#46526a;"><span>Subtotal</span><span>{{ subtotalLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between;color:#46526a;"><span>Taxa de serviço (10%)</span><span>{{ feeLabel }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;border-top:2px dashed #e3e8f0;padding-top:10px;margin-top:4px;"><span>Total</span><span style="color:#283897;">{{ totalLabel }}</span></div>
+          </div>
+        </div>
+
+        <!-- Dados do evento -->
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:14px;">Dados do evento</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:13px;">
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Data do evento</div><div style="font-weight:600;">{{ summaryDate }}</div></div>
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Horário do evento</div><div style="font-weight:600;">{{ summaryEventTime }}</div></div>
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Local de entrega</div><div style="font-weight:600;">{{ summaryLocal }}</div></div>
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Nº de pessoas</div><div style="font-weight:600;">{{ people }}</div></div>
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Recolhimento dos utensílios</div><div style="font-weight:600;">{{ summaryPickup }}</div></div>
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Restrições alimentares</div><div style="font-weight:600;">{{ summaryDietary }}</div></div>
+          </div>
+          <sc-if value="{{ hasCoffeeInstructions }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid #edf1f7;">
+              <div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Instruções para o café</div>
+              <div style="font-size:13px;font-weight:600;">{{ coffeeInstructions }}</div>
+            </div>
+          </sc-if>
+          <button onClick="{{ backToStep2 }}" style="margin-top:14px;border:none;background:none;color:#283897;font-size:12.5px;font-weight:600;cursor:pointer;padding:0;">Editar informações do evento</button>
+        </div>
+
+        <!-- Dados de faturamento -->
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Dados de faturamento</div>
+          <div style="font-size:12.5px;color:#7d8798;margin-bottom:14px;">Selecione um ou mais centros de custo. Ao selecionar mais de um, informe o percentual de cada um.</div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ costCenters }}" as="cc" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px;border:1px solid {{ cc.border }};background:{{ cc.bg }};border-radius:10px;padding:12px 14px;">
+                <input type="checkbox" checked="{{ cc.checked }}" onChange="{{ cc.toggle }}" style="width:17px;height:17px;accent-color:#283897;cursor:pointer;flex-shrink:0;" />
+                <div style="flex:1;">
+                  <div style="font-size:13.5px;font-weight:700;">{{ cc.code }}</div>
+                  <div style="font-size:12px;color:#7d8798;">{{ cc.name }}</div>
+                </div>
+                <sc-if value="{{ cc.showPct }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <input type="number" min="0" max="100" value="{{ cc.pct }}" onChange="{{ cc.onPct }}" style="width:56px;padding:7px 8px;border-radius:7px;border:1px solid #d3dae6;font-size:12.5px;text-align:right;box-sizing:border-box;" />
+                    <span style="font-size:12.5px;color:#46526a;font-weight:600;">%</span>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ showPctTotal }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;font-weight:700;color:{{ pctTotalColor }};">
+              Total: {{ pctTotal }}%
+              <sc-if value="{{ pctTotalInvalid }}" hint-placeholder-val="{{ false }}">
+                <span style="font-weight:400;">(deve somar 100%)</span>
+              </sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noCostCenter }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12.5px;color:#c0392b;margin-top:10px;">Selecione ao menos um centro de custo.</div>
+          </sc-if>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button onClick="{{ backToStep2 }}" style="flex:1;padding:12px;border-radius:9px;border:1px solid #d3dae6;background:#fff;font-size:13.5px;font-weight:700;cursor:pointer;">Voltar</button>
+          <button onClick="{{ continueToStep4 }}" disabled="{{ step3Invalid }}" style="flex:2;padding:12px;border-radius:9px;border:none;background:{{ step3ContinueBg }};color:#fff;font-size:13.5px;font-weight:700;cursor:{{ step3ContinueCursor }};">Continuar para finalizar</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isStep4 }}" hint-placeholder-val="{{ false }}">
+      <div id="print-area" style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;">
+        <div data-print-hide="true" style="background:#fff;border:1px solid #e3e8f0;border-radius:16px;padding:32px;">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+            <div style="width:48px;height:48px;border-radius:50%;background:#e6f5ec;color:#1a7a4f;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">✓</div>
+            <div>
+              <div style="font-size:19px;font-weight:800;">Pedido confirmado!</div>
+              <div style="font-size:13px;color:#7d8798;">Pedido #CB-15234 &bull; enviado em {{ todayLabel }}</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:13px;border-top:1px solid #edf1f7;padding-top:18px;">
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Data e horário</div><div style="font-weight:600;">{{ summaryDate }} &bull; {{ summaryEventTime }}</div></div>
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Local de entrega</div><div style="font-weight:600;">{{ summaryLocal }}</div></div>
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Nº de pessoas</div><div style="font-weight:600;">{{ people }}</div></div>
+            <div><div style="color:#7d8798;font-size:11.5px;margin-bottom:3px;">Valor total</div><div style="font-weight:800;color:#283897;">{{ totalLabel }}</div></div>
+          </div>
+
+          <div style="border-top:1px solid #edf1f7;margin-top:18px;padding-top:14px;">
+            <div style="color:#7d8798;font-size:11.5px;margin-bottom:8px;">Centro(s) de custo</div>
+            <sc-for list="{{ confirmedCostCenters }}" as="cc" hint-placeholder-count="1">
+              <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="font-weight:600;">{{ cc.code }} &bull; {{ cc.name }}</span><span style="color:#46526a;">{{ cc.pctLabel }}</span></div>
+            </sc-for>
+          </div>
+
+          <a href="./Painel de Pedidos.dc.html" style="display:inline-block;margin-top:24px;padding:11px 20px;border-radius:9px;border:1px solid #d3dae6;background:#fff;color:#1a2233;font-size:13.5px;font-weight:700;text-decoration:none;">Voltar para a página inicial</a>
+        </div>
+
+        <div style="background:#fff;border:1px dashed #b9c2e2;border-radius:16px;padding:24px;text-align:center;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;margin:0 auto 10px;">CB</div>
+          <div style="font-size:14px;font-weight:800;margin-bottom:2px;">Ticket de acesso</div>
+          <div style="font-size:11.5px;color:#7d8798;margin-bottom:16px;">Pedido #CB-15234</div>
+
+          <svg width="160" height="160" viewBox="0 0 29 29" style="background:#fff;margin:0 auto 14px;display:block;">
+            <rect width="29" height="29" fill="#fff"/>
+            <g fill="#1a2233">
+              <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#fff"/><rect x="2" y="2" width="3" height="3"/>
+              <rect x="22" y="0" width="7" height="7"/><rect x="23" y="1" width="5" height="5" fill="#fff"/><rect x="24" y="2" width="3" height="3"/>
+              <rect x="0" y="22" width="7" height="7"/><rect x="1" y="23" width="5" height="5" fill="#fff"/><rect x="2" y="24" width="3" height="3"/>
+              <rect x="9" y="1" width="1" height="1"/><rect x="11" y="1" width="2" height="1"/><rect x="15" y="1" width="1" height="1"/><rect x="18" y="1" width="2" height="1"/>
+              <rect x="9" y="3" width="2" height="1"/><rect x="13" y="3" width="1" height="1"/><rect x="16" y="3" width="1" height="2"/><rect x="19" y="3" width="1" height="1"/>
+              <rect x="10" y="5" width="1" height="2"/><rect x="12" y="5" width="2" height="1"/><rect x="17" y="5" width="2" height="1"/><rect x="20" y="5" width="1" height="1"/>
+              <rect x="0" y="9" width="1" height="2"/><rect x="2" y="9" width="2" height="1"/><rect x="5" y="9" width="1" height="2"/><rect x="9" y="9" width="2" height="2"/><rect x="13" y="9" width="1" height="1"/><rect x="15" y="9" width="2" height="1"/><rect x="20" y="9" width="1" height="2"/><rect x="23" y="9" width="1" height="1"/><rect x="25" y="9" width="2" height="1"/><rect x="28" y="9" width="1" height="2"/>
+              <rect x="1" y="11" width="2" height="1"/><rect x="4" y="11" width="1" height="2"/><rect x="7" y="11" width="1" height="1"/><rect x="10" y="11" width="1" height="2"/><rect x="14" y="11" width="2" height="2"/><rect x="18" y="11" width="1" height="1"/><rect x="21" y="11" width="2" height="1"/><rect x="24" y="11" width="1" height="2"/><rect x="27" y="11" width="1" height="1"/>
+              <rect x="0" y="13" width="1" height="1"/><rect x="3" y="13" width="1" height="2"/><rect x="6" y="13" width="2" height="1"/><rect x="9" y="13" width="1" height="1"/><rect x="12" y="13" width="1" height="2"/><rect x="16" y="13" width="2" height="1"/><rect x="19" y="13" width="1" height="2"/><rect x="22" y="13" width="1" height="1"/><rect x="25" y="13" width="2" height="2"/>
+              <rect x="1" y="15" width="1" height="2"/><rect x="4" y="15" width="2" height="1"/><rect x="8" y="15" width="1" height="1"/><rect x="11" y="15" width="2" height="1"/><rect x="15" y="15" width="1" height="2"/><rect x="18" y="15" width="1" height="1"/><rect x="21" y="15" width="1" height="2"/><rect x="24" y="15" width="1" height="1"/><rect x="27" y="15" width="2" height="1"/>
+              <rect x="9" y="18" width="1" height="1"/><rect x="11" y="18" width="2" height="1"/><rect x="15" y="18" width="2" height="2"/><rect x="19" y="18" width="1" height="1"/><rect x="22" y="18" width="2" height="1"/><rect x="26" y="18" width="1" height="2"/>
+              <rect x="9" y="20" width="2" height="1"/><rect x="13" y="20" width="1" height="2"/><rect x="17" y="20" width="1" height="1"/><rect x="20" y="20" width="2" height="1"/><rect x="24" y="20" width="1" height="1"/>
+              <rect x="9" y="23" width="1" height="1"/><rect x="11" y="23" width="2" height="2"/><rect x="15" y="23" width="1" height="1"/><rect x="18" y="23" width="1" height="2"/><rect x="21" y="23" width="1" height="1"/><rect x="24" y="23" width="2" height="1"/><rect x="27" y="23" width="1" height="2"/>
+              <rect x="9" y="26" width="2" height="1"/><rect x="13" y="26" width="1" height="2"/><rect x="16" y="26" width="2" height="1"/><rect x="20" y="26" width="1" height="2"/><rect x="23" y="26" width="1" height="1"/><rect x="26" y="26" width="2" height="1"/>
+            </g>
+          </svg>
+
+          <div style="font-size:12px;color:#46526a;line-height:1.4;margin-bottom:18px;">Escaneie o código para avaliar o atendimento após o consumo.</div>
+          <div style="border-top:1px dashed #d3dae6;padding-top:16px;">
+            <button onClick="{{ printTicket }}" data-no-print="true" style="width:100%;padding:11px;border-radius:9px;border:none;background:#283897;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">🖨️ Imprimir ticket</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isOtherStep }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff;border:1px solid #e3e8f0;border-radius:16px;padding:60px 32px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:12px;">🚧</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:6px;">Etapa em construção nesta demonstração</div>
+        <div style="font-size:13.5px;color:#7d8798;margin-bottom:20px;">{{ otherStepLabel }}</div>
+        <button onClick="{{ backToStep1 }}" style="padding:11px 22px;border-radius:9px;border:none;background:#283897;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;">Voltar para Produtos</button>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:28px;right:28px;background:#1a2233;color:#fff;padding:14px 20px;border-radius:10px;font-size:13.5px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.25);z-index:100;">{{ toastMsg }}</div>
+  </sc-if>
+
+  <!-- Chat -->
+  <div data-print-hide="true" style="position:fixed;bottom:24px;right:24px;z-index:110;display:flex;flex-direction:column;align-items:flex-end;gap:12px;">
+    <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="width:320px;height:420px;background:#fff;border:1px solid #e3e8f0;border-radius:16px;box-shadow:0 16px 40px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#283897;color:#fff;">
+          <div>
+            <div style="font-size:13.5px;font-weight:700;">Fale com o time Sodexo</div>
+            <div style="font-size:11px;opacity:.85;">Prazos, itens especiais e dúvidas</div>
+          </div>
+          <button onClick="{{ toggleChat }}" style="border:none;background:none;color:#fff;font-size:18px;cursor:pointer;line-height:1;">&times;</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;background:#f5f7fa;">
+          <sc-for list="{{ chatMessages }}" as="m" hint-placeholder-count="2">
+            <div style="align-self:{{ m.align }};max-width:80%;background:{{ m.bg }};color:{{ m.color }};padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.4;">{{ m.text }}</div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:8px;padding:12px;border-top:1px solid #e3e8f0;">
+          <input value="{{ chatInput }}" onChange="{{ onChatInput }}" onKeyDown="{{ onChatKeyDown }}" placeholder="Escreva sua mensagem..." style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid #d3dae6;font-size:13px;outline:none;box-sizing:border-box;" />
+          <button onClick="{{ sendChat }}" style="width:38px;height:38px;border-radius:8px;border:none;background:#283897;color:#fff;cursor:pointer;font-size:14px;flex-shrink:0;">&#10148;</button>
+        </div>
+      </div>
+    </sc-if>
+    <button onClick="{{ toggleChat }}" style="position:relative;width:56px;height:56px;border-radius:50%;border:none;background:#283897;color:#fff;cursor:pointer;box-shadow:0 10px 26px rgba(40,56,151,.35);display:flex;align-items:center;justify-content:center;font-size:22px;">
+      💬
+      <sc-if value="{{ chatUnread }}" hint-placeholder-val="{{ false }}">
+        <span style="position:absolute;top:-2px;right:-2px;background:#c0392b;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;">1</span>
+      </sc-if>
+    </button>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CATEGORIES = [
+  {id:'kits', label:'Kits de Coffee Break'},
+  {id:'bebidas', label:'Bebidas'},
+  {id:'salgados', label:'Salgados'},
+  {id:'doces', label:'Doces'},
+  {id:'paes', label:'Pães e Bolos'},
+  {id:'frutas', label:'Frutas'},
+  {id:'outros', label:'Outros'},
+];
+
+const KITS = [
+  {id:'exec', name:'Coffee Executivo', serves:'Serve até 20 pessoas', desc:'Seleção clássica com bebidas quentes, frias e acompanhamentos.', price:240, badge:'MAIS VENDIDO', badgeBg:'#1a7a4f', imgId:'kit-exec'},
+  {id:'premium', name:'Coffee Premium', serves:'Serve até 20 pessoas', desc:'Opção sofisticada com mais variedades e itens especiais.', price:320, badge:'RECOMENDADO', badgeBg:'#283897', imgId:'kit-premium'},
+  {id:'economico', name:'Coffee Econômico', serves:'Serve até 20 pessoas', desc:'Ideal para eventos rápidos com ótimo custo-benefício.', price:180, badge:'MELHOR CUSTO', badgeBg:'#b5690f', imgId:'kit-economico'},
+];
+
+const AVULSOS = [
+  {id:'coca', name:'Coca-Cola', unit:'lata 350 ml', min:1, max:25, step:1, price:10, category:'bebidas', imgId:'av-coca'},
+  {id:'agua', name:'Água Mineral', unit:'sem gás 500 ml', min:6, max:60, step:6, price:6, category:'bebidas', imgId:'av-agua'},
+  {id:'suco', name:'Suco Natural', unit:'300 ml, sabores variados', min:3, max:30, step:3, price:8, category:'bebidas', imgId:'av-suco'},
+  {id:'cafe', name:'Café', unit:'Térmico 1 litro', min:1, max:10, step:1, price:25, category:'bebidas', imgId:'av-cafe'},
+  {id:'salgados', name:'Mini Salgados', unit:'(100 unidades)', min:50, max:200, step:10, price:0.9, category:'salgados', imgId:'av-salgados'},
+  {id:'paes', name:'Mini Pães', unit:'(50 unidades)', min:25, max:150, step:5, price:1.4, category:'paes', imgId:'av-paes'},
+  {id:'doces', name:'Mini Doces', unit:'(30 unidades)', min:15, max:90, step:5, price:2, category:'doces', imgId:'av-doces'},
+  {id:'frutas', name:'Fruta Picada', unit:'300g por pessoa', min:5, max:50, step:5, price:4, category:'frutas', imgId:'av-frutas'},
+];
+
+const money = (v) => 'R$ ' + v.toFixed(2).replace('.', ',');
+
+class Component extends DCLogic {
+  state = {
+    step: 1,
+    searchQuery: '',
+    activeCategory: 'kits',
+    selectedKit: 'exec',
+    qtys: {},
+    people: 15,
+    eventDate: '', eventTime: '', eventLocal: '', eventName: '',
+    needsApproval: false,
+    localMenuOpen: false,
+    pickupDate: '', pickupTime: '',
+    coffeeInstructions: '',
+    hasDietary: false, dietaryDetails: '',
+    costCenterSel: {},
+    costCenterPct: { CC001: 100, CC002: 100, CC003: 100 },
+    toast: null,
+    chatOpen: false,
+    chatUnread: true,
+    chatInput: '',
+    chatMessages: [
+      { from: 'them', text: 'Olá! Sou do time de atendimento Sodexo. Precisa de outro prazo ou de um item que não está no catálogo? Me conta aqui.' },
+    ],
+  };
+
+  redistributePct(sel) {
+    const codes = Object.keys(sel).filter(k => sel[k]);
+    if (codes.length === 0) return this.state.costCenterPct;
+    const base = Math.floor(100 / codes.length);
+    const pct = { ...this.state.costCenterPct };
+    codes.forEach((c, i) => { pct[c] = i === codes.length - 1 ? 100 - base * (codes.length - 1) : base; });
+    return pct;
+  }
+
+  toggleCostCenter = (code) => {
+    this.setState(s => {
+      const sel = { ...s.costCenterSel, [code]: !s.costCenterSel[code] };
+      const pct = this.redistributePct(sel);
+      return { costCenterSel: sel, costCenterPct: pct };
+    });
+  };
+  setCostCenterPct = (code, val) => {
+    const v = Math.max(0, Math.min(100, parseInt(val) || 0));
+    this.setState(s => ({ costCenterPct: { ...s.costCenterPct, [code]: v } }));
+  };
+
+  toastMsg(msg) {
+    this.setState({ toast: true, toastMsg: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: null }), 2400);
+  }
+
+  setQty = (id, val, min, max) => {
+    let v = Math.max(0, val);
+    if (v > 0) v = Math.min(max, Math.max(min, v));
+    this.setState(s => ({ qtys: { ...s.qtys, [id]: v } }));
+  };
+  incQty = (a) => {
+    const cur = this.state.qtys[a.id] || 0;
+    const next = cur === 0 ? a.min : Math.min(a.max, cur + a.step);
+    this.setQty(a.id, next, a.min, a.max);
+  };
+  decQty = (a) => {
+    const cur = this.state.qtys[a.id] || 0;
+    if (cur <= a.min) { this.setQty(a.id, 0, a.min, a.max); return; }
+    this.setQty(a.id, cur - a.step, a.min, a.max);
+  };
+
+  toggleKit = (kitId) => this.setState(s => ({ selectedKit: s.selectedKit === kitId ? null : kitId }));
+  clearAll = () => { this.setState({ selectedKit: null, qtys: {} }); this.toastMsg('Carrinho limpo.'); };
+
+  continueOrder = () => { this.setState({ step: 2 }); this.toastMsg('Itens salvos! Prossiga com as informações do evento.'); };
+  backToStep1 = () => this.setState({ step: 1 });
+  continueToStep3 = () => { this.setState({ step: 3 }); this.toastMsg('Informações do evento salvas!'); };
+  backToStep2 = () => this.setState({ step: 2 });
+  continueToStep4 = () => { this.setState({ step: 4 }); this.toastMsg('Faturamento confirmado!'); };
+  saveForLater = () => this.toastMsg('Pedido salvo como rascunho.');
+  printTicket = () => window.print();
+
+  toggleChat = () => this.setState(s => ({ chatOpen: !s.chatOpen, chatUnread: false }));
+  sendChat = () => {
+    const text = this.state.chatInput.trim();
+    if (!text) return;
+    this.setState(s => ({ chatMessages: [...s.chatMessages, { from: 'me', text }], chatInput: '' }));
+    setTimeout(() => {
+      this.setState(s => ({ chatMessages: [...s.chatMessages, { from: 'them', text: 'Recebido! Nosso time vai analisar seu pedido e retorna em breve por aqui.' }] }));
+    }, 900);
+  };
+
+  renderVals() {
+    const s = this.state;
+    const q = s.searchQuery.trim().toLowerCase();
+
+    const kits = KITS.map(k => {
+      const selected = s.selectedKit === k.id;
+      return {
+        ...k,
+        priceLabel: money(k.price),
+        btnLabel: selected ? 'Selecionado' : 'Adicionar',
+        btnBg: selected ? '#283897' : '#fff',
+        btnColor: selected ? '#fff' : '#283897',
+        btnBorder: '#283897',
+        toggle: () => this.toggleKit(k.id),
+      };
+    });
+
+    let avulsosList = AVULSOS;
+    if (s.activeCategory !== 'kits') avulsosList = avulsosList.filter(a => a.category === s.activeCategory);
+    if (q) avulsosList = avulsosList.filter(a => a.name.toLowerCase().includes(q));
+
+    const avulsos = avulsosList.map(a => {
+      const qty = s.qtys[a.id] || 0;
+      return {
+        ...a,
+        qty,
+        priceLabel: money(a.price * (a.step >= 5 ? 10 : 1)) + (a.step >= 5 ? ' / 10un' : ''),
+        inc: () => this.incQty(a),
+        dec: () => this.decQty(a),
+      };
+    });
+
+    const categories = CATEGORIES.map(c => {
+      const active = s.activeCategory === c.id;
+      return {
+        ...c,
+        select: () => this.setState({ activeCategory: c.id }),
+        bg: active ? '#283897' : '#fff',
+        color: active ? '#fff' : '#46526a',
+        border: active ? '#283897' : '#d3dae6',
+      };
+    });
+
+    const cartItems = [];
+    if (s.selectedKit) {
+      const k = KITS.find(x => x.id === s.selectedKit);
+      cartItems.push({
+        id: 'kit-' + k.id, imgId: k.imgId, name: k.name, sub: k.serves, qty: 1, unitPriceLabel: money(k.price),
+        priceLabel: money(k.price), dec: () => this.toggleKit(k.id), inc: () => {}, remove: () => this.toggleKit(k.id),
+      });
+    }
+    AVULSOS.forEach(a => {
+      const qty = s.qtys[a.id] || 0;
+      if (qty <= 0) return;
+      cartItems.push({
+        id: a.id, imgId: a.imgId, name: a.name, sub: qty + ' ' + (a.unit.includes('unidades') ? 'unidades' : a.unit),
+        qty, unitPriceLabel: money(a.price), priceLabel: money(a.price * qty),
+        dec: () => this.decQty(a), inc: () => this.incQty(a), remove: () => this.setQty(a.id, 0, a.min, a.max),
+      });
+    });
+
+    const subtotal = cartItems.reduce((sum, ci) => {
+      const raw = ci.priceLabel.replace('R$ ', '').replace('.', '').replace(',', '.');
+      return sum + parseFloat(raw);
+    }, 0);
+    const fee = subtotal * 0.1;
+    const total = subtotal + fee;
+    const cartEmpty = cartItems.length === 0;
+
+    const stepDefs = [
+      {num:1, title:'Produtos', sub:'Escolha e monte seu pedido'},
+      {num:2, title:'Informações', sub:'Detalhes do evento'},
+      {num:3, title:'Revisão', sub:'Confira os detalhes'},
+      {num:4, title:'Finalizar', sub:'Confirmação do pedido'},
+    ];
+    const steps = stepDefs.map((st, i) => ({
+      ...st,
+      showChevron: i < stepDefs.length - 1,
+      circleBg: st.num === s.step ? '#283897' : (st.num < s.step ? '#e6f5ec' : '#eaeef5'),
+      circleColor: st.num === s.step ? '#fff' : (st.num < s.step ? '#1a7a4f' : '#7d8798'),
+      titleColor: st.num === s.step ? '#1a2233' : '#7d8798',
+    }));
+
+    const CC_NAMES = { CC001: 'Administrativo', CC002: 'Comercial', CC003: 'Operações' };
+    const selCodes = Object.keys(s.costCenterSel).filter(k => s.costCenterSel[k]);
+    const multiSel = selCodes.length > 1;
+    const costCenters = Object.keys(CC_NAMES).map(code => {
+      const checked = !!s.costCenterSel[code];
+      return {
+        code, name: CC_NAMES[code], checked,
+        toggle: () => this.toggleCostCenter(code),
+        showPct: checked && multiSel,
+        pct: s.costCenterPct[code],
+        onPct: (e) => this.setCostCenterPct(code, e.target.value),
+        border: checked ? '#283897' : '#e3e8f0',
+        bg: checked ? '#f4f6fc' : '#fff',
+      };
+    });
+    const pctTotal = selCodes.reduce((sum, c) => sum + (s.costCenterPct[c] || 0), 0);
+    const pctTotalInvalid = multiSel && pctTotal !== 100;
+    const noCostCenter = selCodes.length === 0;
+    const step3Invalid = noCostCenter || pctTotalInvalid;
+
+    const today = new Date();
+    const todayLabel = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    return {
+      searchQuery: s.searchQuery,
+      onSearchChange: (e) => this.setState({ searchQuery: e.target.value }),
+      categories,
+      showKits: s.activeCategory === 'kits',
+      kits,
+      avulsosTitle: s.activeCategory === 'kits' ? 'Produtos avulsos' : 'Resultados',
+      avulsos,
+      noAvulsos: avulsos.length === 0,
+
+      people: s.people,
+      onPeopleChange: (e) => this.setState({ people: Math.max(1, parseInt(e.target.value) || 1) }),
+      eventDate: s.eventDate, onEventDate: (e) => this.setState({ eventDate: e.target.value }),
+      eventName: s.eventName, onEventName: (e) => this.setState({ eventName: e.target.value }),
+      eventTime: s.eventTime, onEventTime: (e) => this.setState({ eventTime: e.target.value }),
+      eventLocalLabel: s.eventLocal || 'Selecionar local',
+      eventLocalColor: s.eventLocal ? '#1a2233' : '#7d8798',
+      localMenuOpen: s.localMenuOpen,
+      toggleLocalMenu: () => this.setState(st => ({ localMenuOpen: !st.localMenuOpen })),
+      localOptions: ['Sala 1', 'Sala 2', 'Sala 3'].map(name => ({
+        name, select: () => this.setState({ eventLocal: name, localMenuOpen: false }),
+      })),
+
+      cartItems, cartEmpty,
+      subtotalLabel: money(subtotal), feeLabel: money(fee), totalLabel: money(total),
+      clearAll: this.clearAll,
+      continueOrder: this.continueOrder,
+      continueBg: cartEmpty ? '#b9c2e2' : '#283897',
+      continueCursor: cartEmpty ? 'not-allowed' : 'pointer',
+      saveForLater: this.saveForLater,
+
+      steps,
+      isStep1: s.step === 1,
+      isStep2: s.step === 2,
+      isStep3: s.step === 3,
+      isStep4: s.step === 4,
+      isOtherStep: false,
+      backToStep1: this.backToStep1,
+      backToStep2: this.backToStep2,
+      continueToStep3: this.continueToStep3,
+      continueToStep4: this.continueToStep4,
+      printTicket: this.printTicket,
+      confirmedCostCenters: selCodes.map(code => ({ code, name: CC_NAMES[code], pctLabel: multiSel ? (s.costCenterPct[code] + '%') : '100%' })),
+
+      todayLabel,
+      summaryEventTime: s.eventTime || 'Não informado',
+      summaryPickup: (s.pickupDate || s.pickupTime) ? ((s.pickupDate || '—') + ' ' + (s.pickupTime || '')) : 'Não informado',
+      summaryDietary: s.hasDietary ? (s.dietaryDetails || 'Sim, sem detalhes') : 'Nenhuma',
+      hasCoffeeInstructions: !!s.coffeeInstructions,
+      costCenters,
+      showPctTotal: multiSel,
+      pctTotal, pctTotalInvalid,
+      pctTotalColor: pctTotalInvalid ? '#c0392b' : '#1a7a4f',
+      noCostCenter,
+      step3Invalid,
+      step3ContinueBg: step3Invalid ? '#b9c2e2' : '#283897',
+      step3ContinueCursor: step3Invalid ? 'not-allowed' : 'pointer',
+
+      summaryDate: s.eventDate || 'Não informado',
+      summaryLocal: s.eventLocal || 'Não informado',
+      pickupDate: s.pickupDate, onPickupDate: (e) => this.setState({ pickupDate: e.target.value }),
+      pickupTime: s.pickupTime, onPickupTime: (e) => this.setState({ pickupTime: e.target.value }),
+      coffeeInstructions: s.coffeeInstructions, onCoffeeInstructions: (e) => this.setState({ coffeeInstructions: e.target.value }),
+      hasDietary: s.hasDietary,
+      dietaryDetails: s.dietaryDetails, onDietaryDetails: (e) => this.setState({ dietaryDetails: e.target.value }),
+      setDietaryYes: () => this.setState({ hasDietary: true }),
+      setDietaryNo: () => this.setState({ hasDietary: false, dietaryDetails: '' }),
+      dietaryYesBg: s.hasDietary ? '#283897' : '#fff', dietaryYesColor: s.hasDietary ? '#fff' : '#46526a', dietaryYesBorder: s.hasDietary ? '#283897' : '#d3dae6',
+      dietaryNoBg: !s.hasDietary ? '#283897' : '#fff', dietaryNoColor: !s.hasDietary ? '#fff' : '#46526a', dietaryNoBorder: !s.hasDietary ? '#283897' : '#d3dae6',
+
+      toast: s.toast, toastMsg: s.toastMsg,
+
+      chatOpen: s.chatOpen,
+      chatUnread: s.chatUnread,
+      toggleChat: this.toggleChat,
+      chatInput: s.chatInput,
+      onChatInput: (e) => this.setState({ chatInput: e.target.value }),
+      onChatKeyDown: (e) => { if (e.key === 'Enter') this.sendChat(); },
+      sendChat: this.sendChat,
+      chatMessages: s.chatMessages.map(m => ({
+        ...m,
+        align: m.from === 'me' ? 'flex-end' : 'flex-start',
+        bg: m.from === 'me' ? '#283897' : '#fff',
+        color: m.from === 'me' ? '#fff' : '#1a2233',
+      })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

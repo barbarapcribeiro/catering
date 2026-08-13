@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>body { margin:0; }</style>
+</helmet>
+<div style="min-height:100vh;display:flex;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a2233;">
+
+  <!-- Sidebar -->
+  <div style="width:220px;flex-shrink:0;background:#fff;border-right:1px solid #e3e8f0;padding:20px 14px;display:flex;flex-direction:column;gap:22px;">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 6px;">
+      <div style="width:32px;height:32px;border-radius:8px;background:#283897;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;">S</div>
+      <div style="font-size:14px;font-weight:800;">Sodexo Direct</div>
+    </div>
+
+    <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="4">
+      <div>
+        <div style="font-size:10.5px;font-weight:700;color:#a6afc0;text-transform:uppercase;letter-spacing:.04em;padding:0 8px 6px;">{{ g.label }}</div>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+            <button onClick="{{ it.select }}" style="display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;border:none;background:{{ it.bg }};color:{{ it.color }};font-size:12.5px;font-weight:600;cursor:pointer;text-align:left;">
+              <span style="width:16px;text-align:center;flex-shrink:0;">{{ it.glyph }}</span>{{ it.label }}
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- Main -->
+  <div style="flex:1;min-width:0;">
+    <!-- Top bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:#fff;border-bottom:1px solid #e3e8f0;">
+      <div style="position:relative;width:340px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7d8798" stroke-width="2" style="position:absolute;left:13px;top:11px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input value="{{ topSearch }}" onChange="{{ onTopSearch }}" placeholder="Pesquisar item (pedido, produto, usuário...)" style="width:100%;padding:10px 14px 10px 36px;border-radius:9px;border:1px solid #d3dae6;font-size:13px;outline:none;box-sizing:border-box;" />
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;flex-shrink:0;">
+        <a href="./Home.dc.html" style="font-size:12.5px;color:#283897;font-weight:600;text-decoration:none;white-space:nowrap;">← Voltar ao app</a>
+        <button style="position:relative;width:36px;height:36px;border-radius:50%;border:1px solid #e3e8f0;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#46526a" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span style="position:absolute;top:-2px;right:-2px;background:#c0392b;color:#fff;font-size:9.5px;font-weight:700;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;">2</span>
+        </button>
+        <div style="display:flex;align-items:center;gap:9px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:#283897;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">B</div>
+          <div>
+            <div style="font-size:12.5px;font-weight:700;white-space:nowrap;">Bárbara C. Ribeiro</div>
+            <div style="font-size:10.5px;color:#7d8798;white-space:nowrap;">Administrador</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:24px 28px 48px;max-width:1360px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <h1 style="font-size:22px;font-weight:800;margin:0 0 4px;letter-spacing:-0.3px;">Bom dia, Bárbara 👋</h1>
+          <div style="font-size:13px;color:#7d8798;">Aqui está o resumo da operação de hoje.</div>
+        </div>
+        <div style="font-size:12.5px;color:#7d8798;background:#fff;border:1px solid #e3e8f0;border-radius:9px;padding:9px 14px;">Quinta-feira, 24 de julho de 2026</div>
+      </div>
+
+      <!-- KPI cards -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+        <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+          <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:16px 18px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+              <div style="width:28px;height:28px;border-radius:8px;background:{{ k.iconBg }};color:{{ k.iconColor }};display:flex;align-items:center;justify-content:center;font-size:13px;">{{ k.glyph }}</div>
+              <div style="font-size:12px;color:#7d8798;font-weight:600;">{{ k.label }}</div>
+            </div>
+            <div style="font-size:24px;font-weight:800;">{{ k.value }}</div>
+            <div style="font-size:11.5px;color:{{ k.trendColor }};margin-top:4px;">{{ k.trend }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;align-items:start;">
+        <!-- Chart -->
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-size:14px;font-weight:700;">Pedidos por período</div>
+            <div style="font-size:12px;color:#7d8798;">Últimos 7 dias</div>
+          </div>
+          <svg viewBox="0 0 320 120" style="width:100%;height:120px;">
+            <polyline points="{{ chartPoints }}" fill="none" stroke="#283897" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <sc-for list="{{ chartDots }}" as="d" hint-placeholder-count="7">
+              <circle cx="{{ d.x }}" cy="{{ d.y }}" r="3" fill="#283897"/>
+            </sc-for>
+          </svg>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#7d8798;margin-top:4px;">
+            <sc-for list="{{ chartLabels }}" as="l" hint-placeholder-count="7"><span>{{ l }}</span></sc-for>
+          </div>
+        </div>
+
+        <!-- Status donut simplified as bars -->
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:14px;">Pedidos por status</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ statusBreakdown }}" as="sb" hint-placeholder-count="4">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+                  <span style="font-weight:600;">{{ sb.label }}</span>
+                  <span style="color:#7d8798;">{{ sb.pct }}%</span>
+                </div>
+                <div style="height:6px;border-radius:4px;background:#eaeef5;overflow:hidden;">
+                  <div style="height:100%;width:{{ sb.pct }}%;background:{{ sb.color }};border-radius:4px;"></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid #edf1f7;">
+            <span style="font-size:12px;color:#7d8798;">Total de pedidos</span>
+            <span style="font-size:16px;font-weight:800;">{{ totalOrders }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;">
+        <!-- Recent orders table -->
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div style="font-size:14px;font-weight:700;">Pedidos em andamento</div>
+            <a href="./Gerenciar Pedidos.dc.html" style="font-size:12px;color:#283897;font-weight:600;text-decoration:none;">Ver todos</a>
+          </div>
+          <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:8px;padding:0 0 8px;border-bottom:1px solid #e3e8f0;font-size:10.5px;font-weight:700;color:#7d8798;text-transform:uppercase;letter-spacing:.03em;">
+            <div>Pedido</div><div>Data/Hora</div><div>Status</div>
+          </div>
+          <sc-for list="{{ recentOrders }}" as="o" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:8px;align-items:center;padding:11px 0;border-bottom:1px solid #f3f5fa;">
+              <div style="display:flex;align-items:center;gap:9px;min-width:0;">
+                <div style="width:28px;height:28px;border-radius:8px;background:#e9edf9;color:#283897;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10.5px;flex-shrink:0;">
+                  <sc-if value="{{ o.isCoffee }}" hint-placeholder-val="{{ false }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"></path><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="2" x2="6" y2="4"></line><line x1="10" y1="2" x2="10" y2="4"></line><line x1="14" y1="2" x2="14" y2="4"></line></svg>
+                  </sc-if>
+                  <sc-if value="{{ !o.isCoffee }}" hint-placeholder-val="{{ true }}">{{ o.mono }}</sc-if>
+                </div>
+                <div style="min-width:0;">
+                  <div style="font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ o.name }}</div>
+                  <div style="font-size:10.5px;color:#7d8798;">{{ o.unidade }}</div>
+                </div>
+              </div>
+              <div style="font-size:12px;color:#46526a;">{{ o.datetime }}</div>
+              <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:{{ o.statusBg }};color:{{ o.statusColor }};justify-self:start;">{{ o.status }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Pendências -->
+        <div style="background:#fff;border:1px solid #e3e8f0;border-radius:14px;padding:18px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div style="font-size:14px;font-weight:700;">Pendências</div>
+            <span style="background:#fdedd3;color:#8a5a0f;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;">{{ pendenciasCount }}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <sc-for list="{{ pendencias }}" as="p" hint-placeholder-count="4">
+              <button onClick="{{ p.action }}" style="display:flex;align-items:center;gap:10px;padding:10px 6px;border:none;background:none;border-bottom:1px solid #f3f5fa;cursor:pointer;text-align:left;width:100%;box-sizing:border-box;" style-hover="background:#f5f7fa;">
+                <span style="width:26px;height:26px;border-radius:7px;background:{{ p.bg }};color:{{ p.color }};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">{{ p.glyph }}</span>
+                <span style="flex:1;font-size:12.5px;font-weight:600;">{{ p.text }}</span>
+                <span style="font-size:11px;font-weight:700;color:#7d8798;">{{ p.count }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:28px;right:28px;background:#1a2233;color:#fff;padding:14px 20px;border-radius:10px;font-size:13.5px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.25);z-index:100;">{{ toastMsg }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const STATUS_STYLE = {
+  'Aguardando aprovação': {bg:'#fdedd3', color:'#8a5a0f'},
+  'Em preparação': {bg:'#dfeaff', color:'#1e4fa3'},
+  'Entregue': {bg:'#e6f5ec', color:'#1a7a4f'},
+};
+
+const NAV_GROUPS = [
+  {label:'Operação', items:[
+    {id:'pedidos', glyph:'📋', label:'Gestão de pedidos'},
+    {id:'aprovacoes', glyph:'✓', label:'Aprovações'},
+    {id:'ocorrencias', glyph:'⚠', label:'Ocorrências'},
+  ]},
+  {label:'Catálogos', items:[
+    {id:'produtos', glyph:'📦', label:'Produtos e serviços'},
+    {id:'fornecedores', glyph:'🚚', label:'Fornecedores'},
+  ]},
+  {label:'Pesquisa de Satisfação', items:[
+    {id:'pesquisa', glyph:'⭐', label:'Configurar perguntas'},
+  ]},
+  {label:'Pessoas', items:[
+    {id:'usuarios', glyph:'👤', label:'Usuários'},
+    {id:'permissoes', glyph:'🔒', label:'Perfis e permissões'},
+  ]},
+  {label:'Financeiro', items:[
+    {id:'faturamento', glyph:'💳', label:'Faturamento'},
+    {id:'centros', glyph:'🏷', label:'Centros de custo'},
+  ]},
+  {label:'Relatórios', items:[
+    {id:'relatorios', glyph:'📊', label:'Visão Geral'},
+  ]},
+];
+
+const ORDERS = [
+  {mono:'CB', name:'Coffee Break Diretoria', unidade:'Unidade Matriz', datetime:'24/07 • 09:30', status:'Aguardando aprovação'},
+  {mono:'LA', name:'Lanche Reunião Comercial', unidade:'Unidade Matriz', datetime:'24/07 • 10:00', status:'Em preparação'},
+  {mono:'EE', name:'Evento Especial RH', unidade:'Unidade RH', datetime:'24/07 • 11:00', status:'Em preparação'},
+  {mono:'RN', name:'Refeição Normal Financeiro', unidade:'Unidade Financeira', datetime:'23/07 • 12:00', status:'Entregue'},
+  {mono:'SA', name:'Água Mineral Treinamento', unidade:'Unidade Matriz', datetime:'23/07 • 09:00', status:'Entregue'},
+];
+
+class Component extends DCLogic {
+  state = { topSearch: '', toast: null };
+
+  toastMsg(msg) {
+    this.setState({ toast: true, toastMsg: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: null }), 2200);
+  }
+
+  renderVals() {
+    const s = this.state;
+
+    const navGroups = NAV_GROUPS.map(g => ({
+      ...g,
+      items: g.items.map(it => {
+        let action;
+        if (it.id === 'relatorios') action = () => { window.location.href = './Relatórios.dc.html'; };
+        else if (it.id === 'pesquisa') action = () => { window.location.href = './Configurar Pesquisa de Satisfação.dc.html'; };
+        else action = () => this.toastMsg('Abrindo "' + it.label + '"...');
+        return { ...it, select: action, bg: 'transparent', color: '#46526a' };
+      }),
+    }));
+
+    const orders = ORDERS.map(o => {
+      const st = STATUS_STYLE[o.status];
+      return { ...o, statusBg: st.bg, statusColor: st.color, isCoffee: o.mono === 'CB' };
+    });
+
+    const values = [62, 78, 70, 88, 95, 82, 100];
+    const w = 320, h = 120, pad = 6;
+    const max = Math.max(...values), min = Math.min(...values);
+    const stepX = (w - pad * 2) / (values.length - 1);
+    const chartDots = values.map((v, i) => ({
+      x: pad + i * stepX,
+      y: pad + (1 - (v - min) / (max - min || 1)) * (h - pad * 2),
+    }));
+    const chartPoints = chartDots.map(d => d.x.toFixed(1) + ',' + d.y.toFixed(1)).join(' ');
+
+    return {
+      navGroups,
+      topSearch: s.topSearch, onTopSearch: (e) => this.setState({ topSearch: e.target.value }),
+
+      kpis: [
+        {glyph:'📦', iconBg:'#e9edf9', iconColor:'#283897', label:'Pedidos hoje', value:'124', trend:'↑ 12% vs ontem', trendColor:'#1a7a4f'},
+        {glyph:'🕓', iconBg:'#fdedd3', iconColor:'#8a5a0f', label:'Aguardando aprovação', value:'8', trend:'↑ 2 novos', trendColor:'#b5690f'},
+        {glyph:'🔥', iconBg:'#dfeaff', iconColor:'#1e4fa3', label:'Em preparação', value:'15', trend:'↑ 3 novos', trendColor:'#1e4fa3'},
+        {glyph:'✓', iconBg:'#e6f5ec', iconColor:'#1a7a4f', label:'Entregues hoje', value:'86', trend:'↑ 9% vs ontem', trendColor:'#1a7a4f'},
+      ],
+
+      chartPoints, chartDots,
+      chartLabels: ['18/07','19/07','20/07','21/07','22/07','23/07','24/07'],
+
+      statusBreakdown: [
+        {label:'Aguardando aprovação', pct:8, color:'#e0a83a'},
+        {label:'Em preparação', pct:15, color:'#1e4fa3'},
+        {label:'Em entrega', pct:22, color:'#283897'},
+        {label:'Entregues', pct:49, color:'#1a7a4f'},
+        {label:'Cancelados', pct:6, color:'#c0392b'},
+      ],
+      totalOrders: 231,
+
+      recentOrders: orders,
+
+      pendencias: [
+        {glyph:'🚚', bg:'#fdedd3', color:'#8a5a0f', text:'Fornecedores aguardando aprovação', count:2, action: () => this.toastMsg('Abrindo fornecedores pendentes...')},
+        {glyph:'⚠', bg:'#fbe4e0', color:'#c0392b', text:'Produtos com preço desatualizado', count:5, action: () => this.toastMsg('Abrindo produtos...')},
+        {glyph:'🏷', bg:'#f1eef9', color:'#5a4a8a', text:'Centros de custo bloqueados', count:1, action: () => this.toastMsg('Abrindo centros de custo...')},
+        {glyph:'👤', bg:'#dfeaff', color:'#1e4fa3', text:'Usuários com acesso pendente', count:4, action: () => this.toastMsg('Abrindo usuários...')},
+      ],
+      pendenciasCount: 12,
+
+      toast: s.toast, toastMsg: s.toastMsg,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
