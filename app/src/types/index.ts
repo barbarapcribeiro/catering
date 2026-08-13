@@ -224,10 +224,15 @@ export interface AppUser {
   name: string;
   email: string;
   profileId?: string;
+  /** Código do centro de custo associado (perfis Cliente solicitante, Gestor aprovador e Consumidor final). */
+  costCenterCode?: string;
   active: boolean;
   createdAt: string;
   lastPasswordResetAt?: string;
 }
+
+/** Perfis cujo usuário fica associado a um centro de custo específico. */
+export const COST_CENTER_LINKED_PROFILE_IDS = ["prof-cliente", "prof-gestor", "prof-consumidor"] as const;
 
 export interface CostCenter {
   id: string;
