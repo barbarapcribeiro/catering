@@ -64,6 +64,20 @@
 .produtos-table__price {
   font-weight: 700;
 }
+.produtos-table__cost {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.produtos-price-preview {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-top: -4px;
+}
 .produtos-table__actions {
   display: flex;
   gap: 12px;

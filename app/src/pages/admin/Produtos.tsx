@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAppData } from "../../mock/AppDataContext";
 import { Modal } from "../../components/Modal";
 import { money } from "../../mock/money";
+import { computeProductPrice } from "../../mock/pricing";
 import { PRODUCT_TYPES, PRODUCT_UNITS, type Product, type ProductType, type ProductUnit } from "../../types";
 import "./Produtos.css";
 
@@ -9,7 +10,8 @@ const EMPTY_FORM = {
   name: "",
   type: PRODUCT_TYPES[0] as ProductType,
   unit: PRODUCT_UNITS[0] as ProductUnit,
-  price: "",
+  costPrice: "",
+  marginPercent: "40",
   description: "",
   supplierId: "",
   active: true,
@@ -36,7 +38,8 @@ export function Produtos() {
       name: p.name,
       type: p.type,
       unit: p.unit,
-      price: String(p.price),
+      costPrice: String(p.costPrice),
+      marginPercent: String(p.marginPercent),
       description: p.description ?? "",
       supplierId: p.supplierId ?? "",
       active: p.active,
@@ -44,13 +47,18 @@ export function Produtos() {
     setModalOpen(true);
   };
 
+  const parsedCostPrice = parseFloat(form.costPrice.replace(",", ".")) || 0;
+  const parsedMargin = parseFloat(form.marginPercent.replace(",", ".")) || 0;
+  const previewPrice = computeProductPrice(parsedCostPrice, parsedMargin);
+
   const save = () => {
     if (!form.name.trim()) return;
     const payload = {
       name: form.name,
       type: form.type,
       unit: form.unit,
-      price: parseFloat(form.price.replace(",", ".")) || 0,
+      costPrice: parsedCostPrice,
+      marginPercent: parsedMargin,
       description: form.description || undefined,
       supplierId: form.supplierId || undefined,
       active: form.active,
@@ -106,7 +114,7 @@ export function Produtos() {
             <div>Produto</div>
             <div>Tipo</div>
             <div>Unidade</div>
-            <div>Preço</div>
+            <div>Preço de venda</div>
             <div>Fornecedor</div>
             <div>Status</div>
             <div>Ações</div>
@@ -121,7 +129,12 @@ export function Produtos() {
                 <span className="pill-tag">{p.type}</span>
               </div>
               <div className="produtos-table__muted">{p.unit}</div>
-              <div className="produtos-table__price">{money(p.price)}</div>
+              <div>
+                <div className="produtos-table__price">{money(p.price)}</div>
+                <div className="produtos-table__cost">
+                  custo {money(p.costPrice)} • margem {p.marginPercent}%
+                </div>
+              </div>
               <div className="produtos-table__muted">{supplierName(p.supplierId) || "Nenhum selecionado"}</div>
               <div>
                 <span className="status-pill" style={{ background: p.active ? "var(--color-success-soft)" : "var(--color-border-soft)", color: p.active ? "var(--color-success)" : "var(--color-text-muted)" }}>
@@ -177,10 +190,19 @@ export function Produtos() {
                 </select>
               </label>
             </div>
-            <label className="field-label">
-              Preço (R$)
-              <input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="0,00" inputMode="decimal" />
-            </label>
+            <div className="field-row">
+              <label className="field-label">
+                Preço de custo (R$)
+                <input value={form.costPrice} onChange={(e) => setForm({ ...form, costPrice: e.target.value })} placeholder="0,00" inputMode="decimal" />
+              </label>
+              <label className="field-label">
+                Margem negociada (%) <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(contrato)</span>
+                <input value={form.marginPercent} onChange={(e) => setForm({ ...form, marginPercent: e.target.value })} placeholder="0" inputMode="decimal" />
+              </label>
+            </div>
+            <div className="produtos-price-preview">
+              Preço de venda no pedido: <strong>{money(previewPrice)}</strong>
+            </div>
             <label className="field-label">
               Fornecedor <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span>
               <select value={form.supplierId} onChange={(e) => setForm({ ...form, supplierId: e.target.value })}>

@@ -77,13 +77,28 @@
 }
 .kits-card__footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
 }
 .kits-card__price {
   font-size: 16px;
   font-weight: 800;
   color: var(--color-primary);
+}
+.kits-card__fee {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.kits-price-preview {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-top: -4px;
 }
 .kits-card__actions {
   display: flex;

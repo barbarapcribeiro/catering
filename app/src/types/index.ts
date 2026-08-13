@@ -123,6 +123,11 @@ export interface Product {
   name: string;
   type: ProductType;
   unit: ProductUnit;
+  /** Preço de custo (o que a Sodexo paga ao fornecedor). */
+  costPrice: number;
+  /** Margem negociada em contrato, em % sobre o custo. Editável no MVP; futuramente deve vir do contrato. */
+  marginPercent: number;
+  /** Preço de venda final usado no pedido — derivado de costPrice * (1 + marginPercent/100). */
   price: number;
   description?: string;
   supplierId?: string;
@@ -139,7 +144,8 @@ export interface Kit {
   name: string;
   description?: string;
   items: KitItem[];
-  price?: number;
+  /** Taxa de serviço aplicada sobre a soma dos itens, em %. Editável no MVP. */
+  serviceFeePercent: number;
   active: boolean;
 }
 

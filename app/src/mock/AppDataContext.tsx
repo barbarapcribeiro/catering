@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { ChatMessage, Kit, Notification, Order, Product, ServiceCatalogItem, Supplier, SurveyQuestion } from "../types";
+import { computeProductPrice } from "./pricing";
 
 const STORAGE_KEY = "sodexo-eventos-mock-v1";
 
@@ -94,15 +95,19 @@ const initialSuppliers: Supplier[] = [
   { id: "sup3", name: "Higienize Serviços de Limpeza", category: "Limpeza", cnpj: "34.567.890/0001-12", contactName: "Marcos Vinícius", phone: "(11) 2222-1199", email: "marcos@higienize.com.br", active: true },
 ];
 
+function product(base: Omit<Product, "price">): Product {
+  return { ...base, price: computeProductPrice(base.costPrice, base.marginPercent) };
+}
+
 const initialProducts: Product[] = [
-  { id: "prod1", name: "Coca-Cola lata 350ml", type: "Bebida", unit: "un", price: 10, description: "Refrigerante em lata.", supplierId: "sup1", active: true },
-  { id: "prod2", name: "Água Mineral 500ml", type: "Bebida", unit: "un", price: 6, description: "Sem gás.", supplierId: "sup1", active: true },
-  { id: "prod3", name: "Mini Salgados (100 unidades)", type: "Salgado", unit: "pacote", price: 90, description: "Sortidos, assados.", supplierId: "sup1", active: true },
-  { id: "prod4", name: "Copo descartável 200ml", type: "Descartável", unit: "pacote", price: 12, description: "Pacote com 100 unidades.", supplierId: "sup2", active: true },
+  product({ id: "prod1", name: "Coca-Cola lata 350ml", type: "Bebida", unit: "un", costPrice: 6, marginPercent: 40, description: "Refrigerante em lata.", supplierId: "sup1", active: true }),
+  product({ id: "prod2", name: "Água Mineral 500ml", type: "Bebida", unit: "un", costPrice: 3.5, marginPercent: 50, description: "Sem gás.", supplierId: "sup1", active: true }),
+  product({ id: "prod3", name: "Mini Salgados (100 unidades)", type: "Salgado", unit: "pacote", costPrice: 60, marginPercent: 40, description: "Sortidos, assados.", supplierId: "sup1", active: true }),
+  product({ id: "prod4", name: "Copo descartável 200ml", type: "Descartável", unit: "pacote", costPrice: 7, marginPercent: 45, description: "Pacote com 100 unidades.", supplierId: "sup2", active: true }),
 ];
 
 const initialKits: Kit[] = [
-  { id: "kit1", name: "Combo Reunião Rápida", description: "Água e salgados para reuniões curtas.", items: [{ productId: "prod2", qty: 10 }, { productId: "prod3", qty: 1 }], active: true },
+  { id: "kit1", name: "Combo Reunião Rápida", description: "Água e salgados para reuniões curtas.", items: [{ productId: "prod2", qty: 10 }, { productId: "prod3", qty: 1 }], serviceFeePercent: 10, active: true },
 ];
 
 const initialServiceCatalog: ServiceCatalogItem[] = [
@@ -165,8 +170,8 @@ interface AppDataValue {
   removeSupplier: (id: string) => void;
 
   products: Product[];
-  addProduct: (product: Omit<Product, "id">) => void;
-  updateProduct: (id: string, patch: Partial<Product>) => void;
+  addProduct: (product: Omit<Product, "id" | "price">) => void;
+  updateProduct: (id: string, patch: Partial<Omit<Product, "price">>) => void;
   removeProduct: (id: string) => void;
 
   kits: Kit[];
@@ -323,10 +328,18 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   };
 
   const addProduct: AppDataValue["addProduct"] = (product) => {
-    setState((s) => ({ ...s, products: [{ ...product, id: `prod${Date.now()}` }, ...s.products] }));
+    const price = computeProductPrice(product.costPrice, product.marginPercent);
+    setState((s) => ({ ...s, products: [{ ...product, price, id: `prod${Date.now()}` }, ...s.products] }));
   };
   const updateProduct: AppDataValue["updateProduct"] = (id, patch) => {
-    setState((s) => ({ ...s, products: s.products.map((p) => (p.id === id ? { ...p, ...patch } : p)) }));
+    setState((s) => ({
+      ...s,
+      products: s.products.map((p) => {
+        if (p.id !== id) return p;
+        const merged = { ...p, ...patch };
+        return { ...merged, price: computeProductPrice(merged.costPrice, merged.marginPercent) };
+      }),
+    }));
   };
   const removeProduct = (id: string) => {
     setState((s) => ({ ...s, products: s.products.filter((p) => p.id !== id) }));

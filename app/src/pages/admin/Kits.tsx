@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useAppData } from "../../mock/AppDataContext";
 import { Modal } from "../../components/Modal";
 import { money } from "../../mock/money";
+import { computeKitPrice } from "../../mock/pricing";
 import type { Kit, KitItem } from "../../types";
 import "./Kits.css";
 
@@ -9,7 +10,7 @@ interface FormState {
   name: string;
   description: string;
   itemsByProduct: Record<string, number>;
-  manualPrice: string;
+  serviceFeePercent: string;
   active: boolean;
 }
 
@@ -17,7 +18,7 @@ const EMPTY_FORM: FormState = {
   name: "",
   description: "",
   itemsByProduct: {},
-  manualPrice: "",
+  serviceFeePercent: "10",
   active: true,
 };
 
@@ -30,9 +31,11 @@ export function Kits() {
   const activeProducts = products.filter((p) => p.active);
 
   const productName = (id: string) => products.find((p) => p.id === id)?.name ?? "Produto removido";
-  const productPrice = (id: string) => products.find((p) => p.id === id)?.price ?? 0;
+  // Kits são compostos pelos produtos já com o preço final (custo + margem), não pelo custo.
+  const productFinalPrice = (id: string) => products.find((p) => p.id === id)?.price ?? 0;
 
-  const kitSuggestedPrice = (items: KitItem[]) => items.reduce((sum, it) => sum + productPrice(it.productId) * it.qty, 0);
+  const itemsTotal = (items: KitItem[]) => items.reduce((sum, it) => sum + productFinalPrice(it.productId) * it.qty, 0);
+  const kitPrice = (k: Kit) => computeKitPrice(itemsTotal(k.items), k.serviceFeePercent);
 
   const openNew = () => {
     setEditingId(null);
@@ -48,7 +51,7 @@ export function Kits() {
       name: k.name,
       description: k.description ?? "",
       itemsByProduct: byProduct,
-      manualPrice: k.price != null ? String(k.price) : "",
+      serviceFeePercent: String(k.serviceFeePercent),
       active: k.active,
     });
     setModalOpen(true);
@@ -67,7 +70,9 @@ export function Kits() {
     () => Object.entries(form.itemsByProduct).map(([productId, qty]) => ({ productId, qty })),
     [form.itemsByProduct],
   );
-  const suggestedPrice = kitSuggestedPrice(formItems);
+  const formItemsTotal = itemsTotal(formItems);
+  const parsedFee = parseFloat(form.serviceFeePercent.replace(",", ".")) || 0;
+  const formKitPrice = computeKitPrice(formItemsTotal, parsedFee);
 
   const save = () => {
     if (!form.name.trim() || formItems.length === 0) return;
@@ -75,7 +80,7 @@ export function Kits() {
       name: form.name,
       description: form.description || undefined,
       items: formItems,
-      price: form.manualPrice.trim() ? parseFloat(form.manualPrice.replace(",", ".")) || 0 : suggestedPrice,
+      serviceFeePercent: parsedFee,
       active: form.active,
     };
     if (editingId) {
@@ -103,7 +108,7 @@ export function Kits() {
       <div className="kits-header">
         <div>
           <h1 className="kits-title">Kits</h1>
-          <div className="kits-subtitle">Monte combos a partir dos produtos já cadastrados.</div>
+          <div className="kits-subtitle">Monte combos a partir dos produtos já cadastrados (preço final) + taxa de serviço.</div>
         </div>
         <button className="btn btn--primary" onClick={openNew} disabled={activeProducts.length === 0}>
           + Novo kit
@@ -132,7 +137,12 @@ export function Kits() {
               ))}
             </div>
             <div className="kits-card__footer">
-              <div className="kits-card__price">{money(k.price ?? kitSuggestedPrice(k.items))}</div>
+              <div>
+                <div className="kits-card__price">{money(kitPrice(k))}</div>
+                <div className="kits-card__fee">
+                  itens {money(itemsTotal(k.items))} + taxa {k.serviceFeePercent}%
+                </div>
+              </div>
               <div className="kits-card__actions">
                 <button className="link" onClick={() => openEdit(k)}>
                   Editar
@@ -165,7 +175,7 @@ export function Kits() {
               <textarea rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </label>
 
-            <div className="field-label">Produtos do kit</div>
+            <div className="field-label">Produtos do kit (preço final já com margem)</div>
             <div className="kits-product-picker">
               {activeProducts.map((p) => {
                 const qty = form.itemsByProduct[p.id] || 0;
@@ -186,9 +196,12 @@ export function Kits() {
             </div>
 
             <label className="field-label">
-              Preço do kit <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional — se vazio, usa a soma dos itens: {money(suggestedPrice)})</span>
-              <input value={form.manualPrice} onChange={(e) => setForm({ ...form, manualPrice: e.target.value })} placeholder={money(suggestedPrice)} inputMode="decimal" />
+              Taxa de serviço (%) <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(editável no MVP)</span>
+              <input value={form.serviceFeePercent} onChange={(e) => setForm({ ...form, serviceFeePercent: e.target.value })} placeholder="10" inputMode="decimal" />
             </label>
+            <div className="kits-price-preview">
+              Itens: {money(formItemsTotal)} + taxa de serviço ({parsedFee || 0}%) = <strong>{money(formKitPrice)}</strong>
+            </div>
             <label className="kits-active-check">
               <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />
               Kit ativo
