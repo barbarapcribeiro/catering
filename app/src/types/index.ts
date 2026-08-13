@@ -159,3 +159,70 @@ export interface ServiceCatalogItem {
   category: ServiceCatalogCategory;
   active: boolean;
 }
+
+/** Todas as páginas/subpáginas do app, usadas nas telas de Perfis e Permissões. */
+export interface AppPageDef {
+  id: string;
+  label: string;
+  group: "Área do colaborador" | "Painel Administrativo";
+}
+
+export const APP_PAGES: AppPageDef[] = [
+  { id: "home", label: "Home", group: "Área do colaborador" },
+  { id: "pedido-coffee", label: "Novo Pedido · Coffee Break", group: "Área do colaborador" },
+  { id: "pedido-evento", label: "Novo Pedido · Evento Especial", group: "Área do colaborador" },
+  { id: "pedido-agua", label: "Novo Pedido · Água", group: "Área do colaborador" },
+  { id: "pedido-abastecimento", label: "Novo Pedido · Abastecimento Simples", group: "Área do colaborador" },
+  { id: "surpreenda", label: "Surpreenda", group: "Área do colaborador" },
+  { id: "pedidos", label: "Gerenciar Pedidos", group: "Área do colaborador" },
+  { id: "producao", label: "Produção", group: "Área do colaborador" },
+  { id: "fique-por-dentro", label: "Fique por Dentro", group: "Área do colaborador" },
+  { id: "aprovacoes", label: "Aprovações", group: "Área do colaborador" },
+  { id: "admin-operacao", label: "Operação (dashboard)", group: "Painel Administrativo" },
+  { id: "admin-relatorios", label: "Relatórios", group: "Painel Administrativo" },
+  { id: "admin-produtos", label: "Catálogos · Produtos", group: "Painel Administrativo" },
+  { id: "admin-kits", label: "Catálogos · Kits", group: "Painel Administrativo" },
+  { id: "admin-servicos", label: "Catálogos · Serviços", group: "Painel Administrativo" },
+  { id: "admin-fornecedores", label: "Catálogos · Fornecedores", group: "Painel Administrativo" },
+  { id: "admin-pesquisa", label: "Configurar Pesquisa de Satisfação", group: "Painel Administrativo" },
+  { id: "admin-usuarios", label: "Pessoas · Usuários", group: "Painel Administrativo" },
+  { id: "admin-permissoes", label: "Pessoas · Perfis e Permissões", group: "Painel Administrativo" },
+  { id: "admin-faturamento", label: "Financeiro · Faturamento", group: "Painel Administrativo" },
+  { id: "admin-centros-custo", label: "Financeiro · Centros de Custo", group: "Painel Administrativo" },
+  { id: "admin-ocorrencias", label: "Ocorrências", group: "Painel Administrativo" },
+];
+
+/**
+ * Nível de permissão por página. "elementos" da tela (botões de aprovar,
+ * editar, excluir etc.) são modelados como estas 4 ações — granularidade
+ * padrão de sistemas de permissão, em vez de cada elemento individual.
+ */
+export interface PagePermission {
+  ver: boolean;
+  criarEditar: boolean;
+  aprovar: boolean;
+  excluir: boolean;
+}
+
+export const EMPTY_PAGE_PERMISSION: PagePermission = { ver: false, criarEditar: false, aprovar: false, excluir: false };
+
+export interface Profile {
+  id: string;
+  name: string;
+  /** "Quem é" — descrição da persona. */
+  whoIs?: string;
+  /** "O que faz na solução". */
+  responsibilities?: string;
+  permissions: Record<string, PagePermission>;
+  active: boolean;
+}
+
+export interface AppUser {
+  id: string;
+  name: string;
+  email: string;
+  profileId?: string;
+  active: boolean;
+  createdAt: string;
+  lastPasswordResetAt?: string;
+}

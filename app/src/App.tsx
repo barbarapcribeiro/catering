@@ -18,6 +18,8 @@ import { Fornecedores } from "./pages/admin/Fornecedores";
 import { Produtos } from "./pages/admin/Produtos";
 import { Kits } from "./pages/admin/Kits";
 import { Servicos } from "./pages/admin/Servicos";
+import { Usuarios } from "./pages/admin/Usuarios";
+import { Permissoes } from "./pages/admin/Permissoes";
 import { AdminStub } from "./pages/admin/AdminStub";
 
 export default function App() {
@@ -45,8 +47,8 @@ export default function App() {
             <Route path="kits" element={<Kits />} />
             <Route path="servicos" element={<Servicos />} />
             <Route path="fornecedores" element={<Fornecedores />} />
-            <Route path="usuarios" element={<AdminStub title="Usuários" />} />
-            <Route path="permissoes" element={<AdminStub title="Perfis e permissões" />} />
+            <Route path="usuarios" element={<Usuarios />} />
+            <Route path="permissoes" element={<Permissoes />} />
             <Route path="faturamento" element={<AdminStub title="Faturamento" />} />
             <Route path="centros-custo" element={<AdminStub title="Centros de custo" />} />
           </Route>

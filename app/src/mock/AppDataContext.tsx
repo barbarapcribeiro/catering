@@ -1,5 +1,18 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { ChatMessage, Kit, Notification, Order, Product, ServiceCatalogItem, Supplier, SurveyQuestion } from "../types";
+import {
+  EMPTY_PAGE_PERMISSION,
+  type AppUser,
+  type ChatMessage,
+  type Kit,
+  type Notification,
+  type Order,
+  type PagePermission,
+  type Product,
+  type Profile,
+  type ServiceCatalogItem,
+  type Supplier,
+  type SurveyQuestion,
+} from "../types";
 import { computeProductPrice } from "./pricing";
 
 const STORAGE_KEY = "sodexo-eventos-mock-v1";
@@ -14,6 +27,8 @@ interface StoredState {
   products: Product[];
   kits: Kit[];
   serviceCatalog: ServiceCatalogItem[];
+  profiles: Profile[];
+  users: AppUser[];
   nextOrderNum: number;
 }
 
@@ -117,6 +132,109 @@ const initialServiceCatalog: ServiceCatalogItem[] = [
   { id: "svc4", name: "Recepção de convidados", description: "Equipe de recepção na entrada do evento.", category: "Recepção", active: true },
 ];
 
+/** Monta o mapa de permissões de um perfil só para as páginas informadas — as demais ficam sem acesso. */
+function perms(entries: Record<string, Partial<PagePermission>>): Record<string, PagePermission> {
+  const out: Record<string, PagePermission> = {};
+  for (const pageId of Object.keys(entries)) {
+    out[pageId] = { ...EMPTY_PAGE_PERMISSION, ...entries[pageId] };
+  }
+  return out;
+}
+
+const ORDER_PAGES = ["pedido-coffee", "pedido-evento", "pedido-agua", "pedido-abastecimento", "surpreenda"];
+
+const initialProfiles: Profile[] = [
+  {
+    id: "prof-cliente",
+    name: "Cliente solicitante",
+    whoIs: "Colaborador do cliente que pede o coffee.",
+    responsibilities: "Cria, ajusta e cancela pedidos; aprova fechamento de faturamento; responde pesquisa de processo.",
+    active: true,
+    permissions: perms({
+      home: { ver: true },
+      ...Object.fromEntries(ORDER_PAGES.map((p) => [p, { ver: true, criarEditar: true }])),
+      pedidos: { ver: true, criarEditar: true, excluir: true },
+      "fique-por-dentro": { ver: true },
+    }),
+  },
+  {
+    id: "prof-gestor",
+    name: "Gestor aprovador",
+    whoIs: "Gestor vinculado ao centro de custo (quando o contrato exige).",
+    responsibilities: "Aprova pedidos e alterações que aumentem valor.",
+    active: true,
+    permissions: perms({
+      home: { ver: true },
+      pedidos: { ver: true, aprovar: true },
+      aprovacoes: { ver: true, aprovar: true },
+    }),
+  },
+  {
+    id: "prof-gu",
+    name: "GU",
+    whoIs: "Gerente de Unidade Sodexo.",
+    responsibilities: "Confirma pedidos, gerencia a operação, registra status (produção, entrega, finalização), configura regras, conduz o faturamento.",
+    active: true,
+    permissions: perms({
+      home: { ver: true },
+      pedidos: { ver: true, criarEditar: true, aprovar: true },
+      producao: { ver: true, criarEditar: true, aprovar: true },
+      aprovacoes: { ver: true, aprovar: true },
+      "admin-operacao": { ver: true },
+      "admin-relatorios": { ver: true },
+      "admin-produtos": { ver: true, criarEditar: true },
+      "admin-kits": { ver: true, criarEditar: true },
+      "admin-servicos": { ver: true, criarEditar: true },
+      "admin-fornecedores": { ver: true, criarEditar: true },
+      "admin-pesquisa": { ver: true, criarEditar: true },
+      "admin-usuarios": { ver: true },
+      "admin-faturamento": { ver: true, criarEditar: true, aprovar: true },
+      "admin-centros-custo": { ver: true },
+      "admin-ocorrencias": { ver: true, criarEditar: true },
+    }),
+  },
+  {
+    id: "prof-producao",
+    name: "Cozinha / Produção",
+    whoIs: "Responsável/Equipe de produção da unidade.",
+    responsibilities: "Recebe e produz.",
+    active: true,
+    permissions: perms({
+      producao: { ver: true, criarEditar: true },
+    }),
+  },
+  {
+    id: "prof-faturamento",
+    name: "Faturamento / Backoffice",
+    whoIs: "Apoio Administrativo; Ponto Focal Sodexo; GU; outros.",
+    responsibilities: "Realiza o fechamento, aprova com cliente e carrega no ERP para geração do faturamento.",
+    active: true,
+    permissions: perms({
+      "admin-faturamento": { ver: true, criarEditar: true, aprovar: true },
+      "admin-relatorios": { ver: true },
+      "admin-centros-custo": { ver: true },
+    }),
+  },
+  {
+    id: "prof-consumidor",
+    name: "Consumidor final",
+    whoIs: "Quem consome o coffee (não necessariamente quem pediu).",
+    responsibilities: "Avalia via QR code na entrega — não acessa o sistema.",
+    active: true,
+    permissions: perms({}),
+  },
+];
+
+const initialUsers: AppUser[] = [
+  { id: "user1", name: "Bárbara C. Ribeiro", email: "barbara.ribeiro@sodexo.com", profileId: "prof-gu", active: true, createdAt: "2026-01-12T09:00:00Z" },
+  { id: "user2", name: "Marina Silva", email: "marina.silva@sodexo.com", profileId: "prof-gu", active: true, createdAt: "2026-02-03T09:00:00Z" },
+  { id: "user3", name: "Carlos Santos", email: "carlos.santos@clienteempresa.com", profileId: "prof-gestor", active: true, createdAt: "2026-02-10T09:00:00Z" },
+  { id: "user4", name: "Paula Costa", email: "paula.costa@clienteempresa.com", profileId: "prof-gestor", active: true, createdAt: "2026-02-10T09:00:00Z" },
+  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", profileId: "prof-cliente", active: true, createdAt: "2026-03-01T09:00:00Z" },
+  { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sodexo.com", profileId: "prof-producao", active: true, createdAt: "2026-03-05T09:00:00Z" },
+  { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sodexo.com", profileId: "prof-faturamento", active: true, createdAt: "2026-03-08T09:00:00Z" },
+];
+
 const defaultState: StoredState = {
   orders: initialOrders,
   notifications: initialNotifications,
@@ -127,6 +245,8 @@ const defaultState: StoredState = {
   products: initialProducts,
   kits: initialKits,
   serviceCatalog: initialServiceCatalog,
+  profiles: initialProfiles,
+  users: initialUsers,
   nextOrderNum: 300,
 };
 
@@ -183,6 +303,18 @@ interface AppDataValue {
   addServiceCatalogItem: (item: Omit<ServiceCatalogItem, "id">) => void;
   updateServiceCatalogItem: (id: string, patch: Partial<ServiceCatalogItem>) => void;
   removeServiceCatalogItem: (id: string) => void;
+
+  profiles: Profile[];
+  addProfile: (profile: Omit<Profile, "id">) => void;
+  updateProfile: (id: string, patch: Partial<Profile>) => void;
+  removeProfile: (id: string) => void;
+  setProfilePagePermission: (profileId: string, pageId: string, patch: Partial<PagePermission>) => void;
+
+  users: AppUser[];
+  addUser: (user: Omit<AppUser, "id" | "createdAt">) => void;
+  updateUser: (id: string, patch: Partial<AppUser>) => void;
+  removeUser: (id: string) => void;
+  resetUserPassword: (id: string) => void;
 
   toast: string | null;
   showToast: (msg: string) => void;
@@ -365,6 +497,41 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, serviceCatalog: s.serviceCatalog.filter((it) => it.id !== id) }));
   };
 
+  const addProfile: AppDataValue["addProfile"] = (profile) => {
+    setState((s) => ({ ...s, profiles: [{ ...profile, id: `prof${Date.now()}` }, ...s.profiles] }));
+  };
+  const updateProfile: AppDataValue["updateProfile"] = (id, patch) => {
+    setState((s) => ({ ...s, profiles: s.profiles.map((p) => (p.id === id ? { ...p, ...patch } : p)) }));
+  };
+  const removeProfile = (id: string) => {
+    setState((s) => ({ ...s, profiles: s.profiles.filter((p) => p.id !== id) }));
+  };
+  const setProfilePagePermission: AppDataValue["setProfilePagePermission"] = (profileId, pageId, patch) => {
+    setState((s) => ({
+      ...s,
+      profiles: s.profiles.map((p) => {
+        if (p.id !== profileId) return p;
+        const current = p.permissions[pageId] ?? EMPTY_PAGE_PERMISSION;
+        const nextPerm = { ...current, ...patch };
+        return { ...p, permissions: { ...p.permissions, [pageId]: nextPerm } };
+      }),
+    }));
+  };
+
+  const addUser: AppDataValue["addUser"] = (user) => {
+    setState((s) => ({ ...s, users: [{ ...user, id: `user${Date.now()}`, createdAt: new Date().toISOString() }, ...s.users] }));
+  };
+  const updateUser: AppDataValue["updateUser"] = (id, patch) => {
+    setState((s) => ({ ...s, users: s.users.map((u) => (u.id === id ? { ...u, ...patch } : u)) }));
+  };
+  const removeUser = (id: string) => {
+    setState((s) => ({ ...s, users: s.users.filter((u) => u.id !== id) }));
+  };
+  const resetUserPassword = (id: string) => {
+    setState((s) => ({ ...s, users: s.users.map((u) => (u.id === id ? { ...u, lastPasswordResetAt: new Date().toISOString() } : u)) }));
+    showToast("Senha redefinida. Um e-mail com instruções foi enviado ao usuário.");
+  };
+
   const value = useMemo<AppDataValue>(
     () => ({
       orders: state.orders,
@@ -399,6 +566,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       addServiceCatalogItem,
       updateServiceCatalogItem,
       removeServiceCatalogItem,
+      profiles: state.profiles,
+      addProfile,
+      updateProfile,
+      removeProfile,
+      setProfilePagePermission,
+      users: state.users,
+      addUser,
+      updateUser,
+      removeUser,
+      resetUserPassword,
       toast,
       showToast,
     }),
