@@ -1,33 +1,41 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAppData } from "../mock/AppDataContext";
+import { ProfileSwitcher } from "./ProfileSwitcher";
+import { APP_PAGES } from "../types";
 import "./Header.css";
 
 export function Header() {
-  const { notifications, markAllNotificationsRead } = useAppData();
+  const { notifications, markAllNotificationsRead, currentUser, currentProfile, hasPageAccess } = useAppData();
   const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
   const unread = notifications.filter((n) => !n.read).length;
+
+  const displayName = currentUser?.name ?? currentProfile?.name ?? "Visitante";
+  const hasAnyAdminAccess = APP_PAGES.filter((p) => p.group === "Painel Administrativo").some((p) => hasPageAccess(p.id));
 
   return (
     <header className="app-header">
       <div className="app-header__identity">
         <button className="app-header__avatar" onClick={() => navigate("/")} aria-label="Ir para a página inicial">
-          B
+          {displayName.charAt(0).toUpperCase()}
         </button>
         <div>
-          <div className="app-header__name">Olá, Bárbara C. Ribeiro</div>
-          <div className="app-header__subtitle">Sodexo &bull; Demonstração</div>
+          <div className="app-header__name">Olá, {displayName}</div>
+          <div className="app-header__subtitle">Sodexo &bull; {currentProfile?.name ?? "Demonstração"}</div>
         </div>
       </div>
       <nav className="app-header__nav">
-        <Link to="/fique-por-dentro">Fique por dentro</Link>
-        <Link to="/pedidos">Pedidos</Link>
-        <Link to="/producao">Produção</Link>
+        {hasPageAccess("fique-por-dentro") && <Link to="/fique-por-dentro">Fique por dentro</Link>}
+        {hasPageAccess("pedidos") && <Link to="/pedidos">Pedidos</Link>}
+        {hasPageAccess("producao") && <Link to="/producao">Produção</Link>}
         <div className="app-header__divider" />
-        <Link to="/admin" className="app-header__admin-btn">
-          Painel Administrativo
-        </Link>
+        <ProfileSwitcher />
+        {hasAnyAdminAccess && (
+          <Link to="/admin" className="app-header__admin-btn">
+            Painel Administrativo
+          </Link>
+        )}
         <div className="app-header__notif">
           <button
             className="app-header__bell"

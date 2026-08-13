@@ -33,6 +33,7 @@ interface StoredState {
   users: AppUser[];
   costCenters: CostCenter[];
   occurrences: Occurrence[];
+  currentProfileId: string;
   nextOrderNum: number;
 }
 
@@ -239,6 +240,7 @@ const initialProfiles: Profile[] = [
       "admin-fornecedores": { ver: true, criarEditar: true },
       "admin-pesquisa": { ver: true, criarEditar: true },
       "admin-usuarios": { ver: true },
+      "admin-permissoes": { ver: true },
       "admin-faturamento": { ver: true, criarEditar: true, aprovar: true },
       "admin-centros-custo": { ver: true },
       "admin-ocorrencias": { ver: true, criarEditar: true },
@@ -341,6 +343,7 @@ const defaultState: StoredState = {
   users: initialUsers,
   costCenters: initialCostCenters,
   occurrences: initialOccurrences,
+  currentProfileId: "prof-cliente",
   nextOrderNum: 300,
 };
 
@@ -357,6 +360,12 @@ function loadState(): StoredState {
 }
 
 interface AppDataValue {
+  currentProfileId: string;
+  setCurrentProfileId: (id: string) => void;
+  currentProfile: Profile | null;
+  currentUser: AppUser | null;
+  hasPageAccess: (pageId: string, action?: keyof PagePermission) => boolean;
+
   orders: Order[];
   addOrder: (order: Partial<Order> & { category: string; type: string; mono: string }) => Order;
   updateOrder: (id: string, patch: Partial<Order>) => void;
@@ -440,6 +449,18 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setToast(msg);
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => setToast(null), 2600);
+  };
+
+  const currentProfile = state.profiles.find((p) => p.id === state.currentProfileId) ?? null;
+  const currentUser = state.users.find((u) => u.profileId === state.currentProfileId && u.active) ?? null;
+
+  const setCurrentProfileId = (id: string) => {
+    setState((s) => ({ ...s, currentProfileId: id }));
+  };
+
+  const hasPageAccess: AppDataValue["hasPageAccess"] = (pageId, action = "ver") => {
+    const perm = currentProfile?.permissions[pageId];
+    return !!perm?.[action];
   };
 
   const addOrder: AppDataValue["addOrder"] = (order) => {
@@ -661,6 +682,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AppDataValue>(
     () => ({
+      currentProfileId: state.currentProfileId,
+      setCurrentProfileId,
+      currentProfile,
+      currentUser,
+      hasPageAccess,
       orders: state.orders,
       addOrder,
       updateOrder,
