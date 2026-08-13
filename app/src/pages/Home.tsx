@@ -13,6 +13,7 @@ export function Home() {
     case "prof-gestor":
       return <HomeGestor />;
     case "prof-gu":
+    case "prof-admin":
       return <HomeGU />;
     case "prof-producao":
       return <HomeProducao />;

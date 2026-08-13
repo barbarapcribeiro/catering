@@ -166,7 +166,7 @@ export function Relatorios() {
           <div className="relatorios-period">📅 01/07/2026 — 24/07/2026</div>
           <button className="btn btn--outline">Comparar período</button>
           <button className="btn btn--primary" onClick={() => setExportOpen(true)}>
-            ⭳ Exportar
+            ⭳ Exportar Excel
           </button>
         </div>
       </div>
@@ -354,7 +354,7 @@ export function Relatorios() {
               Cancelar
             </button>
             <button className="btn btn--primary" disabled={noFieldsSelected} onClick={doExport} style={{ flex: 2 }}>
-              ⭳ Exportar .xlsx
+              ⭳ Exportar Excel
             </button>
           </div>
         </Modal>

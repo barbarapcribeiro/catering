@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
+  APP_PAGES,
   EMPTY_PAGE_PERMISSION,
   type AppUser,
   type ChatMessage,
@@ -193,6 +194,13 @@ function perms(entries: Record<string, Partial<PagePermission>>): Record<string,
   return out;
 }
 
+const FULL_PAGE_PERMISSION: PagePermission = { ver: true, criarEditar: true, aprovar: true, excluir: true };
+function fullAccessPerms(): Record<string, PagePermission> {
+  const out: Record<string, PagePermission> = {};
+  for (const page of APP_PAGES) out[page.id] = FULL_PAGE_PERMISSION;
+  return out;
+}
+
 const ORDER_PAGES = ["pedido-coffee", "pedido-evento", "pedido-agua", "pedido-abastecimento", "surpreenda"];
 
 const initialProfiles: Profile[] = [
@@ -276,16 +284,25 @@ const initialProfiles: Profile[] = [
     active: true,
     permissions: perms({}),
   },
+  {
+    id: "prof-admin",
+    name: "Administrador",
+    whoIs: "Equipe de TI/suporte responsável pela plataforma.",
+    responsibilities: "Acesso total: gerencia todos os cadastros, usuários, perfis, permissões e configurações do sistema.",
+    active: true,
+    permissions: fullAccessPerms(),
+  },
 ];
 
 const initialUsers: AppUser[] = [
   { id: "user1", name: "Bárbara C. Ribeiro", email: "barbara.ribeiro@sodexo.com", profileId: "prof-gu", active: true, createdAt: "2026-01-12T09:00:00Z" },
   { id: "user2", name: "Marina Silva", email: "marina.silva@sodexo.com", profileId: "prof-gu", active: true, createdAt: "2026-02-03T09:00:00Z" },
-  { id: "user3", name: "Carlos Santos", email: "carlos.santos@clienteempresa.com", profileId: "prof-gestor", active: true, createdAt: "2026-02-10T09:00:00Z" },
-  { id: "user4", name: "Paula Costa", email: "paula.costa@clienteempresa.com", profileId: "prof-gestor", active: true, createdAt: "2026-02-10T09:00:00Z" },
-  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", profileId: "prof-cliente", active: true, createdAt: "2026-03-01T09:00:00Z" },
+  { id: "user3", name: "Carlos Santos", email: "carlos.santos@clienteempresa.com", profileId: "prof-gestor", costCenterCode: "CC001", active: true, createdAt: "2026-02-10T09:00:00Z" },
+  { id: "user4", name: "Paula Costa", email: "paula.costa@clienteempresa.com", profileId: "prof-gestor", costCenterCode: "CC002", active: true, createdAt: "2026-02-10T09:00:00Z" },
+  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", profileId: "prof-cliente", costCenterCode: "CC001", active: true, createdAt: "2026-03-01T09:00:00Z" },
   { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sodexo.com", profileId: "prof-producao", active: true, createdAt: "2026-03-05T09:00:00Z" },
   { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sodexo.com", profileId: "prof-faturamento", active: true, createdAt: "2026-03-08T09:00:00Z" },
+  { id: "user8", name: "Administrador do Sistema", email: "admin@sodexo.com", profileId: "prof-admin", active: true, createdAt: "2026-01-01T09:00:00Z" },
 ];
 
 const initialCostCenters: CostCenter[] = [
