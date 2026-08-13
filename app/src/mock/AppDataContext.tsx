@@ -3,8 +3,10 @@ import {
   EMPTY_PAGE_PERMISSION,
   type AppUser,
   type ChatMessage,
+  type CostCenter,
   type Kit,
   type Notification,
+  type Occurrence,
   type Order,
   type PagePermission,
   type Product,
@@ -29,6 +31,8 @@ interface StoredState {
   serviceCatalog: ServiceCatalogItem[];
   profiles: Profile[];
   users: AppUser[];
+  costCenters: CostCenter[];
+  occurrences: Occurrence[];
   nextOrderNum: number;
 }
 
@@ -83,6 +87,53 @@ const initialOrders: Order[] = [
     valueNumber: 1250,
     createdAt: "2026-07-18T11:00:00Z",
     history: [{ label: "Pedido criado", time: "18/07/2026 11:00" }],
+  },
+  {
+    id: "#CB-15150",
+    category: "Coffee Break",
+    type: "Coffee Break Executivo",
+    mono: "CB",
+    qty: "25 pessoas",
+    peopleCount: 25,
+    datetime: "10/07/2026 09:00",
+    status: "Finalizado",
+    value: "R$ 300,00",
+    valueNumber: 300,
+    createdAt: "2026-07-05T10:00:00Z",
+    costCenters: [{ code: "CC001", percent: 100 }],
+    billingStatus: "Fechado",
+    history: [{ label: "Pedido criado", time: "05/07/2026 10:00" }, { label: "Finalizado", time: "10/07/2026 10:30" }],
+  },
+  {
+    id: "#AG-15142",
+    category: "Água",
+    type: "Água Mineral",
+    mono: "AG",
+    qty: "40 unidades",
+    peopleCount: 40,
+    datetime: "08/07/2026 08:00",
+    status: "Entregue",
+    value: "R$ 140,00",
+    valueNumber: 140,
+    createdAt: "2026-07-03T09:00:00Z",
+    costCenters: [{ code: "CC003", percent: 100 }],
+    billingStatus: "Pendente",
+    history: [{ label: "Pedido criado", time: "03/07/2026 09:00" }, { label: "Entregue", time: "08/07/2026 08:20" }],
+  },
+  {
+    id: "#AB-15095",
+    category: "Abastecimento",
+    type: "Abastecimento Simples",
+    mono: "AB",
+    qty: "1 lote",
+    datetime: "01/07/2026 08:00",
+    status: "Finalizado",
+    value: "R$ 420,00",
+    valueNumber: 420,
+    createdAt: "2026-06-28T09:00:00Z",
+    costCenters: [{ code: "CC002", percent: 60 }, { code: "CC001", percent: 40 }],
+    billingStatus: "Enviado ao ERP",
+    history: [{ label: "Pedido criado", time: "28/06/2026 09:00" }, { label: "Finalizado", time: "01/07/2026 08:30" }],
   },
 ];
 
@@ -235,6 +286,47 @@ const initialUsers: AppUser[] = [
   { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sodexo.com", profileId: "prof-faturamento", active: true, createdAt: "2026-03-08T09:00:00Z" },
 ];
 
+const initialCostCenters: CostCenter[] = [
+  { id: "cc1", code: "CC001", name: "Administrativo", manager: "Carlos Santos", active: true },
+  { id: "cc2", code: "CC002", name: "Comercial", manager: "Paula Costa", active: true },
+  { id: "cc3", code: "CC003", name: "Operações", manager: "Marina Silva", active: true },
+];
+
+const initialOccurrences: Occurrence[] = [
+  {
+    id: "occ1",
+    orderId: "#LAN-15210",
+    type: "Atraso na entrega",
+    severity: "Média",
+    status: "Em análise",
+    description: "Entrega chegou 40 minutos após o horário combinado.",
+    reportedBy: "Ana Beatriz Lima",
+    createdAt: "2026-07-24T09:30:00Z",
+  },
+  {
+    id: "occ2",
+    orderId: "#CB-15234",
+    type: "Item incorreto ou faltando",
+    severity: "Baixa",
+    status: "Aberta",
+    description: "Faltaram guardanapos no kit entregue.",
+    reportedBy: "Carlos Santos",
+    createdAt: "2026-07-25T08:10:00Z",
+  },
+  {
+    id: "occ3",
+    orderId: "#EVT-15188",
+    type: "Qualidade do produto",
+    severity: "Alta",
+    status: "Resolvida",
+    description: "Salgados chegaram frios; equipe de produção foi orientada sobre o transporte.",
+    reportedBy: "João Pedro Nunes",
+    createdAt: "2026-07-18T14:00:00Z",
+    resolutionNotes: "Troca de embalagem térmica para o fornecedor a partir do próximo evento.",
+    resolvedAt: "2026-07-19T11:00:00Z",
+  },
+];
+
 const defaultState: StoredState = {
   orders: initialOrders,
   notifications: initialNotifications,
@@ -247,6 +339,8 @@ const defaultState: StoredState = {
   serviceCatalog: initialServiceCatalog,
   profiles: initialProfiles,
   users: initialUsers,
+  costCenters: initialCostCenters,
+  occurrences: initialOccurrences,
   nextOrderNum: 300,
 };
 
@@ -315,6 +409,16 @@ interface AppDataValue {
   updateUser: (id: string, patch: Partial<AppUser>) => void;
   removeUser: (id: string) => void;
   resetUserPassword: (id: string) => void;
+
+  costCenters: CostCenter[];
+  addCostCenter: (costCenter: Omit<CostCenter, "id">) => void;
+  updateCostCenter: (id: string, patch: Partial<CostCenter>) => void;
+  removeCostCenter: (id: string) => void;
+
+  occurrences: Occurrence[];
+  addOccurrence: (occurrence: Omit<Occurrence, "id" | "createdAt">) => void;
+  updateOccurrence: (id: string, patch: Partial<Occurrence>) => void;
+  removeOccurrence: (id: string) => void;
 
   toast: string | null;
   showToast: (msg: string) => void;
@@ -532,6 +636,29 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     showToast("Senha redefinida. Um e-mail com instruções foi enviado ao usuário.");
   };
 
+  const addCostCenter: AppDataValue["addCostCenter"] = (costCenter) => {
+    setState((s) => ({ ...s, costCenters: [{ ...costCenter, id: `cc${Date.now()}` }, ...s.costCenters] }));
+  };
+  const updateCostCenter: AppDataValue["updateCostCenter"] = (id, patch) => {
+    setState((s) => ({ ...s, costCenters: s.costCenters.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
+  };
+  const removeCostCenter = (id: string) => {
+    setState((s) => ({ ...s, costCenters: s.costCenters.filter((c) => c.id !== id) }));
+  };
+
+  const addOccurrence: AppDataValue["addOccurrence"] = (occurrence) => {
+    setState((s) => ({
+      ...s,
+      occurrences: [{ ...occurrence, id: `occ${Date.now()}`, createdAt: new Date().toISOString() }, ...s.occurrences],
+    }));
+  };
+  const updateOccurrence: AppDataValue["updateOccurrence"] = (id, patch) => {
+    setState((s) => ({ ...s, occurrences: s.occurrences.map((o) => (o.id === id ? { ...o, ...patch } : o)) }));
+  };
+  const removeOccurrence = (id: string) => {
+    setState((s) => ({ ...s, occurrences: s.occurrences.filter((o) => o.id !== id) }));
+  };
+
   const value = useMemo<AppDataValue>(
     () => ({
       orders: state.orders,
@@ -576,6 +703,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       updateUser,
       removeUser,
       resetUserPassword,
+      costCenters: state.costCenters,
+      addCostCenter,
+      updateCostCenter,
+      removeCostCenter,
+      occurrences: state.occurrences,
+      addOccurrence,
+      updateOccurrence,
+      removeOccurrence,
       toast,
       showToast,
     }),

@@ -20,7 +20,9 @@ import { Kits } from "./pages/admin/Kits";
 import { Servicos } from "./pages/admin/Servicos";
 import { Usuarios } from "./pages/admin/Usuarios";
 import { Permissoes } from "./pages/admin/Permissoes";
-import { AdminStub } from "./pages/admin/AdminStub";
+import { Ocorrencias } from "./pages/admin/Ocorrencias";
+import { Faturamento } from "./pages/admin/Faturamento";
+import { CentrosCusto } from "./pages/admin/CentrosCusto";
 
 export default function App() {
   return (
@@ -42,15 +44,15 @@ export default function App() {
             <Route index element={<AdminOperacao />} />
             <Route path="relatorios" element={<Relatorios />} />
             <Route path="pesquisa-satisfacao" element={<ConfigurarPesquisa />} />
-            <Route path="ocorrencias" element={<AdminStub title="Ocorrências" />} />
+            <Route path="ocorrencias" element={<Ocorrencias />} />
             <Route path="produtos" element={<Produtos />} />
             <Route path="kits" element={<Kits />} />
             <Route path="servicos" element={<Servicos />} />
             <Route path="fornecedores" element={<Fornecedores />} />
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="permissoes" element={<Permissoes />} />
-            <Route path="faturamento" element={<AdminStub title="Faturamento" />} />
-            <Route path="centros-custo" element={<AdminStub title="Centros de custo" />} />
+            <Route path="faturamento" element={<Faturamento />} />
+            <Route path="centros-custo" element={<CentrosCusto />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -49,6 +49,8 @@ export interface Order {
   dietaryRestrictions?: string;
   notes?: string;
   costCenters?: CostCenterAllocation[];
+  /** Status do fechamento financeiro do pedido — controlado na tela de Faturamento. */
+  billingStatus?: "Pendente" | "Fechado" | "Enviado ao ERP";
   requiresApproval?: boolean;
   managerApproved?: boolean;
   guApproved?: boolean;
@@ -226,3 +228,36 @@ export interface AppUser {
   createdAt: string;
   lastPasswordResetAt?: string;
 }
+
+export interface CostCenter {
+  id: string;
+  code: string;
+  name: string;
+  manager?: string;
+  active: boolean;
+}
+
+export const OCCURRENCE_TYPES = ["Atraso na entrega", "Item incorreto ou faltando", "Qualidade do produto", "Problema de atendimento", "Outro"] as const;
+export type OccurrenceType = (typeof OCCURRENCE_TYPES)[number];
+
+export const OCCURRENCE_SEVERITIES = ["Baixa", "Média", "Alta"] as const;
+export type OccurrenceSeverity = (typeof OCCURRENCE_SEVERITIES)[number];
+
+export const OCCURRENCE_STATUSES = ["Aberta", "Em análise", "Resolvida", "Cancelada"] as const;
+export type OccurrenceStatus = (typeof OCCURRENCE_STATUSES)[number];
+
+export interface Occurrence {
+  id: string;
+  orderId?: string;
+  type: OccurrenceType;
+  severity: OccurrenceSeverity;
+  status: OccurrenceStatus;
+  description: string;
+  reportedBy?: string;
+  createdAt: string;
+  resolutionNotes?: string;
+  resolvedAt?: string;
+}
+
+export const BILLING_STATUSES = ["Pendente", "Fechado", "Enviado ao ERP"] as const;
+export type BillingStatus = (typeof BILLING_STATUSES)[number];

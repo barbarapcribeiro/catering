@@ -1,0 +1,101 @@
+.centroscusto-page {
+  max-width: 1000px;
+}
+
+.centroscusto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.centroscusto-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
+}
+.centroscusto-subtitle {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.centroscusto-table-card {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.centroscusto-table__head,
+.centroscusto-table__row {
+  display: grid;
+  grid-template-columns: 0.8fr 1.4fr 1.2fr 0.7fr 0.9fr 1.4fr;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 20px;
+  min-width: 780px;
+}
+.centroscusto-table__head {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--color-border);
+}
+.centroscusto-table__row {
+  border-bottom: 1px solid var(--color-border-soft);
+  font-size: 13px;
+}
+.centroscusto-table__row:last-child {
+  border-bottom: none;
+}
+.centroscusto-table__code {
+  font-weight: 700;
+  font-family: var(--font-mono, monospace);
+}
+.centroscusto-table__muted {
+  color: var(--color-text-secondary);
+  font-size: 12.5px;
+}
+.centroscusto-table__actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.centroscusto-table__actions button.link {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.centroscusto-remove-btn {
+  border: none;
+  background: none;
+  color: var(--color-danger);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+.centroscusto-remove-btn:hover {
+  text-decoration: underline;
+}
+
+.centroscusto-active-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.centroscusto-active-check input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
