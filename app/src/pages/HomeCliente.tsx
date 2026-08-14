@@ -183,9 +183,16 @@ export function HomeCliente() {
                     <div className="home-recent__date">{r.date}</div>
                   </div>
                 </div>
-                <button className="btn btn--outline btn--sm" onClick={() => repeatOrder(r)}>
-                  Repetir pedido
-                </button>
+                <div className="home-recent__buttons">
+                  {r.isCoffee && (
+                    <button className="btn btn--primary btn--sm" onClick={() => navigate("/pedido/coffee-break")}>
+                      ☕ Pedir agora
+                    </button>
+                  )}
+                  <button className="btn btn--outline btn--sm" onClick={() => repeatOrder(r)}>
+                    Repetir pedido
+                  </button>
+                </div>
               </div>
             ))}
           </div>

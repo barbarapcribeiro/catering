@@ -55,6 +55,10 @@
   white-space: nowrap;
 }
 
+.app-header__home-link {
+  font-weight: 600;
+}
+
 .app-header__nav a:hover {
   color: var(--color-primary);
 }

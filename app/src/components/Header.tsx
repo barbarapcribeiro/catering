@@ -26,17 +26,17 @@ export function Header() {
         </div>
       </div>
       <nav className="app-header__nav">
-        {hasPageAccess("fique-por-dentro") && <Link to="/fique-por-dentro">Fique por dentro</Link>}
+        <Link to="/" className="app-header__home-link">Home</Link>
         {hasPageAccess("pedidos") && <Link to="/pedidos">Pedidos</Link>}
-        {hasPageAccess("producao") && <Link to="/producao">Produção</Link>}
+        {hasPageAccess("fique-por-dentro") && <Link to="/fique-por-dentro">Fique por dentro</Link>}
         {hasPageAccess("eventos-premium") && <Link to="/eventos-premium">Eventos Premium</Link>}
-        <div className="app-header__divider" />
-        <ProfileSwitcher />
         {hasAnyAdminAccess && (
           <Link to="/admin" className="app-header__admin-btn">
             Painel Administrativo
           </Link>
         )}
+        <div className="app-header__divider" />
+        <ProfileSwitcher />
         <div className="app-header__notif">
           <button
             className="app-header__bell"
