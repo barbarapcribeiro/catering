@@ -22,6 +22,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Gestão de pedidos", to: "/pedidos", glyph: "📋", pageId: "pedidos" },
       { label: "Aprovações", to: "/aprovacoes", glyph: "✓", pageId: "aprovacoes" },
+      { label: "Eventos Premium", to: "/eventos-premium", glyph: "🎉", pageId: "eventos-premium" },
       { label: "Ocorrências", to: "/admin/ocorrencias", glyph: "⚠", pageId: "admin-ocorrencias" },
     ],
   },
@@ -31,12 +32,16 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Produtos", to: "/admin/produtos", glyph: "📦", pageId: "admin-produtos" },
       { label: "Kits", to: "/admin/kits", glyph: "🎁", pageId: "admin-kits" },
       { label: "Serviços", to: "/admin/servicos", glyph: "🧰", pageId: "admin-servicos" },
+      { label: "Decorações", to: "/admin/decoracoes", glyph: "🎈", pageId: "admin-decoracoes" },
       { label: "Fornecedores", to: "/admin/fornecedores", glyph: "🚚", pageId: "admin-fornecedores" },
     ],
   },
   {
     label: "Pesquisa de Satisfação",
-    items: [{ label: "Configurar perguntas", to: "/admin/pesquisa-satisfacao", glyph: "⭐", pageId: "admin-pesquisa" }],
+    items: [
+      { label: "Configurar perguntas", to: "/admin/pesquisa-satisfacao", glyph: "⭐", pageId: "admin-pesquisa" },
+      { label: "Pesquisa da aplicação (CX/UX/NPS)", to: "/admin/pesquisa-aplicacao", glyph: "💬", pageId: "admin-pesquisa-app" },
+    ],
   },
   {
     label: "Pessoas",
@@ -50,11 +55,18 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Faturamento", to: "/admin/faturamento", glyph: "💳", pageId: "admin-faturamento" },
       { label: "Centros de custo", to: "/admin/centros-custo", glyph: "🏷", pageId: "admin-centros-custo" },
+      { label: "Contratos", to: "/admin/contratos", glyph: "📄", pageId: "admin-contratos" },
     ],
   },
   {
     label: "Relatórios",
-    items: [{ label: "Visão Geral", to: "/admin/relatorios", glyph: "📊", pageId: "admin-relatorios" }],
+    items: [
+      { label: "Visão Geral", to: "/admin/relatorios", glyph: "📊", pageId: "admin-relatorios" },
+      { label: "Faturamento", to: "/admin/relatorios/faturamento", glyph: "💰", pageId: "admin-relatorios" },
+      { label: "Pedidos", to: "/admin/relatorios/pedidos", glyph: "📦", pageId: "admin-relatorios" },
+      { label: "Centros de Custo", to: "/admin/relatorios/centros-custo", glyph: "🏷", pageId: "admin-relatorios" },
+      { label: "Satisfação", to: "/admin/relatorios/satisfacao", glyph: "⭐", pageId: "admin-relatorios" },
+    ],
   },
 ];
 

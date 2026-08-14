@@ -133,6 +133,8 @@ export interface Product {
   price: number;
   description?: string;
   supplierId?: string;
+  /** Foto do produto (data URL ou link), exibida no catálogo e no pedido. */
+  photoUrl?: string;
   active: boolean;
 }
 
@@ -141,13 +143,22 @@ export interface KitItem {
   qty: number;
 }
 
+export interface KitServiceItem {
+  serviceId: string;
+  qty: number;
+}
+
 export interface Kit {
   id: string;
   name: string;
   description?: string;
   items: KitItem[];
+  /** Serviços incluídos no kit (opcional), além dos produtos. */
+  serviceItems?: KitServiceItem[];
   /** Taxa de serviço aplicada sobre a soma dos itens, em %. Editável no MVP. */
   serviceFeePercent: number;
+  /** Foto do kit (data URL ou link), exibida no catálogo e no pedido. */
+  photoUrl?: string;
   active: boolean;
 }
 
@@ -159,6 +170,21 @@ export interface ServiceCatalogItem {
   name: string;
   description?: string;
   category: ServiceCatalogCategory;
+  /** Preço do serviço, usado quando incluído em kits e eventos premium. */
+  price: number;
+  active: boolean;
+}
+
+export const DECORATION_CATEGORIES = ["Mesa e Ambientação", "Flores e Arranjos", "Iluminação", "Painéis e Backdrop", "Balões", "Outros"] as const;
+export type DecorationCategory = (typeof DECORATION_CATEGORIES)[number];
+
+export interface Decoration {
+  id: string;
+  name: string;
+  description?: string;
+  category: DecorationCategory;
+  price: number;
+  photoUrl?: string;
   active: boolean;
 }
 
@@ -181,16 +207,20 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "fique-por-dentro", label: "Fique por Dentro", group: "Área do colaborador" },
   { id: "aprovacoes", label: "Aprovações", group: "Área do colaborador" },
   { id: "admin-operacao", label: "Operação (dashboard)", group: "Painel Administrativo" },
+  { id: "eventos-premium", label: "Eventos Premium", group: "Área do colaborador" },
   { id: "admin-relatorios", label: "Relatórios", group: "Painel Administrativo" },
   { id: "admin-produtos", label: "Catálogos · Produtos", group: "Painel Administrativo" },
   { id: "admin-kits", label: "Catálogos · Kits", group: "Painel Administrativo" },
   { id: "admin-servicos", label: "Catálogos · Serviços", group: "Painel Administrativo" },
+  { id: "admin-decoracoes", label: "Catálogos · Decorações", group: "Painel Administrativo" },
   { id: "admin-fornecedores", label: "Catálogos · Fornecedores", group: "Painel Administrativo" },
   { id: "admin-pesquisa", label: "Configurar Pesquisa de Satisfação", group: "Painel Administrativo" },
+  { id: "admin-pesquisa-app", label: "Pesquisa da Aplicação (CX/UX/NPS)", group: "Painel Administrativo" },
   { id: "admin-usuarios", label: "Pessoas · Usuários", group: "Painel Administrativo" },
   { id: "admin-permissoes", label: "Pessoas · Perfis e Permissões", group: "Painel Administrativo" },
   { id: "admin-faturamento", label: "Financeiro · Faturamento", group: "Painel Administrativo" },
   { id: "admin-centros-custo", label: "Financeiro · Centros de Custo", group: "Painel Administrativo" },
+  { id: "admin-contratos", label: "Financeiro · Contratos", group: "Painel Administrativo" },
   { id: "admin-ocorrencias", label: "Ocorrências", group: "Painel Administrativo" },
 ];
 
@@ -266,3 +296,73 @@ export interface Occurrence {
 
 export const BILLING_STATUSES = ["Pendente", "Fechado", "Enviado ao ERP"] as const;
 export type BillingStatus = (typeof BILLING_STATUSES)[number];
+
+export const CONTRACT_PRICING_MODES = ["Preço fixo", "Preço variável por consumo"] as const;
+export type ContractPricingMode = (typeof CONTRACT_PRICING_MODES)[number];
+
+/**
+ * Dados de contrato por centro de custo. Pensado para crescer: hoje cobre os
+ * campos mais comuns (preço, aprovação, ponto focal), mas o objetivo é virar
+ * a fonte de parâmetros que hoje estão "soltos" nas telas (ex.: exigir
+ * aprovador, reajuste, condições de pagamento).
+ */
+export interface Contract {
+  id: string;
+  costCenterCode: string;
+  pricingMode: ContractPricingMode;
+  /** Valor mensal fixo, usado quando pricingMode = "Preço fixo". */
+  fixedPrice?: number;
+  requiresApprover: boolean;
+  clientFocalPointName?: string;
+  clientFocalPointEmail?: string;
+  clientFocalPointPhone?: string;
+  startDate?: string;
+  endDate?: string;
+  paymentTerms?: string;
+  /** Reajuste anual previsto, em %. */
+  annualReadjustmentPercent?: number;
+  slaNotes?: string;
+  notes?: string;
+  active: boolean;
+}
+
+export const APP_SURVEY_CATEGORIES = ["CX", "UX", "NPS"] as const;
+export type AppSurveyCategory = (typeof APP_SURVEY_CATEGORIES)[number];
+
+/** Pesquisa sobre a própria aplicação (não sobre um pedido específico). */
+export interface AppSurveyQuestion {
+  id: string;
+  text: string;
+  category: AppSurveyCategory;
+  type: "NPS" | "Estrelas" | "Escala 1-5" | "Texto";
+  active: boolean;
+}
+
+export const PREMIUM_EVENT_STATUSES = ["Rascunho", "Confirmado", "Concluído", "Cancelado"] as const;
+export type PremiumEventStatus = (typeof PREMIUM_EVENT_STATUSES)[number];
+
+export const PREMIUM_EVENT_ITEM_KINDS = ["produto", "kit", "servico", "decoracao", "espaco"] as const;
+export type PremiumEventItemKind = (typeof PREMIUM_EVENT_ITEM_KINDS)[number];
+
+export interface PremiumEventItem {
+  kind: PremiumEventItemKind;
+  /** Id do item no catálogo correspondente; ausente para "espaco" (item livre). */
+  refId?: string;
+  label: string;
+  qty: number;
+  unitPrice: number;
+}
+
+export interface PremiumEvent {
+  id: string;
+  name: string;
+  clientName?: string;
+  costCenterCode?: string;
+  eventDate?: string;
+  location?: string;
+  guestCount?: number;
+  items: PremiumEventItem[];
+  status: PremiumEventStatus;
+  notes?: string;
+  createdAt: string;
+}

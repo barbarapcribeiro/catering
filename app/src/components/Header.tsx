@@ -29,6 +29,7 @@ export function Header() {
         {hasPageAccess("fique-por-dentro") && <Link to="/fique-por-dentro">Fique por dentro</Link>}
         {hasPageAccess("pedidos") && <Link to="/pedidos">Pedidos</Link>}
         {hasPageAccess("producao") && <Link to="/producao">Produção</Link>}
+        {hasPageAccess("eventos-premium") && <Link to="/eventos-premium">Eventos Premium</Link>}
         <div className="app-header__divider" />
         <ProfileSwitcher />
         {hasAnyAdminAccess && (

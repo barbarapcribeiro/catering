@@ -78,6 +78,25 @@
   height: 26px;
   margin-top: 6px;
 }
+.relatorios-kpi--clickable {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.relatorios-panel-head button.link,
+.relatorios-panel-total a.link,
+.relatorios-panel-total button.link {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
 
 .relatorios-row-1 {
   display: grid;
@@ -181,6 +200,15 @@
   display: flex;
   align-items: center;
   gap: 10px;
+}
+.relatorios-topunit--clickable {
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
 }
 .relatorios-topunit__rank {
   width: 20px;

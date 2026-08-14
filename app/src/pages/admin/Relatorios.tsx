@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useAppData } from "../../mock/AppDataContext";
 import { STATUS_STYLE } from "../../mock/services";
@@ -23,12 +23,22 @@ const CC_LABELS: Record<string, string> = {
   CC005: "Industrial",
 };
 
-const KPIS = [
-  { glyph: "💰", label: "Faturamento total", value: money(248750.6), trend: "↑ 18,0% vs período anterior", seed: 1, sparkColor: "#283897" },
-  { glyph: "📦", label: "Pedidos realizados", value: "156", trend: "↑ 12,4% vs período anterior", seed: 2, sparkColor: "#1e4fa3" },
-  { glyph: "🎟", label: "Ticket médio", value: money(1594.56), trend: "↑ 5,2% vs período anterior", seed: 3, sparkColor: "#1a7a4f" },
-  { glyph: "👥", label: "Unidades atendidas", value: "24", trend: "↑ 9,1% vs período anterior", seed: 4, sparkColor: "#b5690f" },
-  { glyph: "⭐", label: "Satisfação (NPS)", value: "59", trend: "↑ 7 pts vs período anterior", seed: 5, sparkColor: "#c99a1f" },
+export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "satisfacao";
+
+const DASH_TABS: { key: ReportDash; label: string }[] = [
+  { key: "geral", label: "Visão Geral" },
+  { key: "faturamento", label: "Faturamento" },
+  { key: "pedidos", label: "Pedidos" },
+  { key: "centros-custo", label: "Centros de Custo" },
+  { key: "satisfacao", label: "Satisfação" },
+];
+
+const KPIS: { glyph: string; label: string; value: string; trend: string; seed: number; sparkColor: string; dash: ReportDash }[] = [
+  { glyph: "💰", label: "Faturamento total", value: money(248750.6), trend: "↑ 18,0% vs período anterior", seed: 1, sparkColor: "#283897", dash: "faturamento" },
+  { glyph: "📦", label: "Pedidos realizados", value: "156", trend: "↑ 12,4% vs período anterior", seed: 2, sparkColor: "#1e4fa3", dash: "pedidos" },
+  { glyph: "🎟", label: "Ticket médio", value: money(1594.56), trend: "↑ 5,2% vs período anterior", seed: 3, sparkColor: "#1a7a4f", dash: "faturamento" },
+  { glyph: "👥", label: "Unidades atendidas", value: "24", trend: "↑ 9,1% vs período anterior", seed: 4, sparkColor: "#b5690f", dash: "centros-custo" },
+  { glyph: "⭐", label: "Satisfação (NPS)", value: "59", trend: "↑ 7 pts vs período anterior", seed: 5, sparkColor: "#c99a1f", dash: "satisfacao" },
 ];
 
 const BAR_VALUES = [24000, 31000, 20000, 38000, 42000, 29000, 45000, 36000];
@@ -50,12 +60,12 @@ const TOP_COST_CENTERS = [
   { code: "CC005", pct: 31, value: 24209.1 },
 ];
 
-const STATUS_CARDS = [
-  { glyph: "🕓", label: "Aguardando aprovação", value: "8 pedidos", bg: "#fdf6ea", border: "#f0d49a", color: "#8a5a0f" },
-  { glyph: "🔥", label: "Em produção", value: "12 pedidos", bg: "#eef4fc", border: "#c7dcf5", color: "#1e4fa3" },
-  { glyph: "📬", label: "Prontos para entrega", value: "5 pedidos", bg: "#eef8f1", border: "#bfe4cc", color: "#1a7a4f" },
-  { glyph: "⏰", label: "Atrasados", value: "2 pedidos", bg: "#fdf1ef", border: "#f0c6bd", color: "#c0392b" },
-  { glyph: "⚠", label: "Ocorrências abertas", value: "3 ocorrências", bg: "#f6f0fb", border: "#ddc7ee", color: "#5a4a8a" },
+const STATUS_CARDS: { glyph: string; label: string; value: string; bg: string; border: string; color: string; dash: ReportDash }[] = [
+  { glyph: "🕓", label: "Aguardando aprovação", value: "8 pedidos", bg: "#fdf6ea", border: "#f0d49a", color: "#8a5a0f", dash: "pedidos" },
+  { glyph: "🔥", label: "Em produção", value: "12 pedidos", bg: "#eef4fc", border: "#c7dcf5", color: "#1e4fa3", dash: "pedidos" },
+  { glyph: "📬", label: "Prontos para entrega", value: "5 pedidos", bg: "#eef8f1", border: "#bfe4cc", color: "#1a7a4f", dash: "pedidos" },
+  { glyph: "⏰", label: "Atrasados", value: "2 pedidos", bg: "#fdf1ef", border: "#f0c6bd", color: "#c0392b", dash: "pedidos" },
+  { glyph: "⚠", label: "Ocorrências abertas", value: "3 ocorrências", bg: "#f6f0fb", border: "#ddc7ee", color: "#5a4a8a", dash: "pedidos" },
 ];
 
 const RECENT_ORDERS = [
@@ -66,8 +76,7 @@ const RECENT_ORDERS = [
   { id: "#CB-15098", type: "Coffee Break", unidade: "Unidade Financeira", datetime: "23/07 • 09:00", status: "Aguardando aprovação" },
 ];
 
-// Sample order set used exclusively to populate the CSV export (the "Pedidos"
-// report tab this export was designed for is not part of the current build).
+// Sample order set used both for the "Pedidos" dash table and the CSV export.
 const EXPORT_ORDERS = [
   { id: "#CB-15234", type: "Coffee Break", unidade: "Unidade Matriz", datetime: "24/07 • 09:30", people: 20, value: 240, status: "Em preparação" },
   { id: "#LAN-15210", type: "Lanche", unidade: "Unidade Matriz", datetime: "24/07 • 10:00", people: 15, value: 187.5, status: "Pronto para entrega" },
@@ -92,6 +101,14 @@ const EXPORT_FIELD_DEFS = [
 ] as const;
 type ExportFieldKey = (typeof EXPORT_FIELD_DEFS)[number]["key"];
 
+const NPS_DISTRIBUTION = [
+  { label: "Promotores (9-10)", pct: 68, color: "#1a7a4f" },
+  { label: "Neutros (7-8)", pct: 22, color: "#c99a1f" },
+  { label: "Detratores (0-6)", pct: 10, color: "#c0392b" },
+];
+
+const APP_SURVEY_CATEGORY_COLOR: Record<string, string> = { CX: "#1e4fa3", UX: "#283897", NPS: "#c99a1f" };
+
 function makeSpark(seed: number): string {
   const pts: number[] = [];
   let v = 14;
@@ -112,7 +129,11 @@ function Sparkline({ seed, color }: { seed: number; color: string }) {
 }
 
 export function Relatorios() {
-  const { showToast } = useAppData();
+  const { showToast, costCenters, appSurveyQuestions } = useAppData();
+  const navigate = useNavigate();
+  const params = useParams<{ dash?: string }>();
+  const dash: ReportDash = (DASH_TABS.some((t) => t.key === params.dash) ? params.dash : "geral") as ReportDash;
+
   const [exportOpen, setExportOpen] = useState(false);
   const [exportFields, setExportFields] = useState<Record<ExportFieldKey, boolean>>({
     id: true,
@@ -155,6 +176,10 @@ export function Relatorios() {
     showToast("Exportação gerada com sucesso!");
   };
 
+  const goDash = (d: ReportDash) => navigate(d === "geral" ? "/admin/relatorios" : `/admin/relatorios/${d}`);
+
+  const appSurveyCategoryCount = (cat: string) => appSurveyQuestions.filter((q) => q.category === cat && q.active).length;
+
   return (
     <div className="relatorios-page">
       <div className="relatorios-header">
@@ -172,165 +197,405 @@ export function Relatorios() {
       </div>
 
       <div className="tab-row relatorios-tabs">
-        <button className="is-active">Visão Geral</button>
-      </div>
-
-      <div className="relatorios-kpis">
-        {KPIS.map((k) => (
-          <div className="card relatorios-kpi" key={k.label}>
-            <div className="relatorios-kpi__head">
-              <div className="relatorios-kpi__label">{k.label}</div>
-              <span>{k.glyph}</span>
-            </div>
-            <div className="relatorios-kpi__value">{k.value}</div>
-            <div className="relatorios-kpi__trend">{k.trend}</div>
-            <Sparkline seed={k.seed} color={k.sparkColor} />
-          </div>
-        ))}
-      </div>
-
-      <div className="relatorios-row-1">
-        <div className="card relatorios-panel">
-          <div className="relatorios-panel-title">Faturamento por dia</div>
-          <ResponsiveContainer width="100%" height={140}>
-            <BarChart data={barData} margin={{ top: 6, right: 4, left: 4, bottom: 0 }}>
-              <CartesianGrid vertical={false} stroke="#edf1f7" />
-              <XAxis dataKey="day" tick={{ fontSize: 9.5, fill: "#7d8798" }} axisLine={false} tickLine={false} />
-              <YAxis hide />
-              <Tooltip formatter={(v) => [money(Number(v)), "Faturamento"]} contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e3e8f0" }} />
-              <Bar dataKey="value" fill="#283897" radius={[2, 2, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="card relatorios-panel">
-          <div className="relatorios-panel-title">Faturamento por tipo de serviço</div>
-          <div className="relatorios-service-list">
-            {SERVICE_BREAKDOWN.map((sb) => (
-              <div key={sb.label}>
-                <div className="relatorios-service-row">
-                  <span className="relatorios-service-label">
-                    <span className="relatorios-dot" style={{ background: sb.color }} />
-                    {sb.label}
-                  </span>
-                  <span className="relatorios-muted">{sb.pct}%</span>
-                </div>
-                <div className="relatorios-bar-track">
-                  <div className="relatorios-bar-fill" style={{ width: `${sb.pct}%`, background: sb.color }} />
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="relatorios-panel-total">
-            <span>Total</span>
-            <span className="relatorios-panel-total__value">{money(SERVICE_TOTAL)}</span>
-          </div>
-        </div>
-
-        <div className="card relatorios-panel">
-          <div className="relatorios-panel-head">
-            <div className="relatorios-panel-title">Top 5 Centros de custo</div>
-            <span className="relatorios-muted-sm">Faturamento</span>
-          </div>
-          <div className="relatorios-topunits">
-            {TOP_COST_CENTERS.map((u, i) => (
-              <div className="relatorios-topunit" key={u.code}>
-                <div className="relatorios-topunit__rank">{i + 1}</div>
-                <div className="relatorios-topunit__body">
-                  <div className="relatorios-topunit__name">
-                    {u.code} • {CC_LABELS[u.code]}
-                  </div>
-                  <div className="relatorios-bar-track relatorios-bar-track--sm">
-                    <div className="relatorios-bar-fill" style={{ width: `${u.pct}%`, background: "#283897" }} />
-                  </div>
-                </div>
-                <div className="relatorios-topunit__value">{money(u.value)}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="relatorios-status-row">
-        {STATUS_CARDS.map((s) => (
-          <button
-            key={s.label}
-            className="relatorios-status-card"
-            style={{ background: s.bg, borderColor: s.border }}
-            onClick={() => showToast(`Filtrando ${s.label.toLowerCase()}...`)}
-          >
-            <div className="relatorios-status-card__head">
-              <span>{s.glyph}</span>
-              <span style={{ color: s.color }}>{s.label}</span>
-            </div>
-            <div className="relatorios-status-card__value">{s.value}</div>
-            <div className="relatorios-status-card__link" style={{ color: s.color }}>
-              Ver pedidos &rsaquo;
-            </div>
+        {DASH_TABS.map((t) => (
+          <button key={t.key} className={dash === t.key ? "is-active" : ""} onClick={() => goDash(t.key)}>
+            {t.label}
           </button>
         ))}
       </div>
 
-      <div className="relatorios-row-2">
-        <div className="card relatorios-panel">
-          <div className="relatorios-panel-head">
-            <div className="relatorios-panel-title">Resumo de faturamento</div>
-            <a href="#" className="link" onClick={(e) => e.preventDefault()}>
-              Ver relatório completo
-            </a>
-          </div>
-          <div className="relatorios-summary__head">
-            <div>Tipo</div>
-            <div>Fat.</div>
-            <div>%</div>
-            <div>Pedidos</div>
-            <div>vs período</div>
-          </div>
-          {SERVICE_BREAKDOWN.map((sb) => (
-            <div className="relatorios-summary__row" key={sb.label}>
-              <div className="relatorios-summary__type">
-                <span className="relatorios-dot" style={{ background: sb.color }} />
-                {sb.label}
-              </div>
-              <div className="relatorios-summary__value">{money(sb.value)}</div>
-              <div className="relatorios-muted">{sb.pct}%</div>
-              <div>{sb.orders}</div>
-              <div className={`relatorios-trend ${sb.up ? "is-up" : "is-down"}`}>{sb.trend}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="card relatorios-panel">
-          <div className="relatorios-panel-head">
-            <div className="relatorios-panel-title">Últimos pedidos</div>
-            <Link to="/pedidos" className="link">
-              Ver todos
-            </Link>
-          </div>
-          <div className="relatorios-orders__head">
-            <div>Pedido</div>
-            <div>Unidade</div>
-            <div>Data/Hora</div>
-            <div>Status</div>
-          </div>
-          {RECENT_ORDERS.map((o) => {
-            const st = LOCAL_STATUS_STYLE[o.status] || { bg: "#eee", color: "#555" };
-            return (
-              <div className="relatorios-orders__row" key={o.id}>
-                <div className="relatorios-orders__id-wrap">
-                  <div className="relatorios-orders__id">{o.id}</div>
-                  <div className="relatorios-muted-sm">{o.type}</div>
+      {dash === "geral" && (
+        <>
+          <div className="relatorios-kpis">
+            {KPIS.map((k) => (
+              <button className="card relatorios-kpi relatorios-kpi--clickable" key={k.label} onClick={() => goDash(k.dash)}>
+                <div className="relatorios-kpi__head">
+                  <div className="relatorios-kpi__label">{k.label}</div>
+                  <span>{k.glyph}</span>
                 </div>
-                <div className="relatorios-orders__unidade">{o.unidade}</div>
-                <div className="relatorios-orders__datetime">{o.datetime}</div>
-                <span className="status-pill" style={{ background: st.bg, color: st.color }}>
-                  {o.status}
+                <div className="relatorios-kpi__value">{k.value}</div>
+                <div className="relatorios-kpi__trend">{k.trend}</div>
+                <Sparkline seed={k.seed} color={k.sparkColor} />
+              </button>
+            ))}
+          </div>
+
+          <div className="relatorios-row-1">
+            <div className="card relatorios-panel">
+              <div className="relatorios-panel-title">Faturamento por dia</div>
+              <ResponsiveContainer width="100%" height={140}>
+                <BarChart data={barData} margin={{ top: 6, right: 4, left: 4, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke="#edf1f7" />
+                  <XAxis dataKey="day" tick={{ fontSize: 9.5, fill: "#7d8798" }} axisLine={false} tickLine={false} />
+                  <YAxis hide />
+                  <Tooltip formatter={(v) => [money(Number(v)), "Faturamento"]} contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e3e8f0" }} />
+                  <Bar dataKey="value" fill="#283897" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="card relatorios-panel">
+              <div className="relatorios-panel-head">
+                <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Faturamento por tipo de serviço</div>
+                <button className="link" onClick={() => goDash("faturamento")}>Ver mais &rsaquo;</button>
+              </div>
+              <div className="relatorios-service-list">
+                {SERVICE_BREAKDOWN.map((sb) => (
+                  <div key={sb.label}>
+                    <div className="relatorios-service-row">
+                      <span className="relatorios-service-label">
+                        <span className="relatorios-dot" style={{ background: sb.color }} />
+                        {sb.label}
+                      </span>
+                      <span className="relatorios-muted">{sb.pct}%</span>
+                    </div>
+                    <div className="relatorios-bar-track">
+                      <div className="relatorios-bar-fill" style={{ width: `${sb.pct}%`, background: sb.color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="relatorios-panel-total">
+                <span>Total</span>
+                <span className="relatorios-panel-total__value">{money(SERVICE_TOTAL)}</span>
+              </div>
+            </div>
+
+            <div className="card relatorios-panel">
+              <div className="relatorios-panel-head">
+                <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Top 5 Centros de custo</div>
+                <button className="link" onClick={() => goDash("centros-custo")}>Ver mais &rsaquo;</button>
+              </div>
+              <div className="relatorios-topunits">
+                {TOP_COST_CENTERS.map((u, i) => (
+                  <button className="relatorios-topunit relatorios-topunit--clickable" key={u.code} onClick={() => goDash("centros-custo")}>
+                    <div className="relatorios-topunit__rank">{i + 1}</div>
+                    <div className="relatorios-topunit__body">
+                      <div className="relatorios-topunit__name">
+                        {u.code} • {CC_LABELS[u.code]}
+                      </div>
+                      <div className="relatorios-bar-track relatorios-bar-track--sm">
+                        <div className="relatorios-bar-fill" style={{ width: `${u.pct}%`, background: "#283897" }} />
+                      </div>
+                    </div>
+                    <div className="relatorios-topunit__value">{money(u.value)}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="relatorios-status-row">
+            {STATUS_CARDS.map((s) => (
+              <button
+                key={s.label}
+                className="relatorios-status-card"
+                style={{ background: s.bg, borderColor: s.border }}
+                onClick={() => goDash(s.dash)}
+              >
+                <div className="relatorios-status-card__head">
+                  <span>{s.glyph}</span>
+                  <span style={{ color: s.color }}>{s.label}</span>
+                </div>
+                <div className="relatorios-status-card__value">{s.value}</div>
+                <div className="relatorios-status-card__link" style={{ color: s.color }}>
+                  Ver pedidos &rsaquo;
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="relatorios-row-2">
+            <div className="card relatorios-panel">
+              <div className="relatorios-panel-head">
+                <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Resumo de faturamento</div>
+                <button className="link" onClick={() => goDash("faturamento")}>
+                  Ver relatório completo
+                </button>
+              </div>
+              <div className="relatorios-summary__head">
+                <div>Tipo</div>
+                <div>Fat.</div>
+                <div>%</div>
+                <div>Pedidos</div>
+                <div>vs período</div>
+              </div>
+              {SERVICE_BREAKDOWN.map((sb) => (
+                <div className="relatorios-summary__row" key={sb.label}>
+                  <div className="relatorios-summary__type">
+                    <span className="relatorios-dot" style={{ background: sb.color }} />
+                    {sb.label}
+                  </div>
+                  <div className="relatorios-summary__value">{money(sb.value)}</div>
+                  <div className="relatorios-muted">{sb.pct}%</div>
+                  <div>{sb.orders}</div>
+                  <div className={`relatorios-trend ${sb.up ? "is-up" : "is-down"}`}>{sb.trend}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="card relatorios-panel">
+              <div className="relatorios-panel-head">
+                <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Últimos pedidos</div>
+                <Link to="/pedidos" className="link">
+                  Ver todos
+                </Link>
+              </div>
+              <div className="relatorios-orders__head">
+                <div>Pedido</div>
+                <div>Unidade</div>
+                <div>Data/Hora</div>
+                <div>Status</div>
+              </div>
+              {RECENT_ORDERS.map((o) => {
+                const st = LOCAL_STATUS_STYLE[o.status] || { bg: "#eee", color: "#555" };
+                return (
+                  <div className="relatorios-orders__row" key={o.id}>
+                    <div className="relatorios-orders__id-wrap">
+                      <div className="relatorios-orders__id">{o.id}</div>
+                      <div className="relatorios-muted-sm">{o.type}</div>
+                    </div>
+                    <div className="relatorios-orders__unidade">{o.unidade}</div>
+                    <div className="relatorios-orders__datetime">{o.datetime}</div>
+                    <span className="status-pill" style={{ background: st.bg, color: st.color }}>
+                      {o.status}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+
+      {dash === "faturamento" && (
+        <>
+          <div className="relatorios-kpis">
+            {KPIS.filter((k) => k.dash === "faturamento").map((k) => (
+              <div className="card relatorios-kpi" key={k.label}>
+                <div className="relatorios-kpi__head">
+                  <div className="relatorios-kpi__label">{k.label}</div>
+                  <span>{k.glyph}</span>
+                </div>
+                <div className="relatorios-kpi__value">{k.value}</div>
+                <div className="relatorios-kpi__trend">{k.trend}</div>
+                <Sparkline seed={k.seed} color={k.sparkColor} />
+              </div>
+            ))}
+          </div>
+          <div className="relatorios-row-1">
+            <div className="card relatorios-panel" style={{ gridColumn: "span 2" }}>
+              <div className="relatorios-panel-title">Faturamento por dia</div>
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={barData} margin={{ top: 6, right: 4, left: 4, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke="#edf1f7" />
+                  <XAxis dataKey="day" tick={{ fontSize: 9.5, fill: "#7d8798" }} axisLine={false} tickLine={false} />
+                  <YAxis hide />
+                  <Tooltip formatter={(v) => [money(Number(v)), "Faturamento"]} contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e3e8f0" }} />
+                  <Bar dataKey="value" fill="#283897" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="card relatorios-panel">
+              <div className="relatorios-panel-title">Faturamento por tipo</div>
+              <div className="relatorios-service-list">
+                {SERVICE_BREAKDOWN.map((sb) => (
+                  <div key={sb.label}>
+                    <div className="relatorios-service-row">
+                      <span className="relatorios-service-label">
+                        <span className="relatorios-dot" style={{ background: sb.color }} />
+                        {sb.label}
+                      </span>
+                      <span className="relatorios-muted">{sb.pct}%</span>
+                    </div>
+                    <div className="relatorios-bar-track">
+                      <div className="relatorios-bar-fill" style={{ width: `${sb.pct}%`, background: sb.color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="relatorios-panel-total">
+                <span>Total</span>
+                <span className="relatorios-panel-total__value">{money(SERVICE_TOTAL)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="card relatorios-panel">
+            <div className="relatorios-panel-head">
+              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Resumo de faturamento por tipo de serviço</div>
+              <Link to="/admin/faturamento" className="link">
+                Ver fechamentos e faturas &rsaquo;
+              </Link>
+            </div>
+            <div className="relatorios-summary__head">
+              <div>Tipo</div>
+              <div>Fat.</div>
+              <div>%</div>
+              <div>Pedidos</div>
+              <div>vs período</div>
+            </div>
+            {SERVICE_BREAKDOWN.map((sb) => (
+              <div className="relatorios-summary__row" key={sb.label}>
+                <div className="relatorios-summary__type">
+                  <span className="relatorios-dot" style={{ background: sb.color }} />
+                  {sb.label}
+                </div>
+                <div className="relatorios-summary__value">{money(sb.value)}</div>
+                <div className="relatorios-muted">{sb.pct}%</div>
+                <div>{sb.orders}</div>
+                <div className={`relatorios-trend ${sb.up ? "is-up" : "is-down"}`}>{sb.trend}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {dash === "pedidos" && (
+        <>
+          <div className="relatorios-status-row">
+            {STATUS_CARDS.map((s) => (
+              <div key={s.label} className="relatorios-status-card" style={{ background: s.bg, borderColor: s.border, cursor: "default" }}>
+                <div className="relatorios-status-card__head">
+                  <span>{s.glyph}</span>
+                  <span style={{ color: s.color }}>{s.label}</span>
+                </div>
+                <div className="relatorios-status-card__value">{s.value}</div>
+              </div>
+            ))}
+          </div>
+          <div className="card relatorios-panel">
+            <div className="relatorios-panel-head">
+              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Pedidos do período</div>
+              <Link to="/pedidos" className="link">
+                Ver Gestão de pedidos &rsaquo;
+              </Link>
+            </div>
+            <div className="relatorios-orders__head">
+              <div>Pedido</div>
+              <div>Unidade</div>
+              <div>Data/Hora</div>
+              <div>Status</div>
+            </div>
+            {EXPORT_ORDERS.map((o) => {
+              const st = LOCAL_STATUS_STYLE[o.status] || { bg: "#eee", color: "#555" };
+              return (
+                <div className="relatorios-orders__row" key={o.id}>
+                  <div className="relatorios-orders__id-wrap">
+                    <div className="relatorios-orders__id">{o.id}</div>
+                    <div className="relatorios-muted-sm">{o.type} • {o.people} pessoas</div>
+                  </div>
+                  <div className="relatorios-orders__unidade">{o.unidade}</div>
+                  <div className="relatorios-orders__datetime">{o.datetime}</div>
+                  <span className="status-pill" style={{ background: st.bg, color: st.color }}>
+                    {o.status}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {dash === "centros-custo" && (
+        <div className="relatorios-row-2">
+          <div className="card relatorios-panel">
+            <div className="relatorios-panel-title">Faturamento por centro de custo</div>
+            <div className="relatorios-topunits">
+              {TOP_COST_CENTERS.map((u, i) => (
+                <div className="relatorios-topunit" key={u.code}>
+                  <div className="relatorios-topunit__rank">{i + 1}</div>
+                  <div className="relatorios-topunit__body">
+                    <div className="relatorios-topunit__name">
+                      {u.code} • {CC_LABELS[u.code]}
+                    </div>
+                    <div className="relatorios-bar-track relatorios-bar-track--sm">
+                      <div className="relatorios-bar-fill" style={{ width: `${u.pct}%`, background: "#283897" }} />
+                    </div>
+                  </div>
+                  <div className="relatorios-topunit__value">{money(u.value)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card relatorios-panel">
+            <div className="relatorios-panel-head">
+              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Centros de custo cadastrados</div>
+              <Link to="/admin/centros-custo" className="link">
+                Gerenciar &rsaquo;
+              </Link>
+            </div>
+            <div className="relatorios-summary__head" style={{ gridTemplateColumns: "1fr 1fr 0.8fr" }}>
+              <div>Código</div>
+              <div>Nome</div>
+              <div>Status</div>
+            </div>
+            {costCenters.map((c) => (
+              <div className="relatorios-summary__row" key={c.id} style={{ gridTemplateColumns: "1fr 1fr 0.8fr" }}>
+                <div className="relatorios-summary__type">{c.code}</div>
+                <div className="relatorios-muted">{c.name}</div>
+                <span className="status-pill" style={{ background: c.active ? "var(--color-success-soft)" : "var(--color-border-soft)", color: c.active ? "var(--color-success)" : "var(--color-text-muted)" }}>
+                  {c.active ? "Ativo" : "Bloqueado"}
                 </span>
               </div>
-            );
-          })}
+            ))}
+            {costCenters.length === 0 && <div className="empty-state">Nenhum centro de custo cadastrado.</div>}
+          </div>
         </div>
-      </div>
+      )}
+
+      {dash === "satisfacao" && (
+        <div className="relatorios-row-2">
+          <div className="card relatorios-panel">
+            <div className="relatorios-panel-title">NPS geral</div>
+            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginBottom: 4 }}>59</div>
+            <div className="relatorios-kpi__trend" style={{ marginBottom: 14 }}>↑ 7 pts vs período anterior</div>
+            <div className="relatorios-service-list">
+              {NPS_DISTRIBUTION.map((n) => (
+                <div key={n.label}>
+                  <div className="relatorios-service-row">
+                    <span className="relatorios-service-label">
+                      <span className="relatorios-dot" style={{ background: n.color }} />
+                      {n.label}
+                    </span>
+                    <span className="relatorios-muted">{n.pct}%</span>
+                  </div>
+                  <div className="relatorios-bar-track">
+                    <div className="relatorios-bar-fill" style={{ width: `${n.pct}%`, background: n.color }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card relatorios-panel">
+            <div className="relatorios-panel-head">
+              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Pesquisa da aplicação (CX / UX / NPS)</div>
+              <Link to="/admin/pesquisa-aplicacao" className="link">
+                Configurar perguntas &rsaquo;
+              </Link>
+            </div>
+            <div className="relatorios-service-list">
+              {["CX", "UX", "NPS"].map((cat) => (
+                <div key={cat} className="relatorios-service-row" style={{ marginBottom: 8 }}>
+                  <span className="relatorios-service-label">
+                    <span className="relatorios-dot" style={{ background: APP_SURVEY_CATEGORY_COLOR[cat] }} />
+                    {cat}
+                  </span>
+                  <span className="relatorios-muted">{appSurveyCategoryCount(cat)} pergunta(s) ativa(s)</span>
+                </div>
+              ))}
+            </div>
+            <div className="relatorios-panel-total">
+              <span>Pesquisa de satisfação do pedido</span>
+              <Link to="/admin/pesquisa-satisfacao" className="link">
+                Configurar &rsaquo;
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {exportOpen && (
         <Modal onClose={() => setExportOpen(false)} width={420}>

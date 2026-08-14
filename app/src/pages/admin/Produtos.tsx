@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAppData } from "../../mock/AppDataContext";
 import { Modal } from "../../components/Modal";
+import { PhotoUpload } from "../../components/PhotoUpload";
 import { money } from "../../mock/money";
 import { computeProductPrice } from "../../mock/pricing";
 import { PRODUCT_TYPES, PRODUCT_UNITS, type Product, type ProductType, type ProductUnit } from "../../types";
@@ -14,6 +15,7 @@ const EMPTY_FORM = {
   marginPercent: "40",
   description: "",
   supplierId: "",
+  photoUrl: undefined as string | undefined,
   active: true,
 };
 
@@ -42,6 +44,7 @@ export function Produtos() {
       marginPercent: String(p.marginPercent),
       description: p.description ?? "",
       supplierId: p.supplierId ?? "",
+      photoUrl: p.photoUrl,
       active: p.active,
     });
     setModalOpen(true);
@@ -61,6 +64,7 @@ export function Produtos() {
       marginPercent: parsedMargin,
       description: form.description || undefined,
       supplierId: form.supplierId || undefined,
+      photoUrl: form.photoUrl,
       active: form.active,
     };
     if (editingId) {
@@ -121,9 +125,16 @@ export function Produtos() {
           </div>
           {filtered.map((p) => (
             <div key={p.id} className="produtos-table__row">
-              <div>
-                <div className="produtos-table__name">{p.name}</div>
-                {p.description && <div className="produtos-table__desc">{p.description}</div>}
+              <div className="produtos-table__name-cell">
+                {p.photoUrl ? (
+                  <img className="produtos-table__thumb" src={p.photoUrl} alt="" />
+                ) : (
+                  <div className="produtos-table__thumb produtos-table__thumb--empty" />
+                )}
+                <div>
+                  <div className="produtos-table__name">{p.name}</div>
+                  {p.description && <div className="produtos-table__desc">{p.description}</div>}
+                </div>
               </div>
               <div>
                 <span className="pill-tag">{p.type}</span>
@@ -203,6 +214,7 @@ export function Produtos() {
             <div className="produtos-price-preview">
               Preço de venda no pedido: <strong>{money(previewPrice)}</strong>
             </div>
+            <PhotoUpload value={form.photoUrl} onChange={(v) => setForm({ ...form, photoUrl: v })} label="Foto do produto" />
             <label className="field-label">
               Fornecedor <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span>
               <select value={form.supplierId} onChange={(e) => setForm({ ...form, supplierId: e.target.value })}>
