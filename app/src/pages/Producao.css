@@ -465,27 +465,19 @@
 }
 
 .prod-bulk-bar {
-  display: grid;
-  grid-template-columns: auto repeat(5, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 18px;
   align-items: center;
 }
-@media (max-width: 900px) {
-  .prod-bulk-bar {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 480px) {
-  .prod-bulk-bar {
-    grid-template-columns: 1fr;
-  }
-}
 .prod-bulk-toggle {
   position: relative;
+  flex: 1 1 160px;
 }
 .prod-bulk-toggle .btn {
   white-space: nowrap;
+  width: 100%;
 }
 .prod-bulk-menu {
   top: auto;
@@ -494,6 +486,7 @@
 }
 .prod-bulk-btn {
   white-space: nowrap;
+  flex: 1 1 160px;
 }
 .prod-bulk-btn--success {
   border-color: var(--color-success);

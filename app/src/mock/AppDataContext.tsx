@@ -2,19 +2,24 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import {
   APP_PAGES,
   EMPTY_PAGE_PERMISSION,
+  type AppSurveyQuestion,
   type AppUser,
   type ChatMessage,
+  type Contract,
   type CostCenter,
+  type Decoration,
   type Kit,
   type Notification,
   type Occurrence,
   type Order,
   type PagePermission,
+  type PremiumEvent,
   type Product,
   type Profile,
   type ServiceCatalogItem,
   type Supplier,
   type SurveyQuestion,
+  type SurveyResponse,
 } from "../types";
 import { computeProductPrice } from "./pricing";
 
@@ -26,10 +31,15 @@ interface StoredState {
   favorites: string[];
   chatMessages: ChatMessage[];
   surveyQuestions: SurveyQuestion[];
+  appSurveyQuestions: AppSurveyQuestion[];
+  surveyResponses: SurveyResponse[];
   suppliers: Supplier[];
   products: Product[];
   kits: Kit[];
   serviceCatalog: ServiceCatalogItem[];
+  decorations: Decoration[];
+  contracts: Contract[];
+  premiumEvents: PremiumEvent[];
   profiles: Profile[];
   users: AppUser[];
   costCenters: CostCenter[];
@@ -153,6 +163,70 @@ const initialSurveyQuestions: SurveyQuestion[] = [
   { id: "q5", text: "Deixe um comentário sobre sua experiência", type: "Texto", active: true },
 ];
 
+const initialSurveyResponses: SurveyResponse[] = [
+  {
+    id: "resp1",
+    kind: "pedido",
+    orderId: "#CB-15150",
+    answers: [
+      { questionId: "q1", value: 9 },
+      { questionId: "q2", value: 5 },
+      { questionId: "q3", value: 4 },
+      { questionId: "q4", value: 5 },
+      { questionId: "q5", value: "Atendimento excelente, entrega no horário." },
+    ],
+    createdAt: "2026-07-10T11:00:00Z",
+  },
+  {
+    id: "resp2",
+    kind: "pedido",
+    orderId: "#AG-15142",
+    answers: [
+      { questionId: "q1", value: 7 },
+      { questionId: "q2", value: 4 },
+      { questionId: "q3", value: 4 },
+      { questionId: "q4", value: 4 },
+    ],
+    createdAt: "2026-07-08T09:00:00Z",
+  },
+  {
+    id: "resp3",
+    kind: "pedido",
+    orderId: "#AB-15095",
+    answers: [
+      { questionId: "q1", value: 4 },
+      { questionId: "q2", value: 3 },
+      { questionId: "q3", value: 2 },
+      { questionId: "q4", value: 3 },
+      { questionId: "q5", value: "Chegou um pouco atrasado." },
+    ],
+    createdAt: "2026-07-01T10:00:00Z",
+  },
+  {
+    id: "resp4",
+    kind: "aplicacao",
+    answers: [
+      { questionId: "aq1", value: 8 },
+      { questionId: "aq2", value: 5 },
+      { questionId: "aq3", value: 4 },
+      { questionId: "aq4", value: 5 },
+      { questionId: "aq5", value: "Gostaria de conseguir duplicar pedidos com mais facilidade." },
+    ],
+    createdAt: "2026-08-01T14:00:00Z",
+  },
+  {
+    id: "resp5",
+    kind: "aplicacao",
+    answers: [
+      { questionId: "aq1", value: 6 },
+      { questionId: "aq2", value: 4 },
+      { questionId: "aq3", value: 3 },
+      { questionId: "aq4", value: 4 },
+    ],
+    createdAt: "2026-08-05T09:30:00Z",
+  },
+];
+
 const initialChat: ChatMessage[] = [
   { id: "c1", from: "them", text: "Oi, eu sou a responsável Sodexo da sua unidade, em que posso ajudar?" },
 ];
@@ -179,10 +253,76 @@ const initialKits: Kit[] = [
 ];
 
 const initialServiceCatalog: ServiceCatalogItem[] = [
-  { id: "svc1", name: "Limpeza pós-evento", description: "Limpeza do espaço após o término do evento.", category: "Limpeza", active: true },
-  { id: "svc2", name: "Retirada de itens", description: "Recolhimento de utensílios e equipamentos.", category: "Logística", active: true },
-  { id: "svc3", name: "Organização de eventos", description: "Apoio completo na montagem e organização.", category: "Organização de Eventos", active: true },
-  { id: "svc4", name: "Recepção de convidados", description: "Equipe de recepção na entrada do evento.", category: "Recepção", active: true },
+  { id: "svc1", name: "Limpeza pós-evento", description: "Limpeza do espaço após o término do evento.", category: "Limpeza", price: 180, active: true },
+  { id: "svc2", name: "Retirada de itens", description: "Recolhimento de utensílios e equipamentos.", category: "Logística", price: 120, active: true },
+  { id: "svc3", name: "Organização de eventos", description: "Apoio completo na montagem e organização.", category: "Organização de Eventos", price: 450, active: true },
+  { id: "svc4", name: "Recepção de convidados", description: "Equipe de recepção na entrada do evento.", category: "Recepção", price: 220, active: true },
+];
+
+const initialDecorations: Decoration[] = [
+  { id: "dec1", name: "Arranjo de mesa sazonal", description: "Composição floral para mesas de coffee break.", category: "Flores e Arranjos", price: 90, active: true },
+  { id: "dec2", name: "Backdrop personalizado", description: "Painel com identidade visual do evento.", category: "Painéis e Backdrop", price: 650, active: true },
+  { id: "dec3", name: "Iluminação de ambiente", description: "Kit de iluminação decorativa para o espaço do evento.", category: "Iluminação", price: 380, active: true },
+  { id: "dec4", name: "Toalhas e sousplat premium", description: "Ambientação de mesa para eventos especiais.", category: "Mesa e Ambientação", price: 140, active: true },
+];
+
+const initialAppSurveyQuestions: AppSurveyQuestion[] = [
+  { id: "aq1", text: "De 0 a 10, quanto você recomendaria a plataforma Sodexo Direct a um colega?", category: "NPS", type: "NPS", active: true },
+  { id: "aq2", text: "O quão fácil foi encontrar o que você precisava no sistema?", category: "UX", type: "Estrelas", active: true },
+  { id: "aq3", text: "A navegação entre as telas fez sentido para você?", category: "UX", type: "Escala 1-5", active: true },
+  { id: "aq4", text: "Como você avalia o atendimento recebido ao usar a plataforma?", category: "CX", type: "Estrelas", active: true },
+  { id: "aq5", text: "O que podemos melhorar na sua experiência com o sistema?", category: "CX", type: "Texto", active: true },
+];
+
+const initialContracts: Contract[] = [
+  {
+    id: "ctr1",
+    costCenterCode: "CC001",
+    pricingMode: "Preço fixo",
+    fixedPrice: 18500,
+    requiresApprover: true,
+    clientFocalPointName: "Carlos Santos",
+    clientFocalPointEmail: "carlos.santos@clienteempresa.com",
+    clientFocalPointPhone: "(11) 4002-1122",
+    startDate: "2026-01-01",
+    endDate: "2026-12-31",
+    paymentTerms: "Boleto, 28 dias",
+    annualReadjustmentPercent: 5,
+    slaNotes: "Entrega em até 24h para pedidos padrão; 72h para eventos especiais.",
+    active: true,
+  },
+  {
+    id: "ctr2",
+    costCenterCode: "CC002",
+    pricingMode: "Preço variável por consumo",
+    requiresApprover: false,
+    clientFocalPointName: "Paula Costa",
+    clientFocalPointEmail: "paula.costa@clienteempresa.com",
+    startDate: "2026-02-01",
+    paymentTerms: "Faturamento mensal, 15 dias",
+    annualReadjustmentPercent: 4,
+    active: true,
+  },
+];
+
+const initialPremiumEvents: PremiumEvent[] = [
+  {
+    id: "pev1",
+    name: "Confraternização de fim de ano",
+    clientName: "Diretoria Administrativa",
+    costCenterCode: "CC001",
+    eventDate: "2026-12-12",
+    location: "Salão de eventos - Unidade Matriz",
+    guestCount: 80,
+    status: "Confirmado",
+    createdAt: "2026-08-01T10:00:00Z",
+    items: [
+      { kind: "kit", refId: "kit1", label: "Combo Reunião Rápida", qty: 4, unitPrice: 150.15 },
+      { kind: "decoracao", refId: "dec2", label: "Backdrop personalizado", qty: 1, unitPrice: 650 },
+      { kind: "servico", refId: "svc4", label: "Recepção de convidados", qty: 1, unitPrice: 220 },
+      { kind: "espaco", label: "Aluguel do salão de eventos", qty: 1, unitPrice: 1200 },
+    ],
+  },
 ];
 
 /** Monta o mapa de permissões de um perfil só para as páginas informadas — as demais ficam sem acesso. */
@@ -215,6 +355,7 @@ const initialProfiles: Profile[] = [
       ...Object.fromEntries(ORDER_PAGES.map((p) => [p, { ver: true, criarEditar: true }])),
       pedidos: { ver: true, criarEditar: true, excluir: true },
       "fique-por-dentro": { ver: true },
+      "pesquisa-app": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -227,6 +368,7 @@ const initialProfiles: Profile[] = [
       home: { ver: true },
       pedidos: { ver: true, aprovar: true },
       aprovacoes: { ver: true, aprovar: true },
+      "pesquisa-app": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -240,17 +382,22 @@ const initialProfiles: Profile[] = [
       pedidos: { ver: true, criarEditar: true, aprovar: true },
       producao: { ver: true, criarEditar: true, aprovar: true },
       aprovacoes: { ver: true, aprovar: true },
+      "eventos-premium": { ver: true, criarEditar: true, aprovar: true, excluir: true },
+      "pesquisa-app": { ver: true, criarEditar: true },
       "admin-operacao": { ver: true },
       "admin-relatorios": { ver: true },
       "admin-produtos": { ver: true, criarEditar: true },
       "admin-kits": { ver: true, criarEditar: true },
       "admin-servicos": { ver: true, criarEditar: true },
+      "admin-decoracoes": { ver: true, criarEditar: true },
       "admin-fornecedores": { ver: true, criarEditar: true },
       "admin-pesquisa": { ver: true, criarEditar: true },
+      "admin-pesquisa-app": { ver: true, criarEditar: true },
       "admin-usuarios": { ver: true },
       "admin-permissoes": { ver: true },
       "admin-faturamento": { ver: true, criarEditar: true, aprovar: true },
       "admin-centros-custo": { ver: true },
+      "admin-contratos": { ver: true, criarEditar: true },
       "admin-ocorrencias": { ver: true, criarEditar: true },
     }),
   },
@@ -262,6 +409,7 @@ const initialProfiles: Profile[] = [
     active: true,
     permissions: perms({
       producao: { ver: true, criarEditar: true },
+      "pesquisa-app": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -274,6 +422,8 @@ const initialProfiles: Profile[] = [
       "admin-faturamento": { ver: true, criarEditar: true, aprovar: true },
       "admin-relatorios": { ver: true },
       "admin-centros-custo": { ver: true },
+      "admin-contratos": { ver: true, criarEditar: true },
+      "pesquisa-app": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -352,10 +502,15 @@ const defaultState: StoredState = {
   favorites: ["cb", "la", "sa", "rn"],
   chatMessages: initialChat,
   surveyQuestions: initialSurveyQuestions,
+  appSurveyQuestions: initialAppSurveyQuestions,
+  surveyResponses: initialSurveyResponses,
   suppliers: initialSuppliers,
   products: initialProducts,
   kits: initialKits,
   serviceCatalog: initialServiceCatalog,
+  decorations: initialDecorations,
+  contracts: initialContracts,
+  premiumEvents: initialPremiumEvents,
   profiles: initialProfiles,
   users: initialUsers,
   costCenters: initialCostCenters,
@@ -404,6 +559,9 @@ interface AppDataValue {
   removeSurveyQuestion: (id: string) => void;
   reorderSurveyQuestion: (id: string, dir: -1 | 1) => void;
 
+  surveyResponses: SurveyResponse[];
+  addSurveyResponse: (response: Omit<SurveyResponse, "id" | "createdAt">) => void;
+
   suppliers: Supplier[];
   addSupplier: (supplier: Omit<Supplier, "id">) => void;
   updateSupplier: (id: string, patch: Partial<Supplier>) => void;
@@ -423,6 +581,26 @@ interface AppDataValue {
   addServiceCatalogItem: (item: Omit<ServiceCatalogItem, "id">) => void;
   updateServiceCatalogItem: (id: string, patch: Partial<ServiceCatalogItem>) => void;
   removeServiceCatalogItem: (id: string) => void;
+
+  decorations: Decoration[];
+  addDecoration: (item: Omit<Decoration, "id">) => void;
+  updateDecoration: (id: string, patch: Partial<Decoration>) => void;
+  removeDecoration: (id: string) => void;
+
+  contracts: Contract[];
+  addContract: (contract: Omit<Contract, "id">) => void;
+  updateContract: (id: string, patch: Partial<Contract>) => void;
+  removeContract: (id: string) => void;
+
+  appSurveyQuestions: AppSurveyQuestion[];
+  addAppSurveyQuestion: (question: Omit<AppSurveyQuestion, "id">) => void;
+  updateAppSurveyQuestion: (id: string, patch: Partial<AppSurveyQuestion>) => void;
+  removeAppSurveyQuestion: (id: string) => void;
+
+  premiumEvents: PremiumEvent[];
+  addPremiumEvent: (event: Omit<PremiumEvent, "id" | "createdAt">) => void;
+  updatePremiumEvent: (id: string, patch: Partial<PremiumEvent>) => void;
+  removePremiumEvent: (id: string) => void;
 
   profiles: Profile[];
   addProfile: (profile: Omit<Profile, "id">) => void;
@@ -591,6 +769,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const addSurveyResponse: AppDataValue["addSurveyResponse"] = (response) => {
+    setState((s) => ({
+      ...s,
+      surveyResponses: [{ ...response, id: `resp${Date.now()}`, createdAt: new Date().toISOString() }, ...s.surveyResponses],
+    }));
+  };
+
   const addSupplier: AppDataValue["addSupplier"] = (supplier) => {
     setState((s) => ({ ...s, suppliers: [{ ...supplier, id: `sup${Date.now()}` }, ...s.suppliers] }));
   };
@@ -637,6 +822,49 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   };
   const removeServiceCatalogItem = (id: string) => {
     setState((s) => ({ ...s, serviceCatalog: s.serviceCatalog.filter((it) => it.id !== id) }));
+  };
+
+  const addDecoration: AppDataValue["addDecoration"] = (item) => {
+    setState((s) => ({ ...s, decorations: [{ ...item, id: `dec${Date.now()}` }, ...s.decorations] }));
+  };
+  const updateDecoration: AppDataValue["updateDecoration"] = (id, patch) => {
+    setState((s) => ({ ...s, decorations: s.decorations.map((it) => (it.id === id ? { ...it, ...patch } : it)) }));
+  };
+  const removeDecoration = (id: string) => {
+    setState((s) => ({ ...s, decorations: s.decorations.filter((it) => it.id !== id) }));
+  };
+
+  const addContract: AppDataValue["addContract"] = (contract) => {
+    setState((s) => ({ ...s, contracts: [{ ...contract, id: `ctr${Date.now()}` }, ...s.contracts] }));
+  };
+  const updateContract: AppDataValue["updateContract"] = (id, patch) => {
+    setState((s) => ({ ...s, contracts: s.contracts.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
+  };
+  const removeContract = (id: string) => {
+    setState((s) => ({ ...s, contracts: s.contracts.filter((c) => c.id !== id) }));
+  };
+
+  const addAppSurveyQuestion: AppDataValue["addAppSurveyQuestion"] = (question) => {
+    setState((s) => ({ ...s, appSurveyQuestions: [...s.appSurveyQuestions, { ...question, id: `aq${Date.now()}` }] }));
+  };
+  const updateAppSurveyQuestion: AppDataValue["updateAppSurveyQuestion"] = (id, patch) => {
+    setState((s) => ({ ...s, appSurveyQuestions: s.appSurveyQuestions.map((q) => (q.id === id ? { ...q, ...patch } : q)) }));
+  };
+  const removeAppSurveyQuestion = (id: string) => {
+    setState((s) => ({ ...s, appSurveyQuestions: s.appSurveyQuestions.filter((q) => q.id !== id) }));
+  };
+
+  const addPremiumEvent: AppDataValue["addPremiumEvent"] = (event) => {
+    setState((s) => ({
+      ...s,
+      premiumEvents: [{ ...event, id: `pev${Date.now()}`, createdAt: new Date().toISOString() }, ...s.premiumEvents],
+    }));
+  };
+  const updatePremiumEvent: AppDataValue["updatePremiumEvent"] = (id, patch) => {
+    setState((s) => ({ ...s, premiumEvents: s.premiumEvents.map((e) => (e.id === id ? { ...e, ...patch } : e)) }));
+  };
+  const removePremiumEvent = (id: string) => {
+    setState((s) => ({ ...s, premiumEvents: s.premiumEvents.filter((e) => e.id !== id) }));
   };
 
   const addProfile: AppDataValue["addProfile"] = (profile) => {
@@ -720,6 +948,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       updateSurveyQuestion,
       removeSurveyQuestion,
       reorderSurveyQuestion,
+      surveyResponses: state.surveyResponses,
+      addSurveyResponse,
       suppliers: state.suppliers,
       addSupplier,
       updateSupplier,
@@ -736,6 +966,22 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       addServiceCatalogItem,
       updateServiceCatalogItem,
       removeServiceCatalogItem,
+      decorations: state.decorations,
+      addDecoration,
+      updateDecoration,
+      removeDecoration,
+      contracts: state.contracts,
+      addContract,
+      updateContract,
+      removeContract,
+      appSurveyQuestions: state.appSurveyQuestions,
+      addAppSurveyQuestion,
+      updateAppSurveyQuestion,
+      removeAppSurveyQuestion,
+      premiumEvents: state.premiumEvents,
+      addPremiumEvent,
+      updatePremiumEvent,
+      removePremiumEvent,
       profiles: state.profiles,
       addProfile,
       updateProfile,

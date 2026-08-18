@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { useAppData } from "../mock/AppDataContext";
+import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
 import "./OrderFlow.css";
 import "./AbastecimentoOrder.css";
@@ -26,28 +27,29 @@ interface ItemDef {
   key: ItemKey;
   name: string;
   desc: string;
+  price: number;
 }
 
 const CAFE_ITEMS: ItemDef[] = [
-  { key: "cafe500", name: "Garrafa de Café 500ml", desc: "Térmica, mantém a temperatura por mais tempo." },
-  { key: "cafe1l", name: "Garrafa de Café 1L", desc: "Ideal para grupos pequenos." },
-  { key: "cafe3l", name: "Garrafa de Café 3L", desc: "Ideal para setores e salas de reunião." },
-  { key: "cafe5l", name: "Garrafa de Café 5L", desc: "Ideal para andares e áreas maiores." },
+  { key: "cafe500", name: "Garrafa de Café 500ml", desc: "Térmica, mantém a temperatura por mais tempo.", price: 8 },
+  { key: "cafe1l", name: "Garrafa de Café 1L", desc: "Ideal para grupos pequenos.", price: 14 },
+  { key: "cafe3l", name: "Garrafa de Café 3L", desc: "Ideal para setores e salas de reunião.", price: 32 },
+  { key: "cafe5l", name: "Garrafa de Café 5L", desc: "Ideal para andares e áreas maiores.", price: 48 },
 ];
 
 const AGUA_ITEMS: ItemDef[] = [
-  { key: "agua500", name: "Garrafa 500ml", desc: "Água mineral individual." },
-  { key: "agua15", name: "Garrafa 1,5L", desc: "Água mineral, ideal para mesas de reunião." },
-  { key: "galao5", name: "Galão 5L", desc: "Galão compacto, ideal para salas e escritórios." },
-  { key: "galao20", name: "Galão 20L", desc: "Galão com suporte, ideal para eventos maiores." },
+  { key: "agua500", name: "Garrafa 500ml", desc: "Água mineral individual.", price: 3 },
+  { key: "agua15", name: "Garrafa 1,5L", desc: "Água mineral, ideal para mesas de reunião.", price: 6 },
+  { key: "galao5", name: "Galão 5L", desc: "Galão compacto, ideal para salas e escritórios.", price: 25 },
+  { key: "galao20", name: "Galão 20L", desc: "Galão com suporte, ideal para eventos maiores.", price: 60 },
 ];
 
 const OUTROS_ITEMS: ItemDef[] = [
-  { key: "adocante", name: "Adoçante", desc: "Sachês individuais." },
-  { key: "acucar", name: "Açúcar", desc: "Sachês individuais." },
-  { key: "biscoitos", name: "Biscoitos Simples", desc: "Pacotes individuais, sabores variados." },
-  { key: "balas", name: "Balas", desc: "Pacote sortido." },
-  { key: "bombons", name: "Bombons", desc: "Unidade, sabores variados." },
+  { key: "adocante", name: "Adoçante", desc: "Sachês individuais.", price: 5 },
+  { key: "acucar", name: "Açúcar", desc: "Sachês individuais.", price: 4 },
+  { key: "biscoitos", name: "Biscoitos Simples", desc: "Pacotes individuais, sabores variados.", price: 6 },
+  { key: "balas", name: "Balas", desc: "Pacote sortido.", price: 7 },
+  { key: "bombons", name: "Bombons", desc: "Unidade, sabores variados.", price: 2 },
 ];
 
 const ALL_ITEMS = [...CAFE_ITEMS, ...AGUA_ITEMS, ...OUTROS_ITEMS];
@@ -55,8 +57,9 @@ const ALL_ITEMS = [...CAFE_ITEMS, ...AGUA_ITEMS, ...OUTROS_ITEMS];
 const INITIAL_QTY = ALL_ITEMS.reduce((acc, it) => ({ ...acc, [it.key]: 0 }), {} as Record<ItemKey, number>);
 
 export function AbastecimentoOrder() {
-  const { addOrder, showToast } = useAppData();
+  const { addOrder, showToast, costCenters } = useAppData();
   const navigate = useNavigate();
+  const activeCostCenters = costCenters.filter((c) => c.active);
 
   const [orderId] = useState(() => `#AS-${Math.floor(15200 + Math.random() * 800)}`);
   const [qty, setQty] = useState<Record<ItemKey, number>>(INITIAL_QTY);
@@ -65,6 +68,8 @@ export function AbastecimentoOrder() {
   const [deliverTo, setDeliverTo] = useState("");
   const [local, setLocal] = useState("");
   const [localMenuOpen, setLocalMenuOpen] = useState(false);
+  const [costCenter, setCostCenter] = useState("");
+  const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
   const [observations, setObservations] = useState("");
   const [hasError, setHasError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -74,6 +79,7 @@ export function AbastecimentoOrder() {
   };
 
   const totalUnits = Object.values(qty).reduce((sum, v) => sum + v, 0);
+  const total = ALL_ITEMS.reduce((sum, d) => sum + qty[d.key] * d.price, 0);
 
   const submitOrder = () => {
     if (totalUnits === 0) {
@@ -84,6 +90,11 @@ export function AbastecimentoOrder() {
     if (!deliveryDate || !deliveryTime || !local || !deliverTo) {
       setHasError(true);
       setErrorMsg("Preencha data, horário e destino da entrega.");
+      return;
+    }
+    if (!costCenter) {
+      setHasError(true);
+      setErrorMsg("Selecione o centro de custo.");
       return;
     }
     setHasError(false);
@@ -97,9 +108,11 @@ export function AbastecimentoOrder() {
       qty: `${totalUnits} item(ns)`,
       datetime: `${deliveryDate} ${deliveryTime}`.trim(),
       status: "Solicitado",
-      value: "—",
-      items: ALL_ITEMS.filter((d) => qty[d.key] > 0).map((d) => ({ name: d.name, qty: qty[d.key], price: 0 })),
+      value: money(total),
+      valueNumber: total,
+      items: ALL_ITEMS.filter((d) => qty[d.key] > 0).map((d) => ({ name: d.name, qty: qty[d.key], price: d.price })),
       location: local,
+      costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Entregar para: ${deliverTo}${observations ? " • " + observations : ""}`,
     });
     showToast("Pedido de abastecimento solicitado com sucesso!");
@@ -115,7 +128,8 @@ export function AbastecimentoOrder() {
             <ImagePlaceholder label="Foto do produto" style={{ width: "100%", height: 120, borderRadius: 0 }} />
             <div className="kit-card__body">
               <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 3 }}>{it.name}</div>
-              <div style={{ fontSize: 11.5, color: "var(--color-text-muted)", marginBottom: 12, minHeight: 30 }}>{it.desc}</div>
+              <div style={{ fontSize: 11.5, color: "var(--color-text-muted)", marginBottom: 6, minHeight: 30 }}>{it.desc}</div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--color-primary)", marginBottom: 12 }}>{money(it.price)}</div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>Quantidade</span>
                 <div className="qty-stepper">
@@ -191,6 +205,29 @@ export function AbastecimentoOrder() {
               Entregar para
               <input value={deliverTo} onChange={(e) => setDeliverTo(e.target.value)} placeholder="Nome, setor ou sala" />
             </label>
+            <div style={{ position: "relative" }}>
+              <label className="field-label" style={{ marginBottom: 6 }}>
+                Centro de custo
+              </label>
+              <div className="abast-local-box" onClick={() => setCostCenterMenuOpen((v) => !v)} style={{ color: costCenter ? "var(--color-text)" : "var(--color-text-muted)" }}>
+                {costCenter ? `${costCenter} · ${activeCostCenters.find((c) => c.code === costCenter)?.name}` : "Selecionar centro de custo"}
+              </div>
+              {costCenterMenuOpen && (
+                <div className="location-dropdown">
+                  {activeCostCenters.map((c) => (
+                    <button
+                      key={c.code}
+                      onClick={() => {
+                        setCostCenter(c.code);
+                        setCostCenterMenuOpen(false);
+                      }}
+                    >
+                      {c.code} · {c.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <label className="field-label" style={{ marginTop: 18 }}>
             Observações
@@ -201,7 +238,7 @@ export function AbastecimentoOrder() {
         {hasError && <div className="abast-error">{errorMsg}</div>}
 
         <div className="abast-submit-bar">
-          <div style={{ fontSize: 13, color: "var(--color-text-muted)" }}>{totalUnits > 0 ? `${totalUnits} item(ns) selecionado(s)` : "Nenhum item selecionado ainda"}</div>
+          <div style={{ fontSize: 13, color: "var(--color-text-muted)" }}>{totalUnits > 0 ? `${totalUnits} item(ns) selecionado(s) · ${money(total)}` : "Nenhum item selecionado ainda"}</div>
           <button className="btn btn--primary" onClick={submitOrder}>
             Confirmar pedido
           </button>

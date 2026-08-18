@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAppData } from "../../mock/AppDataContext";
 import { Modal } from "../../components/Modal";
+import { money } from "../../mock/money";
 import { SERVICE_CATALOG_CATEGORIES, type ServiceCatalogCategory, type ServiceCatalogItem } from "../../types";
 import "./Servicos.css";
 
@@ -8,6 +9,7 @@ const EMPTY_FORM = {
   name: "",
   category: SERVICE_CATALOG_CATEGORIES[0] as ServiceCatalogCategory,
   description: "",
+  price: "",
   active: true,
 };
 
@@ -26,13 +28,15 @@ export function Servicos() {
 
   const openEdit = (s: ServiceCatalogItem) => {
     setEditingId(s.id);
-    setForm({ name: s.name, category: s.category, description: s.description ?? "", active: s.active });
+    setForm({ name: s.name, category: s.category, description: s.description ?? "", price: String(s.price), active: s.active });
     setModalOpen(true);
   };
 
+  const parsedPrice = parseFloat(form.price.replace(",", ".")) || 0;
+
   const save = () => {
     if (!form.name.trim()) return;
-    const payload = { name: form.name, category: form.category, description: form.description || undefined, active: form.active };
+    const payload = { name: form.name, category: form.category, description: form.description || undefined, price: parsedPrice, active: form.active };
     if (editingId) {
       updateServiceCatalogItem(editingId, payload);
       showToast("Serviço atualizado.");
@@ -83,6 +87,7 @@ export function Servicos() {
           <div className="servicos-table__head">
             <div>Serviço</div>
             <div>Categoria</div>
+            <div>Preço</div>
             <div>Status</div>
             <div>Ações</div>
           </div>
@@ -95,6 +100,7 @@ export function Servicos() {
               <div>
                 <span className="pill-tag">{s.category}</span>
               </div>
+              <div className="servicos-table__muted">{money(s.price)}</div>
               <div>
                 <span className="status-pill" style={{ background: s.active ? "var(--color-success-soft)" : "var(--color-border-soft)", color: s.active ? "var(--color-success)" : "var(--color-text-muted)" }}>
                   {s.active ? "Ativo" : "Inativo"}
@@ -136,6 +142,10 @@ export function Servicos() {
                   </option>
                 ))}
               </select>
+            </label>
+            <label className="field-label">
+              Preço (R$)
+              <input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="0,00" inputMode="decimal" />
             </label>
             <label className="field-label">
               Descrição <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span>

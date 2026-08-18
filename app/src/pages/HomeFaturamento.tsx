@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
+import { OpenOrdersCard, PromosSection, RecentOrdersCard } from "../components/HomeWidgets";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import type { BillingStatus } from "../types";
@@ -32,6 +33,10 @@ export function HomeFaturamento() {
             <div className="persona-home__subtitle">Pendências de fechamento e faturamento.</div>
           </div>
         </div>
+
+        <RecentOrdersCard orders={orders} />
+        <OpenOrdersCard orders={orders} />
+        <PromosSection />
 
         <div className="persona-home__kpis">
           <div className="card persona-home__kpi">

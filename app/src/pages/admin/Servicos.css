@@ -29,11 +29,11 @@
 .servicos-table__head,
 .servicos-table__row {
   display: grid;
-  grid-template-columns: 1.8fr 1.1fr 0.8fr 1.4fr;
+  grid-template-columns: 1.8fr 1.1fr 0.9fr 0.8fr 1.4fr;
   gap: 10px;
   align-items: center;
   padding: 14px 20px;
-  min-width: 640px;
+  min-width: 720px;
 }
 .servicos-table__head {
   font-size: 11px;
@@ -56,6 +56,10 @@
 .servicos-table__desc {
   font-size: 11.5px;
   color: var(--color-text-muted);
+}
+.servicos-table__muted {
+  color: var(--color-text-secondary);
+  font-size: 12.5px;
 }
 .servicos-table__actions {
   display: flex;

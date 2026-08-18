@@ -176,3 +176,13 @@
     display: none;
   }
 }
+
+@media (max-width: 600px) {
+  .app-header__dropdown {
+    position: fixed;
+    top: 68px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+}

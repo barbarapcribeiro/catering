@@ -202,8 +202,27 @@
   .admin-sidebar {
     width: 190px;
   }
+  .admin-topbar {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
   .admin-topbar__search {
-    width: 220px;
+    width: 100%;
+    max-width: 320px;
+    order: 3;
+  }
+  .admin-topbar__right {
+    flex-wrap: wrap;
+    flex-shrink: 1;
+    width: 100%;
+    row-gap: 8px;
+  }
+  .admin-topbar__user-name,
+  .admin-topbar__user-role {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 

@@ -3,22 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { useAppData } from "../mock/AppDataContext";
+import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
 import "../pages/OrderFlow.css";
 import "./AguaOrder.css";
 
 type ItemKey = "b500" | "b15" | "g5" | "g20";
 
-const ITEM_DEFS: { key: ItemKey; name: string; desc: string }[] = [
-  { key: "b500", name: "Garrafa 500ml", desc: "Água mineral individual" },
-  { key: "b15", name: "Garrafa 1,5L", desc: "Água mineral, ideal para mesas de reunião." },
-  { key: "g5", name: "Galão 5L", desc: "Galão compacto, ideal para salas e escritórios." },
-  { key: "g20", name: "Galão 20L", desc: "Galão com suporte, ideal para eventos maiores." },
+const ITEM_DEFS: { key: ItemKey; name: string; desc: string; price: number }[] = [
+  { key: "b500", name: "Garrafa 500ml", desc: "Água mineral individual", price: 3 },
+  { key: "b15", name: "Garrafa 1,5L", desc: "Água mineral, ideal para mesas de reunião.", price: 6 },
+  { key: "g5", name: "Galão 5L", desc: "Galão compacto, ideal para salas e escritórios.", price: 25 },
+  { key: "g20", name: "Galão 20L", desc: "Galão com suporte, ideal para eventos maiores.", price: 60 },
 ];
 
 export function AguaOrder() {
-  const { addOrder, showToast } = useAppData();
+  const { addOrder, showToast, costCenters } = useAppData();
   const navigate = useNavigate();
+  const activeCostCenters = costCenters.filter((c) => c.active);
 
   const [orderId] = useState(() => `#SA-${Math.floor(15200 + Math.random() * 800)}`);
   const [qty, setQty] = useState<Record<ItemKey, number>>({ b500: 0, b15: 0, g5: 0, g20: 0 });
@@ -27,6 +29,8 @@ export function AguaOrder() {
   const [deliverTo, setDeliverTo] = useState("");
   const [local, setLocal] = useState("");
   const [localMenuOpen, setLocalMenuOpen] = useState(false);
+  const [costCenter, setCostCenter] = useState("");
+  const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
   const [observations, setObservations] = useState("");
   const [hasError, setHasError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -36,6 +40,7 @@ export function AguaOrder() {
   };
 
   const totalUnits = qty.b500 + qty.b15 + qty.g5 + qty.g20;
+  const total = ITEM_DEFS.reduce((sum, d) => sum + qty[d.key] * d.price, 0);
 
   const submitOrder = () => {
     if (totalUnits === 0) {
@@ -46,6 +51,11 @@ export function AguaOrder() {
     if (!deliveryDate || !deliveryTime || !local || !deliverTo) {
       setHasError(true);
       setErrorMsg("Preencha data, horário e destino da entrega.");
+      return;
+    }
+    if (!costCenter) {
+      setHasError(true);
+      setErrorMsg("Selecione o centro de custo.");
       return;
     }
     setHasError(false);
@@ -59,9 +69,11 @@ export function AguaOrder() {
       qty: `${totalUnits} item(ns)`,
       datetime: `${deliveryDate} ${deliveryTime}`.trim(),
       status: "Solicitado",
-      value: "—",
-      items: ITEM_DEFS.filter((d) => qty[d.key] > 0).map((d) => ({ name: d.name, qty: qty[d.key], price: 0 })),
+      value: money(total),
+      valueNumber: total,
+      items: ITEM_DEFS.filter((d) => qty[d.key] > 0).map((d) => ({ name: d.name, qty: qty[d.key], price: d.price })),
       location: local,
+      costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Entregar para: ${deliverTo}${observations ? " • " + observations : ""}`,
     });
     showToast("Pedido de água solicitado com sucesso!");
@@ -93,7 +105,8 @@ export function AguaOrder() {
               <ImagePlaceholder label="Foto do produto" style={{ width: "100%", height: 140, borderRadius: 0 }} />
               <div className="kit-card__body">
                 <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 3 }}>{it.name}</div>
-                <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 12 }}>{it.desc}</div>
+                <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 6 }}>{it.desc}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-primary)", marginBottom: 12 }}>{money(it.price)}</div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>Quantidade</span>
                   <div className="qty-stepper">
@@ -143,6 +156,27 @@ export function AguaOrder() {
               Entregar para
               <input value={deliverTo} onChange={(e) => setDeliverTo(e.target.value)} placeholder="Nome, setor ou sala" />
             </label>
+            <div style={{ position: "relative" }}>
+              <label className="field-label" style={{ marginBottom: 6 }}>Centro de custo</label>
+              <div className="agua-local-box" onClick={() => setCostCenterMenuOpen((v) => !v)} style={{ color: costCenter ? "var(--color-text)" : "var(--color-text-muted)" }}>
+                {costCenter ? `${costCenter} · ${activeCostCenters.find((c) => c.code === costCenter)?.name}` : "Selecionar centro de custo"}
+              </div>
+              {costCenterMenuOpen && (
+                <div className="location-dropdown">
+                  {activeCostCenters.map((c) => (
+                    <button
+                      key={c.code}
+                      onClick={() => {
+                        setCostCenter(c.code);
+                        setCostCenterMenuOpen(false);
+                      }}
+                    >
+                      {c.code} · {c.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <label className="field-label" style={{ marginTop: 18 }}>
             Observações
@@ -154,7 +188,7 @@ export function AguaOrder() {
 
         <div className="agua-submit-bar">
           <div style={{ fontSize: 13, color: "var(--color-text-muted)" }}>
-            {totalUnits > 0 ? `${totalUnits} item(ns) selecionado(s)` : "Nenhum item selecionado ainda"}
+            {totalUnits > 0 ? `${totalUnits} item(ns) selecionado(s) · ${money(total)}` : "Nenhum item selecionado ainda"}
           </div>
           <button className="btn btn--primary" onClick={submitOrder}>
             Confirmar pedido

@@ -1,0 +1,33 @@
+.photo-upload {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.photo-upload__preview {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  border: 1px dashed var(--color-border);
+  background: var(--color-surface-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex: none;
+}
+.photo-upload__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-upload__placeholder {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 0 4px;
+}
+.photo-upload__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
