@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
+import { OpenOrdersCard, PromosSection, RecentOrdersCard } from "../components/HomeWidgets";
 import { useAppData } from "../mock/AppDataContext";
 import "./HomePersona.css";
 
@@ -31,6 +32,10 @@ export function HomeGU() {
             <div className="persona-home__subtitle">Visão geral da operação da sua unidade.</div>
           </div>
         </div>
+
+        <RecentOrdersCard orders={orders} />
+        <OpenOrdersCard orders={orders} />
+        <PromosSection />
 
         <div className="persona-home__kpis persona-home__kpis--4">
           <div className="card persona-home__kpi">

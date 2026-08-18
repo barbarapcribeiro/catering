@@ -582,6 +582,11 @@ export function GerenciarPedidos() {
             <button className="btn btn--outline" onClick={duplicate}>
               ⧉ Duplicar pedido
             </button>
+            {(selected.status === "Entregue" || selected.status === "Finalizado") && (
+              <button className="btn btn--outline" onClick={() => navigate(`/pesquisa-pedido/${selected.id.replace(/^#/, "")}`)}>
+                ⭐ Simular pesquisa (QR code)
+              </button>
+            )}
             <button className="btn btn--outline gp-action-bar__danger-outline" onClick={cancel}>
               ✕ Cancelar pedido
             </button>

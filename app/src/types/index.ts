@@ -79,6 +79,23 @@ export interface SurveyQuestion {
   active: boolean;
 }
 
+export type SurveyKind = "pedido" | "aplicacao";
+
+export interface SurveyResponseAnswer {
+  questionId: string;
+  value: number | string;
+}
+
+/** Uma resposta completa a um dos dois formulários (pesquisa do pedido ou da aplicação). */
+export interface SurveyResponse {
+  id: string;
+  kind: SurveyKind;
+  /** Preenchido apenas para kind "pedido". */
+  orderId?: string;
+  answers: SurveyResponseAnswer[];
+  createdAt: string;
+}
+
 export interface Promo {
   id: string;
   tag: "NOVIDADE" | "PROMOÇÃO";
@@ -208,6 +225,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "aprovacoes", label: "Aprovações", group: "Área do colaborador" },
   { id: "admin-operacao", label: "Operação (dashboard)", group: "Painel Administrativo" },
   { id: "eventos-premium", label: "Eventos Premium", group: "Área do colaborador" },
+  { id: "pesquisa-app", label: "Pesquisa da Aplicação (responder)", group: "Área do colaborador" },
   { id: "admin-relatorios", label: "Relatórios", group: "Painel Administrativo" },
   { id: "admin-produtos", label: "Catálogos · Produtos", group: "Painel Administrativo" },
   { id: "admin-kits", label: "Catálogos · Kits", group: "Painel Administrativo" },

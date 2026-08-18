@@ -1,4 +1,4 @@
-import type { Service } from "../types";
+import type { Order, Service } from "../types";
 
 export const SERVICES: Service[] = [
   {
@@ -115,6 +115,11 @@ export const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
   Cancelado: { bg: "#fbe4e0", color: "#c0392b" },
   Recebido: { bg: "#e9edf9", color: "#283897" },
 };
+
+/** Um pedido é considerado "em aberto" enquanto não chega a um estado final (entregue, finalizado ou cancelado). */
+export function isOpenOrder(order: Order): boolean {
+  return order.status !== "Entregue" && order.status !== "Finalizado" && order.status !== "Cancelado";
+}
 
 export const COST_CENTERS = ["CC001", "CC002", "CC003", "CC004", "CC005"];
 export const LOCATIONS = ["Sala 1", "Sala 2", "Sala 3"];

@@ -11,6 +11,8 @@ import { Producao } from "./pages/Producao";
 import { FiquePorDentro } from "./pages/FiquePorDentro";
 import { Aprovacoes } from "./pages/Aprovacoes";
 import { EventosPremium } from "./pages/EventosPremium";
+import { PesquisaPedido } from "./pages/PesquisaPedido";
+import { PesquisaAppForm } from "./pages/PesquisaAppForm";
 import { AdminLayout } from "./pages/admin/AdminLayout";
 import { AdminOperacao } from "./pages/admin/AdminOperacao";
 import { Relatorios } from "./pages/admin/Relatorios";
@@ -44,6 +46,9 @@ export default function App() {
           <Route path="/fique-por-dentro" element={<FiquePorDentro />} />
           <Route path="/aprovacoes" element={<Aprovacoes />} />
           <Route path="/eventos-premium" element={<EventosPremium />} />
+          <Route path="/pesquisa-pedido/:orderId" element={<PesquisaPedido />} />
+          <Route path="/pesquisa-pedido" element={<PesquisaPedido />} />
+          <Route path="/pesquisa-app" element={<PesquisaAppForm />} />
 
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminOperacao />} />

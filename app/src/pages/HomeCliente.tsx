@@ -4,7 +4,8 @@ import { Layout } from "../components/Layout";
 import { Modal } from "../components/Modal";
 import { PathIcon } from "../components/Icon";
 import { useAppData } from "../mock/AppDataContext";
-import { SERVICES, STATUS_STYLE } from "../mock/services";
+import { isOpenOrder, SERVICES, STATUS_STYLE } from "../mock/services";
+import { PROMOS } from "../mock/promos";
 import type { Order } from "../types";
 import "./Home.css";
 
@@ -12,43 +13,6 @@ const RECENT_ORDERS = [
   { name: "Coffee Break Diretoria", date: "22/07/2026 • 14:30", mono: "CB", category: "Coffee Break", isCoffee: true },
   { name: "Lanche Reunião Comercial", date: "18/07/2026 • 10:00", mono: "LA", category: "Lanche", isCoffee: false },
   { name: "Evento Especial", date: "15/07/2026 • 08:30", mono: "EE", category: "Evento Especial", isCoffee: false },
-];
-
-const PROMOS = [
-  {
-    id: "combo",
-    tag: "NOVIDADE",
-    tagColor: "#283897",
-    bg: "#e9edf9",
-    title: "Combo Reunião",
-    desc: "Novas opções de coffee break para reuniões produtivas.",
-    ctaLabel: "Conhecer opções",
-    ctaBg: "#283897",
-    ctaHoverBg: "#1f2d78",
-  },
-  {
-    id: "coffee",
-    tag: "PROMOÇÃO",
-    tagColor: "#1a7a4f",
-    bg: "#e6f5ec",
-    title: "Desconto no Coffee Break",
-    desc: "Peça para grupos acima de 20 pessoas e ganhe 10% OFF.",
-    ctaLabel: "Aproveitar agora",
-    ctaBg: "#1a7a4f",
-    ctaHoverBg: "#14603e",
-    badge: "10%\nOFF",
-  },
-  {
-    id: "lanche",
-    tag: "NOVIDADE",
-    tagColor: "#b5690f",
-    bg: "#faf0e3",
-    title: "Lanche Saudável",
-    desc: "Novas opções de lanches saudáveis no cardápio.",
-    ctaLabel: "Ver opções",
-    ctaBg: "#e07a1f",
-    ctaHoverBg: "#c5650f",
-  },
 ];
 
 type Modal_ = { type: "service"; service: (typeof SERVICES)[number] } | { type: "order"; order: Order } | null;
@@ -69,7 +33,7 @@ export function HomeCliente() {
   let filtered = SERVICES.filter((sv) => sv.name.toLowerCase().includes(q));
   if (activeFilter === "favorites") filtered = filtered.filter((sv) => favorites.has(sv.id));
 
-  const openOrders = useMemo(() => orders.filter((o) => o.status !== "Cancelado"), [orders]);
+  const openOrders = useMemo(() => orders.filter(isOpenOrder), [orders]);
 
   const openService = (svc: (typeof SERVICES)[number]) => {
     if (svc.route) {
@@ -183,16 +147,9 @@ export function HomeCliente() {
                     <div className="home-recent__date">{r.date}</div>
                   </div>
                 </div>
-                <div className="home-recent__buttons">
-                  {r.isCoffee && (
-                    <button className="btn btn--primary btn--sm" onClick={() => navigate("/pedido/coffee-break")}>
-                      ☕ Pedir agora
-                    </button>
-                  )}
-                  <button className="btn btn--outline btn--sm" onClick={() => repeatOrder(r)}>
-                    Repetir pedido
-                  </button>
-                </div>
+                <button className="btn btn--outline btn--sm" onClick={() => repeatOrder(r)}>
+                  Repetir pedido
+                </button>
               </div>
             ))}
           </div>
@@ -293,17 +250,12 @@ export function HomeCliente() {
           <div className="home-promos__grid">
             {PROMOS.map((p) => (
               <div key={p.id} className="promo-card" style={{ background: p.bg }}>
-                <span className="promo-card__tag" style={{ color: p.tagColor }}>
+                <span className="promo-card__tag" style={{ color: p.color }}>
                   {p.tag}
                 </span>
-                {p.badge && (
-                  <span className="promo-card__badge" style={{ background: p.tagColor }}>
-                    {p.badge.split("\n").map((l, i) => (
-                      <span key={i}>
-                        {l}
-                        <br />
-                      </span>
-                    ))}
+                {p.discount && (
+                  <span className="promo-card__badge" style={{ background: p.color }}>
+                    {p.discount}
                   </span>
                 )}
                 <div className="promo-card__title">{p.title}</div>
@@ -311,9 +263,8 @@ export function HomeCliente() {
                 <div className="promo-card__image">Imagem</div>
                 <button
                   className="promo-card__cta"
-                  style={{ background: p.ctaBg }}
-                  onMouseOver={(e) => (e.currentTarget.style.background = p.ctaHoverBg)}
-                  onMouseOut={(e) => (e.currentTarget.style.background = p.ctaBg)}
+                  style={{ background: p.color }}
+                  onClick={() => p.route && navigate(p.route)}
                 >
                   {p.ctaLabel}
                 </button>

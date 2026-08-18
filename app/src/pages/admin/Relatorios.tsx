@@ -23,14 +23,15 @@ const CC_LABELS: Record<string, string> = {
   CC005: "Industrial",
 };
 
-export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "satisfacao";
+export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "pesquisa-satisfacao" | "pesquisa-aplicacao";
 
 const DASH_TABS: { key: ReportDash; label: string }[] = [
   { key: "geral", label: "Visão Geral" },
   { key: "faturamento", label: "Faturamento" },
   { key: "pedidos", label: "Pedidos" },
   { key: "centros-custo", label: "Centros de Custo" },
-  { key: "satisfacao", label: "Satisfação" },
+  { key: "pesquisa-satisfacao", label: "Pesquisa de Satisfação" },
+  { key: "pesquisa-aplicacao", label: "Pesquisa da Aplicação" },
 ];
 
 const KPIS: { glyph: string; label: string; value: string; trend: string; seed: number; sparkColor: string; dash: ReportDash }[] = [
@@ -38,7 +39,7 @@ const KPIS: { glyph: string; label: string; value: string; trend: string; seed: 
   { glyph: "📦", label: "Pedidos realizados", value: "156", trend: "↑ 12,4% vs período anterior", seed: 2, sparkColor: "#1e4fa3", dash: "pedidos" },
   { glyph: "🎟", label: "Ticket médio", value: money(1594.56), trend: "↑ 5,2% vs período anterior", seed: 3, sparkColor: "#1a7a4f", dash: "faturamento" },
   { glyph: "👥", label: "Unidades atendidas", value: "24", trend: "↑ 9,1% vs período anterior", seed: 4, sparkColor: "#b5690f", dash: "centros-custo" },
-  { glyph: "⭐", label: "Satisfação (NPS)", value: "59", trend: "↑ 7 pts vs período anterior", seed: 5, sparkColor: "#c99a1f", dash: "satisfacao" },
+  { glyph: "⭐", label: "Satisfação (NPS)", value: "59", trend: "↑ 7 pts vs período anterior", seed: 5, sparkColor: "#c99a1f", dash: "pesquisa-satisfacao" },
 ];
 
 const BAR_VALUES = [24000, 31000, 20000, 38000, 42000, 29000, 45000, 36000];
@@ -101,13 +102,37 @@ const EXPORT_FIELD_DEFS = [
 ] as const;
 type ExportFieldKey = (typeof EXPORT_FIELD_DEFS)[number]["key"];
 
-const NPS_DISTRIBUTION = [
-  { label: "Promotores (9-10)", pct: 68, color: "#1a7a4f" },
-  { label: "Neutros (7-8)", pct: 22, color: "#c99a1f" },
-  { label: "Detratores (0-6)", pct: 10, color: "#c0392b" },
-];
-
 const APP_SURVEY_CATEGORY_COLOR: Record<string, string> = { CX: "#1e4fa3", UX: "#283897", NPS: "#c99a1f" };
+
+/** Respostas numéricas de uma pergunta específica, dentre as respostas de um dos dois formulários. */
+function numericAnswers(responses: { answers: { questionId: string; value: number | string }[] }[], questionId: string): number[] {
+  return responses.flatMap((r) => r.answers.filter((a) => a.questionId === questionId && typeof a.value === "number").map((a) => a.value as number));
+}
+function textAnswers(responses: { answers: { questionId: string; value: number | string }[] }[], questionId: string): string[] {
+  return responses.flatMap((r) => r.answers.filter((a) => a.questionId === questionId && typeof a.value === "string" && a.value).map((a) => a.value as string));
+}
+
+interface NpsStats {
+  score: number;
+  avg: number;
+  promoter: number;
+  neutral: number;
+  detractor: number;
+  count: number;
+}
+/** Calcula NPS real a partir das respostas; usa o "fallback" ilustrativo enquanto não há respostas suficientes. */
+function npsStats(values: number[], fallback: NpsStats): NpsStats {
+  if (values.length === 0) return fallback;
+  const promoter = Math.round((values.filter((v) => v >= 9).length / values.length) * 100);
+  const detractor = Math.round((values.filter((v) => v <= 6).length / values.length) * 100);
+  const neutral = 100 - promoter - detractor;
+  const avg = values.reduce((s, v) => s + v, 0) / values.length;
+  return { score: promoter - detractor, avg, promoter, neutral, detractor, count: values.length };
+}
+function avgOf(values: number[], fallback: number): { avg: number; count: number } {
+  if (values.length === 0) return { avg: fallback, count: 0 };
+  return { avg: values.reduce((s, v) => s + v, 0) / values.length, count: values.length };
+}
 
 function makeSpark(seed: number): string {
   const pts: number[] = [];
@@ -129,7 +154,7 @@ function Sparkline({ seed, color }: { seed: number; color: string }) {
 }
 
 export function Relatorios() {
-  const { showToast, costCenters, appSurveyQuestions } = useAppData();
+  const { showToast, costCenters, surveyQuestions, appSurveyQuestions, surveyResponses } = useAppData();
   const navigate = useNavigate();
   const params = useParams<{ dash?: string }>();
   const dash: ReportDash = (DASH_TABS.some((t) => t.key === params.dash) ? params.dash : "geral") as ReportDash;
@@ -178,7 +203,22 @@ export function Relatorios() {
 
   const goDash = (d: ReportDash) => navigate(d === "geral" ? "/admin/relatorios" : `/admin/relatorios/${d}`);
 
-  const appSurveyCategoryCount = (cat: string) => appSurveyQuestions.filter((q) => q.category === cat && q.active).length;
+  const pedidoResponses = useMemo(() => surveyResponses.filter((r) => r.kind === "pedido"), [surveyResponses]);
+  const aplicacaoResponses = useMemo(() => surveyResponses.filter((r) => r.kind === "aplicacao"), [surveyResponses]);
+
+  const npsQuestion = surveyQuestions.find((q) => q.type === "NPS" && q.active);
+  const pedidoNps = npsStats(npsQuestion ? numericAnswers(pedidoResponses, npsQuestion.id) : [], {
+    score: 59, avg: 8.1, promoter: 68, neutral: 22, detractor: 10, count: 0,
+  });
+  const starQuestions = surveyQuestions.filter((q) => q.type === "Estrelas" && q.active);
+  const textQuestions = surveyQuestions.filter((q) => q.type === "Texto" && q.active);
+
+  const appNpsQuestion = appSurveyQuestions.find((q) => q.type === "NPS" && q.active);
+  const appNps = npsStats(appNpsQuestion ? numericAnswers(aplicacaoResponses, appNpsQuestion.id) : [], {
+    score: 42, avg: 7.2, promoter: 55, neutral: 32, detractor: 13, count: 0,
+  });
+  const appRatedQuestions = appSurveyQuestions.filter((q) => q.active && (q.type === "Estrelas" || q.type === "Escala 1-5"));
+  const appTextQuestions = appSurveyQuestions.filter((q) => q.active && q.type === "Texto");
 
   return (
     <div className="relatorios-page">
@@ -545,14 +585,25 @@ export function Relatorios() {
         </div>
       )}
 
-      {dash === "satisfacao" && (
+      {dash === "pesquisa-satisfacao" && (
         <div className="relatorios-row-2">
           <div className="card relatorios-panel">
-            <div className="relatorios-panel-title">NPS geral</div>
-            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginBottom: 4 }}>59</div>
-            <div className="relatorios-kpi__trend" style={{ marginBottom: 14 }}>↑ 7 pts vs período anterior</div>
+            <div className="relatorios-panel-head">
+              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>NPS geral do pedido</div>
+              <Link to="/admin/pesquisa-satisfacao" className="link">
+                Configurar perguntas &rsaquo;
+              </Link>
+            </div>
+            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginTop: 10, marginBottom: 4 }}>{pedidoNps.score}</div>
+            <div className="relatorios-muted-sm" style={{ marginBottom: 14 }}>
+              {pedidoNps.count > 0 ? `Calculado a partir de ${pedidoNps.count} resposta(s) reais` : "Exemplo ilustrativo — nenhuma resposta recebida ainda"}
+            </div>
             <div className="relatorios-service-list">
-              {NPS_DISTRIBUTION.map((n) => (
+              {[
+                { label: "Promotores (9-10)", pct: pedidoNps.promoter, color: "#1a7a4f" },
+                { label: "Neutros (7-8)", pct: pedidoNps.neutral, color: "#c99a1f" },
+                { label: "Detratores (0-6)", pct: pedidoNps.detractor, color: "#c0392b" },
+              ].map((n) => (
                 <div key={n.label}>
                   <div className="relatorios-service-row">
                     <span className="relatorios-service-label">
@@ -570,28 +621,92 @@ export function Relatorios() {
           </div>
 
           <div className="card relatorios-panel">
+            <div className="relatorios-panel-title">Avaliações por pergunta</div>
+            <div className="relatorios-service-list">
+              {starQuestions.map((q) => {
+                const { avg, count } = avgOf(numericAnswers(pedidoResponses, q.id), 4.3);
+                return (
+                  <div key={q.id} className="relatorios-service-row" style={{ marginBottom: 8 }}>
+                    <span className="relatorios-service-label">{q.text}</span>
+                    <span className="relatorios-muted">{"★".repeat(Math.round(avg))}{"☆".repeat(5 - Math.round(avg))} {count === 0 && "(exemplo)"}</span>
+                  </div>
+                );
+              })}
+              {starQuestions.length === 0 && <div className="relatorios-muted-sm">Nenhuma pergunta de estrelas configurada.</div>}
+            </div>
+            <div className="relatorios-panel-total" style={{ flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
+              <span>Comentários recentes</span>
+              {textQuestions.flatMap((q) => textAnswers(pedidoResponses, q.id)).slice(0, 3).map((t, i) => (
+                <div key={i} className="relatorios-muted-sm">“{t}”</div>
+              ))}
+              {textQuestions.flatMap((q) => textAnswers(pedidoResponses, q.id)).length === 0 && (
+                <div className="relatorios-muted-sm">Nenhum comentário recebido ainda.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {dash === "pesquisa-aplicacao" && (
+        <div className="relatorios-row-2">
+          <div className="card relatorios-panel">
             <div className="relatorios-panel-head">
-              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Pesquisa da aplicação (CX / UX / NPS)</div>
+              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>NPS geral da plataforma</div>
               <Link to="/admin/pesquisa-aplicacao" className="link">
                 Configurar perguntas &rsaquo;
               </Link>
             </div>
+            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginTop: 10, marginBottom: 4 }}>{appNps.score}</div>
+            <div className="relatorios-muted-sm" style={{ marginBottom: 14 }}>
+              {appNps.count > 0 ? `Calculado a partir de ${appNps.count} resposta(s) reais` : "Exemplo ilustrativo — nenhuma resposta recebida ainda"}
+            </div>
             <div className="relatorios-service-list">
-              {["CX", "UX", "NPS"].map((cat) => (
-                <div key={cat} className="relatorios-service-row" style={{ marginBottom: 8 }}>
-                  <span className="relatorios-service-label">
-                    <span className="relatorios-dot" style={{ background: APP_SURVEY_CATEGORY_COLOR[cat] }} />
-                    {cat}
-                  </span>
-                  <span className="relatorios-muted">{appSurveyCategoryCount(cat)} pergunta(s) ativa(s)</span>
+              {[
+                { label: "Promotores (9-10)", pct: appNps.promoter, color: "#1a7a4f" },
+                { label: "Neutros (7-8)", pct: appNps.neutral, color: "#c99a1f" },
+                { label: "Detratores (0-6)", pct: appNps.detractor, color: "#c0392b" },
+              ].map((n) => (
+                <div key={n.label}>
+                  <div className="relatorios-service-row">
+                    <span className="relatorios-service-label">
+                      <span className="relatorios-dot" style={{ background: n.color }} />
+                      {n.label}
+                    </span>
+                    <span className="relatorios-muted">{n.pct}%</span>
+                  </div>
+                  <div className="relatorios-bar-track">
+                    <div className="relatorios-bar-fill" style={{ width: `${n.pct}%`, background: n.color }} />
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="relatorios-panel-total">
-              <span>Pesquisa de satisfação do pedido</span>
-              <Link to="/admin/pesquisa-satisfacao" className="link">
-                Configurar &rsaquo;
-              </Link>
+          </div>
+
+          <div className="card relatorios-panel">
+            <div className="relatorios-panel-title">CX &amp; UX por pergunta</div>
+            <div className="relatorios-service-list">
+              {appRatedQuestions.map((q) => {
+                const { avg, count } = avgOf(numericAnswers(aplicacaoResponses, q.id), 4.0);
+                return (
+                  <div key={q.id} className="relatorios-service-row" style={{ marginBottom: 8 }}>
+                    <span className="relatorios-service-label">
+                      <span className="relatorios-dot" style={{ background: APP_SURVEY_CATEGORY_COLOR[q.category] }} />
+                      {q.text}
+                    </span>
+                    <span className="relatorios-muted">{avg.toFixed(1)}/5 {count === 0 && "(exemplo)"}</span>
+                  </div>
+                );
+              })}
+              {appRatedQuestions.length === 0 && <div className="relatorios-muted-sm">Nenhuma pergunta de avaliação configurada.</div>}
+            </div>
+            <div className="relatorios-panel-total" style={{ flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
+              <span>Comentários recentes</span>
+              {appTextQuestions.flatMap((q) => textAnswers(aplicacaoResponses, q.id)).slice(0, 3).map((t, i) => (
+                <div key={i} className="relatorios-muted-sm">“{t}”</div>
+              ))}
+              {appTextQuestions.flatMap((q) => textAnswers(aplicacaoResponses, q.id)).length === 0 && (
+                <div className="relatorios-muted-sm">Nenhum comentário recebido ainda.</div>
+              )}
             </div>
           </div>
         </div>

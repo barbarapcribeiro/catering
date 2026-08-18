@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
+import { OpenOrdersCard, PromosSection, RecentOrdersCard } from "../components/HomeWidgets";
 import { useAppData } from "../mock/AppDataContext";
 import { STATUS_STYLE } from "../mock/services";
 import { money } from "../mock/money";
@@ -75,6 +76,10 @@ export function HomeGestor() {
             <div className="persona-home__subtitle">Acompanhe e aprove os pedidos do seu centro de custo.</div>
           </div>
         </div>
+
+        <RecentOrdersCard orders={orders} />
+        <OpenOrdersCard orders={orders} />
+        <PromosSection />
 
         <div className="persona-home__panel">
           <div className="persona-home__panel-header">

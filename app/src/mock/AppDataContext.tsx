@@ -19,6 +19,7 @@ import {
   type ServiceCatalogItem,
   type Supplier,
   type SurveyQuestion,
+  type SurveyResponse,
 } from "../types";
 import { computeProductPrice } from "./pricing";
 
@@ -31,6 +32,7 @@ interface StoredState {
   chatMessages: ChatMessage[];
   surveyQuestions: SurveyQuestion[];
   appSurveyQuestions: AppSurveyQuestion[];
+  surveyResponses: SurveyResponse[];
   suppliers: Supplier[];
   products: Product[];
   kits: Kit[];
@@ -161,6 +163,70 @@ const initialSurveyQuestions: SurveyQuestion[] = [
   { id: "q5", text: "Deixe um comentário sobre sua experiência", type: "Texto", active: true },
 ];
 
+const initialSurveyResponses: SurveyResponse[] = [
+  {
+    id: "resp1",
+    kind: "pedido",
+    orderId: "#CB-15150",
+    answers: [
+      { questionId: "q1", value: 9 },
+      { questionId: "q2", value: 5 },
+      { questionId: "q3", value: 4 },
+      { questionId: "q4", value: 5 },
+      { questionId: "q5", value: "Atendimento excelente, entrega no horário." },
+    ],
+    createdAt: "2026-07-10T11:00:00Z",
+  },
+  {
+    id: "resp2",
+    kind: "pedido",
+    orderId: "#AG-15142",
+    answers: [
+      { questionId: "q1", value: 7 },
+      { questionId: "q2", value: 4 },
+      { questionId: "q3", value: 4 },
+      { questionId: "q4", value: 4 },
+    ],
+    createdAt: "2026-07-08T09:00:00Z",
+  },
+  {
+    id: "resp3",
+    kind: "pedido",
+    orderId: "#AB-15095",
+    answers: [
+      { questionId: "q1", value: 4 },
+      { questionId: "q2", value: 3 },
+      { questionId: "q3", value: 2 },
+      { questionId: "q4", value: 3 },
+      { questionId: "q5", value: "Chegou um pouco atrasado." },
+    ],
+    createdAt: "2026-07-01T10:00:00Z",
+  },
+  {
+    id: "resp4",
+    kind: "aplicacao",
+    answers: [
+      { questionId: "aq1", value: 8 },
+      { questionId: "aq2", value: 5 },
+      { questionId: "aq3", value: 4 },
+      { questionId: "aq4", value: 5 },
+      { questionId: "aq5", value: "Gostaria de conseguir duplicar pedidos com mais facilidade." },
+    ],
+    createdAt: "2026-08-01T14:00:00Z",
+  },
+  {
+    id: "resp5",
+    kind: "aplicacao",
+    answers: [
+      { questionId: "aq1", value: 6 },
+      { questionId: "aq2", value: 4 },
+      { questionId: "aq3", value: 3 },
+      { questionId: "aq4", value: 4 },
+    ],
+    createdAt: "2026-08-05T09:30:00Z",
+  },
+];
+
 const initialChat: ChatMessage[] = [
   { id: "c1", from: "them", text: "Oi, eu sou a responsável Sodexo da sua unidade, em que posso ajudar?" },
 ];
@@ -289,6 +355,7 @@ const initialProfiles: Profile[] = [
       ...Object.fromEntries(ORDER_PAGES.map((p) => [p, { ver: true, criarEditar: true }])),
       pedidos: { ver: true, criarEditar: true, excluir: true },
       "fique-por-dentro": { ver: true },
+      "pesquisa-app": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -301,6 +368,7 @@ const initialProfiles: Profile[] = [
       home: { ver: true },
       pedidos: { ver: true, aprovar: true },
       aprovacoes: { ver: true, aprovar: true },
+      "pesquisa-app": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -315,6 +383,7 @@ const initialProfiles: Profile[] = [
       producao: { ver: true, criarEditar: true, aprovar: true },
       aprovacoes: { ver: true, aprovar: true },
       "eventos-premium": { ver: true, criarEditar: true, aprovar: true, excluir: true },
+      "pesquisa-app": { ver: true, criarEditar: true },
       "admin-operacao": { ver: true },
       "admin-relatorios": { ver: true },
       "admin-produtos": { ver: true, criarEditar: true },
@@ -340,6 +409,7 @@ const initialProfiles: Profile[] = [
     active: true,
     permissions: perms({
       producao: { ver: true, criarEditar: true },
+      "pesquisa-app": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -353,6 +423,7 @@ const initialProfiles: Profile[] = [
       "admin-relatorios": { ver: true },
       "admin-centros-custo": { ver: true },
       "admin-contratos": { ver: true, criarEditar: true },
+      "pesquisa-app": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -432,6 +503,7 @@ const defaultState: StoredState = {
   chatMessages: initialChat,
   surveyQuestions: initialSurveyQuestions,
   appSurveyQuestions: initialAppSurveyQuestions,
+  surveyResponses: initialSurveyResponses,
   suppliers: initialSuppliers,
   products: initialProducts,
   kits: initialKits,
@@ -486,6 +558,9 @@ interface AppDataValue {
   updateSurveyQuestion: (id: string, patch: Partial<SurveyQuestion>) => void;
   removeSurveyQuestion: (id: string) => void;
   reorderSurveyQuestion: (id: string, dir: -1 | 1) => void;
+
+  surveyResponses: SurveyResponse[];
+  addSurveyResponse: (response: Omit<SurveyResponse, "id" | "createdAt">) => void;
 
   suppliers: Supplier[];
   addSupplier: (supplier: Omit<Supplier, "id">) => void;
@@ -694,6 +769,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const addSurveyResponse: AppDataValue["addSurveyResponse"] = (response) => {
+    setState((s) => ({
+      ...s,
+      surveyResponses: [{ ...response, id: `resp${Date.now()}`, createdAt: new Date().toISOString() }, ...s.surveyResponses],
+    }));
+  };
+
   const addSupplier: AppDataValue["addSupplier"] = (supplier) => {
     setState((s) => ({ ...s, suppliers: [{ ...supplier, id: `sup${Date.now()}` }, ...s.suppliers] }));
   };
@@ -866,6 +948,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       updateSurveyQuestion,
       removeSurveyQuestion,
       reorderSurveyQuestion,
+      surveyResponses: state.surveyResponses,
+      addSurveyResponse,
       suppliers: state.suppliers,
       addSupplier,
       updateSupplier,
