@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
+import { Modal } from "../components/Modal";
 import { useAppData } from "../mock/AppDataContext";
 import { STATUS_STYLE } from "../mock/services";
 import { money } from "../mock/money";
-import type { Order } from "../types";
+import { OCCURRENCE_TYPES, type Order, type OccurrenceType } from "../types";
 import "./GerenciarPedidos.css";
 
 type ListTab = "andamento" | "finalizado" | "cancelado";
@@ -74,7 +75,7 @@ function getDisplayItems(o: Order): DisplayItem[] {
 }
 
 export function GerenciarPedidos() {
-  const { orders, cancelOrder, duplicateOrder, showToast, chatMessages, sendChatMessage } = useAppData();
+  const { orders, cancelOrder, duplicateOrder, updateOrder, addOccurrence, currentUser, showToast, chatMessages, sendChatMessage } = useAppData();
   const navigate = useNavigate();
 
   const [listTab, setListTab] = useState<ListTab>("andamento");
@@ -84,6 +85,9 @@ export function GerenciarPedidos() {
   const [detailTab, setDetailTab] = useState<DetailTab>("resumo");
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [convInput, setConvInput] = useState("");
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportType, setReportType] = useState<OccurrenceType>(OCCURRENCE_TYPES[0]);
+  const [reportDescription, setReportDescription] = useState("");
 
   const selectOrder = (id: string) => {
     setSelectedId(id);
@@ -116,6 +120,31 @@ export function GerenciarPedidos() {
     if (!selected) return;
     cancelOrder(selected.id);
     setQuickActionsOpen(false);
+  };
+  const finalize = () => {
+    if (!selected) return;
+    updateOrder(selected.id, { status: "Finalizado" });
+    showToast(`Pedido ${selected.id} finalizado. Obrigado por confirmar!`);
+    setQuickActionsOpen(false);
+  };
+  const openReportModal = () => {
+    setReportType(OCCURRENCE_TYPES[0]);
+    setReportDescription("");
+    setReportModalOpen(true);
+    setQuickActionsOpen(false);
+  };
+  const submitReport = () => {
+    if (!selected || !reportDescription.trim()) return;
+    addOccurrence({
+      orderId: selected.id,
+      type: reportType,
+      severity: "Média",
+      status: "Aberta",
+      description: reportDescription.trim(),
+      reportedBy: currentUser?.name,
+    });
+    showToast("Problema reportado! Nossa equipe vai analisar.");
+    setReportModalOpen(false);
   };
   const converse = () => {
     setDetailTab("resumo");
@@ -296,6 +325,10 @@ export function GerenciarPedidos() {
                     </button>
                     {quickActionsOpen && (
                       <div className="kebab-menu gp-quick-actions__menu">
+                        {selected.status === "Entregue" && <button onClick={finalize}>Finalizar pedido</button>}
+                        {(selected.status === "Entregue" || selected.status === "Finalizado") && (
+                          <button onClick={openReportModal}>Reportar problema</button>
+                        )}
                         <button onClick={editOrder}>Editar pedido</button>
                         <button onClick={duplicate}>Duplicar pedido</button>
                         <button className="kebab-menu__danger" onClick={cancel}>
@@ -581,12 +614,54 @@ export function GerenciarPedidos() {
                 ⭐ Simular pesquisa (QR code)
               </button>
             )}
+            {selected.status === "Entregue" && (
+              <button className="btn btn--outline gp-action-bar__primary-outline" onClick={finalize}>
+                ✓ Finalizar pedido
+              </button>
+            )}
+            {(selected.status === "Entregue" || selected.status === "Finalizado") && (
+              <button className="btn btn--outline" onClick={openReportModal}>
+                ⚠ Reportar problema
+              </button>
+            )}
             <button className="btn btn--outline gp-action-bar__danger-outline" onClick={cancel}>
               ✕ Cancelar pedido
             </button>
           </div>
         )}
       </div>
+
+      {reportModalOpen && selected && (
+        <Modal onClose={() => setReportModalOpen(false)} width={440}>
+          <div className="modal-title" style={{ marginBottom: 18 }}>
+            Reportar problema — {selected.id}
+          </div>
+          <div className="modal-form">
+            <label className="field-label">
+              Tipo de problema
+              <select value={reportType} onChange={(e) => setReportType(e.target.value as OccurrenceType)}>
+                {OCCURRENCE_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="field-label">
+              Descreva o que aconteceu
+              <textarea rows={4} value={reportDescription} onChange={(e) => setReportDescription(e.target.value)} placeholder="Conte com detalhes o que houve com esse pedido..." />
+            </label>
+          </div>
+          <div className="modal-actions">
+            <button className="btn btn--outline" onClick={() => setReportModalOpen(false)}>
+              Cancelar
+            </button>
+            <button className="btn btn--primary" disabled={!reportDescription.trim()} onClick={submitReport}>
+              Enviar
+            </button>
+          </div>
+        </Modal>
+      )}
     </Layout>
   );
 }
