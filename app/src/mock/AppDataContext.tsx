@@ -13,6 +13,7 @@ import {
   type Occurrence,
   type Order,
   type PagePermission,
+  type Popup,
   type PremiumEvent,
   type Product,
   type Profile,
@@ -44,6 +45,8 @@ interface StoredState {
   users: AppUser[];
   costCenters: CostCenter[];
   occurrences: Occurrence[];
+  popups: Popup[];
+  dismissedPopupIds: string[];
   currentProfileId: string;
   nextOrderNum: number;
 }
@@ -205,6 +208,7 @@ const initialProfiles: Profile[] = [
       "admin-kits": { ver: true, criarEditar: true },
       "admin-servicos": { ver: true, criarEditar: true },
       "admin-decoracoes": { ver: true, criarEditar: true },
+      "admin-popups": { ver: true, criarEditar: true, excluir: true },
       "admin-fornecedores": { ver: true, criarEditar: true },
       "admin-pesquisa": { ver: true, criarEditar: true },
       "admin-pesquisa-app": { ver: true, criarEditar: true },
@@ -278,6 +282,8 @@ const initialCostCenters: CostCenter[] = [
 
 const initialOccurrences: Occurrence[] = [];
 
+const initialPopups: Popup[] = [];
+
 const defaultState: StoredState = {
   orders: initialOrders,
   notifications: initialNotifications,
@@ -297,6 +303,8 @@ const defaultState: StoredState = {
   users: initialUsers,
   costCenters: initialCostCenters,
   occurrences: initialOccurrences,
+  popups: initialPopups,
+  dismissedPopupIds: [],
   currentProfileId: "prof-cliente",
   nextOrderNum: 0,
 };
@@ -368,6 +376,13 @@ interface AppDataValue {
   addDecoration: (item: Omit<Decoration, "id">) => void;
   updateDecoration: (id: string, patch: Partial<Decoration>) => void;
   removeDecoration: (id: string) => void;
+
+  popups: Popup[];
+  addPopup: (popup: Omit<Popup, "id" | "createdAt">) => void;
+  updatePopup: (id: string, patch: Partial<Popup>) => void;
+  removePopup: (id: string) => void;
+  dismissedPopupIds: Set<string>;
+  dismissPopup: (id: string) => void;
 
   contracts: Contract[];
   addContract: (contract: Omit<Contract, "id">) => void;
@@ -507,6 +522,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const dismissPopup = (id: string) => {
+    setState((s) => (s.dismissedPopupIds.includes(id) ? s : { ...s, dismissedPopupIds: [...s.dismissedPopupIds, id] }));
+  };
+
   const sendChatMessage = (text: string) => {
     if (!text.trim()) return;
     const mine: ChatMessage = { id: `m${Date.now()}`, from: "me", text };
@@ -614,6 +633,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   };
   const removeDecoration = (id: string) => {
     setState((s) => ({ ...s, decorations: s.decorations.filter((it) => it.id !== id) }));
+  };
+
+  const addPopup: AppDataValue["addPopup"] = (popup) => {
+    setState((s) => ({ ...s, popups: [{ ...popup, id: `pop${Date.now()}`, createdAt: new Date().toISOString() }, ...s.popups] }));
+  };
+  const updatePopup: AppDataValue["updatePopup"] = (id, patch) => {
+    setState((s) => ({ ...s, popups: s.popups.map((p) => (p.id === id ? { ...p, ...patch } : p)) }));
+  };
+  const removePopup = (id: string) => {
+    setState((s) => ({ ...s, popups: s.popups.filter((p) => p.id !== id) }));
   };
 
   const addContract: AppDataValue["addContract"] = (contract) => {
@@ -752,6 +781,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       addDecoration,
       updateDecoration,
       removeDecoration,
+      popups: state.popups,
+      addPopup,
+      updatePopup,
+      removePopup,
+      dismissedPopupIds: new Set(state.dismissedPopupIds),
+      dismissPopup,
       contracts: state.contracts,
       addContract,
       updateContract,

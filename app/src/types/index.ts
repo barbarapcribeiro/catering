@@ -205,6 +205,18 @@ export interface Decoration {
   active: boolean;
 }
 
+export const POPUP_TEXT_MAX_LENGTH = 500;
+
+/** Pop-up de comunicação exibido para os perfis selecionados ao acessarem o app. */
+export interface Popup {
+  id: string;
+  text: string;
+  imageUrl?: string;
+  active: boolean;
+  profileIds: string[];
+  createdAt: string;
+}
+
 /** Todas as páginas/subpáginas do app, usadas nas telas de Perfis e Permissões. */
 export interface AppPageDef {
   id: string;
@@ -240,6 +252,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-centros-custo", label: "Financeiro · Centros de Custo", group: "Painel Administrativo" },
   { id: "admin-contratos", label: "Financeiro · Contratos", group: "Painel Administrativo" },
   { id: "admin-ocorrencias", label: "Ocorrências", group: "Painel Administrativo" },
+  { id: "admin-popups", label: "Pop-ups", group: "Painel Administrativo" },
 ];
 
 /**
