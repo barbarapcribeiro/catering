@@ -8,6 +8,7 @@ type FilterTab = "aguardando" | "producao" | "pronto" | "todos";
 type SortBy = "recentes" | "pessoas" | "unidade";
 
 const STATUS_STYLE: Record<string, { bg: string; color: string; accent: string }> = {
+  Solicitado: { bg: "#e9e5f4", color: "#5a4a8a", accent: "#5a4a8a" },
   "Em preparação": { bg: "#dfeaff", color: "#1e4fa3", accent: "#1e4fa3" },
   "Pronto para entrega": { bg: "#e6f5ec", color: "#1a7a4f", accent: "#1a7a4f" },
 };
@@ -18,7 +19,7 @@ export function Producao() {
   const { orders, updateOrder, costCenters, showToast } = useAppData();
 
   const kitchenOrders = useMemo(
-    () => orders.filter((o) => o.status === "Em preparação" || o.status === "Pronto para entrega"),
+    () => orders.filter((o) => o.status === "Solicitado" || o.status === "Em preparação" || o.status === "Pronto para entrega"),
     [orders],
   );
 
@@ -31,6 +32,10 @@ export function Producao() {
   const selectedIdOrDefault = selectedId ?? kitchenOrders[0]?.id ?? null;
 
   const startProduction = (id: string) => {
+    const order = kitchenOrders.find((o) => o.id === id);
+    if (order?.status === "Solicitado") {
+      updateOrder(id, { status: "Em preparação" });
+    }
     setStartedIds((prev) => new Set(prev).add(id));
     showToast(`Produção iniciada para o pedido ${id}.`);
   };
@@ -43,6 +48,11 @@ export function Producao() {
       return next;
     });
     showToast(`Pedido ${id} marcado como pronto para entrega.`);
+  };
+
+  const markDelivered = (id: string) => {
+    updateOrder(id, { status: "Entregue" });
+    showToast(`Pedido ${id} marcado como entregue.`);
   };
 
   const bucketOf = (o: Order): Exclude<FilterTab, "todos"> => {
@@ -337,9 +347,9 @@ export function Producao() {
                   </button>
                 )}
                 {bucketOf(selected) === "pronto" && (
-                  <div className="empty-state" style={{ padding: "12px 0" }}>
-                    Pronto para entrega — aguardando retirada.
-                  </div>
+                  <button className="btn btn--primary btn--full prod-start-btn" onClick={() => markDelivered(selected.id)}>
+                    📬 Marcar como entregue
+                  </button>
                 )}
                 <button className="btn btn--outline btn--full" onClick={() => showToast("Enviando ticket para impressão...")}>
                   🖨 Imprimir ticket
