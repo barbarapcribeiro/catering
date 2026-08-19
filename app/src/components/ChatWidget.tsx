@@ -5,12 +5,14 @@ import "./ChatWidget.css";
 export function ChatWidget() {
   const { chatMessages, sendChatMessage } = useAppData();
   const [open, setOpen] = useState(false);
-  const [unread, setUnread] = useState(true);
+  const [hasOpened, setHasOpened] = useState(false);
   const [input, setInput] = useState("");
+
+  const unreadCount = hasOpened ? 0 : chatMessages.filter((m) => m.from === "them").length;
 
   const toggle = () => {
     setOpen((v) => !v);
-    setUnread(false);
+    setHasOpened(true);
   };
 
   const send = () => {
@@ -64,7 +66,7 @@ export function ChatWidget() {
       )}
       <button className="chat-widget__fab" onClick={toggle} aria-label="Abrir chat">
         💬
-        {unread && <span className="chat-widget__fab-badge">1</span>}
+        {unreadCount > 0 && <span className="chat-widget__fab-badge">{unreadCount}</span>}
       </button>
     </div>
   );

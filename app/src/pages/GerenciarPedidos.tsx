@@ -14,13 +14,7 @@ const STAGES = ["Pedido recebido", "Aguardando aprovação", "Aguardando aprova�
 
 // Attachments aren't part of the shared Order type (display-only, mock-only data).
 // Keyed by order id — orders without a match simply show the empty state.
-const ATTACHMENTS: Record<string, { name: string; meta: string }[]> = {
-  "#CB-15234": [
-    { name: "Ata da reunião.pdf", meta: "240 KB • enviado por você" },
-    { name: "Layout da sala.jpg", meta: "1.1 MB • enviado por você" },
-  ],
-  "#LAN-15210": [{ name: "Pauta comercial.pdf", meta: "96 KB • enviado por você" }],
-};
+const ATTACHMENTS: Record<string, { name: string; meta: string }[]> = {};
 
 function tabOf(o: Order): ListTab {
   if (o.status === "Cancelado") return "cancelado";

@@ -13,6 +13,7 @@ import {
   type Occurrence,
   type Order,
   type PagePermission,
+  type Popup,
   type PremiumEvent,
   type Product,
   type Profile,
@@ -23,7 +24,7 @@ import {
 } from "../types";
 import { computeProductPrice } from "./pricing";
 
-const STORAGE_KEY = "sodexo-eventos-mock-v1";
+const STORAGE_KEY = "sodexo-eventos-mock-v2";
 
 interface StoredState {
   orders: Order[];
@@ -44,116 +45,15 @@ interface StoredState {
   users: AppUser[];
   costCenters: CostCenter[];
   occurrences: Occurrence[];
+  popups: Popup[];
+  dismissedPopupIds: string[];
   currentProfileId: string;
   nextOrderNum: number;
 }
 
-const initialOrders: Order[] = [
-  {
-    id: "#CB-15234",
-    category: "Coffee Break",
-    type: "Coffee Break Executivo",
-    mono: "CB",
-    qty: "20 pessoas",
-    peopleCount: 20,
-    datetime: "24/07/2026 14:00",
-    status: "Aguardando aprovação",
-    value: "R$ 240,00",
-    valueNumber: 240,
-    location: "Sala 1",
-    eventTime: "14:00",
-    createdAt: "2026-07-20T10:00:00Z",
-    requiresApproval: true,
-    history: [
-      { label: "Pedido criado", time: "20/07/2026 09:12" },
-      { label: "Aguardando aprovação do gestor", time: "20/07/2026 09:12" },
-    ],
-  },
-  {
-    id: "#LAN-15210",
-    category: "Lanche",
-    type: "Lanche Individual",
-    mono: "LA",
-    qty: "15 unidades",
-    peopleCount: 15,
-    datetime: "25/07/2026 12:30",
-    status: "Em preparação",
-    value: "R$ 187,50",
-    valueNumber: 187.5,
-    createdAt: "2026-07-19T15:00:00Z",
-    history: [
-      { label: "Pedido criado", time: "19/07/2026 15:00" },
-      { label: "Em preparação", time: "24/07/2026 08:00" },
-    ],
-  },
-  {
-    id: "#EVT-15188",
-    category: "Evento",
-    type: "Evento Especial",
-    mono: "EE",
-    qty: "30 pessoas",
-    peopleCount: 30,
-    datetime: "28/07/2026 09:00",
-    status: "Solicitado",
-    value: "R$ 1.250,00",
-    valueNumber: 1250,
-    createdAt: "2026-07-18T11:00:00Z",
-    history: [{ label: "Pedido criado", time: "18/07/2026 11:00" }],
-  },
-  {
-    id: "#CB-15150",
-    category: "Coffee Break",
-    type: "Coffee Break Executivo",
-    mono: "CB",
-    qty: "25 pessoas",
-    peopleCount: 25,
-    datetime: "10/07/2026 09:00",
-    status: "Finalizado",
-    value: "R$ 300,00",
-    valueNumber: 300,
-    createdAt: "2026-07-05T10:00:00Z",
-    costCenters: [{ code: "CC001", percent: 100 }],
-    billingStatus: "Fechado",
-    history: [{ label: "Pedido criado", time: "05/07/2026 10:00" }, { label: "Finalizado", time: "10/07/2026 10:30" }],
-  },
-  {
-    id: "#AG-15142",
-    category: "Água",
-    type: "Água Mineral",
-    mono: "AG",
-    qty: "40 unidades",
-    peopleCount: 40,
-    datetime: "08/07/2026 08:00",
-    status: "Entregue",
-    value: "R$ 140,00",
-    valueNumber: 140,
-    createdAt: "2026-07-03T09:00:00Z",
-    costCenters: [{ code: "CC003", percent: 100 }],
-    billingStatus: "Pendente",
-    history: [{ label: "Pedido criado", time: "03/07/2026 09:00" }, { label: "Entregue", time: "08/07/2026 08:20" }],
-  },
-  {
-    id: "#AB-15095",
-    category: "Abastecimento",
-    type: "Abastecimento Simples",
-    mono: "AB",
-    qty: "1 lote",
-    datetime: "01/07/2026 08:00",
-    status: "Finalizado",
-    value: "R$ 420,00",
-    valueNumber: 420,
-    createdAt: "2026-06-28T09:00:00Z",
-    costCenters: [{ code: "CC002", percent: 60 }, { code: "CC001", percent: 40 }],
-    billingStatus: "Enviado ao ERP",
-    history: [{ label: "Pedido criado", time: "28/06/2026 09:00" }, { label: "Finalizado", time: "01/07/2026 08:30" }],
-  },
-];
+const initialOrders: Order[] = [];
 
-const initialNotifications: Notification[] = [
-  { id: "n1", title: "Pedido #CB-15234 aguardando aprovação", time: "há 2 horas", read: false },
-  { id: "n2", title: "Evento Especial confirmado para 28/07", time: "há 5 horas", read: false },
-  { id: "n3", title: "Novo catálogo de refeições disponível", time: "ontem", read: false },
-];
+const initialNotifications: Notification[] = [];
 
 const initialSurveyQuestions: SurveyQuestion[] = [
   { id: "q1", text: "De 0 a 10, quanto você recomendaria nosso serviço?", type: "NPS", active: true },
@@ -163,73 +63,9 @@ const initialSurveyQuestions: SurveyQuestion[] = [
   { id: "q5", text: "Deixe um comentário sobre sua experiência", type: "Texto", active: true },
 ];
 
-const initialSurveyResponses: SurveyResponse[] = [
-  {
-    id: "resp1",
-    kind: "pedido",
-    orderId: "#CB-15150",
-    answers: [
-      { questionId: "q1", value: 9 },
-      { questionId: "q2", value: 5 },
-      { questionId: "q3", value: 4 },
-      { questionId: "q4", value: 5 },
-      { questionId: "q5", value: "Atendimento excelente, entrega no horário." },
-    ],
-    createdAt: "2026-07-10T11:00:00Z",
-  },
-  {
-    id: "resp2",
-    kind: "pedido",
-    orderId: "#AG-15142",
-    answers: [
-      { questionId: "q1", value: 7 },
-      { questionId: "q2", value: 4 },
-      { questionId: "q3", value: 4 },
-      { questionId: "q4", value: 4 },
-    ],
-    createdAt: "2026-07-08T09:00:00Z",
-  },
-  {
-    id: "resp3",
-    kind: "pedido",
-    orderId: "#AB-15095",
-    answers: [
-      { questionId: "q1", value: 4 },
-      { questionId: "q2", value: 3 },
-      { questionId: "q3", value: 2 },
-      { questionId: "q4", value: 3 },
-      { questionId: "q5", value: "Chegou um pouco atrasado." },
-    ],
-    createdAt: "2026-07-01T10:00:00Z",
-  },
-  {
-    id: "resp4",
-    kind: "aplicacao",
-    answers: [
-      { questionId: "aq1", value: 8 },
-      { questionId: "aq2", value: 5 },
-      { questionId: "aq3", value: 4 },
-      { questionId: "aq4", value: 5 },
-      { questionId: "aq5", value: "Gostaria de conseguir duplicar pedidos com mais facilidade." },
-    ],
-    createdAt: "2026-08-01T14:00:00Z",
-  },
-  {
-    id: "resp5",
-    kind: "aplicacao",
-    answers: [
-      { questionId: "aq1", value: 6 },
-      { questionId: "aq2", value: 4 },
-      { questionId: "aq3", value: 3 },
-      { questionId: "aq4", value: 4 },
-    ],
-    createdAt: "2026-08-05T09:30:00Z",
-  },
-];
+const initialSurveyResponses: SurveyResponse[] = [];
 
-const initialChat: ChatMessage[] = [
-  { id: "c1", from: "them", text: "Oi, eu sou a responsável Sodexo da sua unidade, em que posso ajudar?" },
-];
+const initialChat: ChatMessage[] = [];
 
 const initialSuppliers: Supplier[] = [
   { id: "sup1", name: "Distribuidora Boa Mesa Ltda.", category: "Alimentos e Bebidas", cnpj: "12.345.678/0001-90", contactName: "Roberto Alves", phone: "(11) 4002-8922", email: "contato@boamesa.com.br", active: true },
@@ -305,25 +141,7 @@ const initialContracts: Contract[] = [
   },
 ];
 
-const initialPremiumEvents: PremiumEvent[] = [
-  {
-    id: "pev1",
-    name: "Confraternização de fim de ano",
-    clientName: "Diretoria Administrativa",
-    costCenterCode: "CC001",
-    eventDate: "2026-12-12",
-    location: "Salão de eventos - Unidade Matriz",
-    guestCount: 80,
-    status: "Confirmado",
-    createdAt: "2026-08-01T10:00:00Z",
-    items: [
-      { kind: "kit", refId: "kit1", label: "Combo Reunião Rápida", qty: 4, unitPrice: 150.15 },
-      { kind: "decoracao", refId: "dec2", label: "Backdrop personalizado", qty: 1, unitPrice: 650 },
-      { kind: "servico", refId: "svc4", label: "Recepção de convidados", qty: 1, unitPrice: 220 },
-      { kind: "espaco", label: "Aluguel do salão de eventos", qty: 1, unitPrice: 1200 },
-    ],
-  },
-];
+const initialPremiumEvents: PremiumEvent[] = [];
 
 /** Monta o mapa de permissões de um perfil só para as páginas informadas — as demais ficam sem acesso. */
 function perms(entries: Record<string, Partial<PagePermission>>): Record<string, PagePermission> {
@@ -390,6 +208,7 @@ const initialProfiles: Profile[] = [
       "admin-kits": { ver: true, criarEditar: true },
       "admin-servicos": { ver: true, criarEditar: true },
       "admin-decoracoes": { ver: true, criarEditar: true },
+      "admin-popups": { ver: true, criarEditar: true, excluir: true },
       "admin-fornecedores": { ver: true, criarEditar: true },
       "admin-pesquisa": { ver: true, criarEditar: true },
       "admin-pesquisa-app": { ver: true, criarEditar: true },
@@ -461,45 +280,14 @@ const initialCostCenters: CostCenter[] = [
   { id: "cc3", code: "CC003", name: "Operações", manager: "Marina Silva", active: true },
 ];
 
-const initialOccurrences: Occurrence[] = [
-  {
-    id: "occ1",
-    orderId: "#LAN-15210",
-    type: "Atraso na entrega",
-    severity: "Média",
-    status: "Em análise",
-    description: "Entrega chegou 40 minutos após o horário combinado.",
-    reportedBy: "Ana Beatriz Lima",
-    createdAt: "2026-07-24T09:30:00Z",
-  },
-  {
-    id: "occ2",
-    orderId: "#CB-15234",
-    type: "Item incorreto ou faltando",
-    severity: "Baixa",
-    status: "Aberta",
-    description: "Faltaram guardanapos no kit entregue.",
-    reportedBy: "Carlos Santos",
-    createdAt: "2026-07-25T08:10:00Z",
-  },
-  {
-    id: "occ3",
-    orderId: "#EVT-15188",
-    type: "Qualidade do produto",
-    severity: "Alta",
-    status: "Resolvida",
-    description: "Salgados chegaram frios; equipe de produção foi orientada sobre o transporte.",
-    reportedBy: "João Pedro Nunes",
-    createdAt: "2026-07-18T14:00:00Z",
-    resolutionNotes: "Troca de embalagem térmica para o fornecedor a partir do próximo evento.",
-    resolvedAt: "2026-07-19T11:00:00Z",
-  },
-];
+const initialOccurrences: Occurrence[] = [];
+
+const initialPopups: Popup[] = [];
 
 const defaultState: StoredState = {
   orders: initialOrders,
   notifications: initialNotifications,
-  favorites: ["cb", "la", "sa", "rn"],
+  favorites: [],
   chatMessages: initialChat,
   surveyQuestions: initialSurveyQuestions,
   appSurveyQuestions: initialAppSurveyQuestions,
@@ -515,8 +303,10 @@ const defaultState: StoredState = {
   users: initialUsers,
   costCenters: initialCostCenters,
   occurrences: initialOccurrences,
+  popups: initialPopups,
+  dismissedPopupIds: [],
   currentProfileId: "prof-cliente",
-  nextOrderNum: 300,
+  nextOrderNum: 0,
 };
 
 function loadState(): StoredState {
@@ -586,6 +376,13 @@ interface AppDataValue {
   addDecoration: (item: Omit<Decoration, "id">) => void;
   updateDecoration: (id: string, patch: Partial<Decoration>) => void;
   removeDecoration: (id: string) => void;
+
+  popups: Popup[];
+  addPopup: (popup: Omit<Popup, "id" | "createdAt">) => void;
+  updatePopup: (id: string, patch: Partial<Popup>) => void;
+  removePopup: (id: string) => void;
+  dismissedPopupIds: Set<string>;
+  dismissPopup: (id: string) => void;
 
   contracts: Contract[];
   addContract: (contract: Omit<Contract, "id">) => void;
@@ -725,6 +522,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const dismissPopup = (id: string) => {
+    setState((s) => (s.dismissedPopupIds.includes(id) ? s : { ...s, dismissedPopupIds: [...s.dismissedPopupIds, id] }));
+  };
+
   const sendChatMessage = (text: string) => {
     if (!text.trim()) return;
     const mine: ChatMessage = { id: `m${Date.now()}`, from: "me", text };
@@ -832,6 +633,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   };
   const removeDecoration = (id: string) => {
     setState((s) => ({ ...s, decorations: s.decorations.filter((it) => it.id !== id) }));
+  };
+
+  const addPopup: AppDataValue["addPopup"] = (popup) => {
+    setState((s) => ({ ...s, popups: [{ ...popup, id: `pop${Date.now()}`, createdAt: new Date().toISOString() }, ...s.popups] }));
+  };
+  const updatePopup: AppDataValue["updatePopup"] = (id, patch) => {
+    setState((s) => ({ ...s, popups: s.popups.map((p) => (p.id === id ? { ...p, ...patch } : p)) }));
+  };
+  const removePopup = (id: string) => {
+    setState((s) => ({ ...s, popups: s.popups.filter((p) => p.id !== id) }));
   };
 
   const addContract: AppDataValue["addContract"] = (contract) => {
@@ -970,6 +781,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       addDecoration,
       updateDecoration,
       removeDecoration,
+      popups: state.popups,
+      addPopup,
+      updatePopup,
+      removePopup,
+      dismissedPopupIds: new Set(state.dismissedPopupIds),
+      dismissPopup,
       contracts: state.contracts,
       addContract,
       updateContract,

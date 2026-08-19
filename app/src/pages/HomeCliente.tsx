@@ -9,11 +9,13 @@ import { PROMOS } from "../mock/promos";
 import type { Order } from "../types";
 import "./Home.css";
 
-const RECENT_ORDERS = [
-  { name: "Coffee Break Diretoria", date: "22/07/2026 • 14:30", mono: "CB", category: "Coffee Break", isCoffee: true },
-  { name: "Lanche Reunião Comercial", date: "18/07/2026 • 10:00", mono: "LA", category: "Lanche", isCoffee: false },
-  { name: "Evento Especial", date: "15/07/2026 • 08:30", mono: "EE", category: "Evento Especial", isCoffee: false },
-];
+function formatDateTimePt(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return `${d.toLocaleDateString("pt-BR")} • ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+const PROMO_ICON: Record<string, string> = { combo: "☕", coffee: "☕", lanche: "🥪" };
 
 type Modal_ = { type: "service"; service: (typeof SERVICES)[number] } | { type: "order"; order: Order } | null;
 
@@ -34,6 +36,10 @@ export function HomeCliente() {
   if (activeFilter === "favorites") filtered = filtered.filter((sv) => favorites.has(sv.id));
 
   const openOrders = useMemo(() => orders.filter(isOpenOrder), [orders]);
+  const recentOrders = useMemo(
+    () => [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 3),
+    [orders],
+  );
 
   const openService = (svc: (typeof SERVICES)[number]) => {
     if (svc.route) {
@@ -44,15 +50,8 @@ export function HomeCliente() {
     }
   };
 
-  const repeatOrder = (item: (typeof RECENT_ORDERS)[number]) => {
-    addOrder({
-      category: item.category,
-      type: item.name,
-      mono: item.mono,
-      qty: "—",
-      datetime: "A definir",
-    });
-    showToast(`Pedido "${item.name}" repetido com sucesso!`);
+  const repeatOrder = (order: Order) => {
+    duplicateOrder(order.id);
   };
 
   const submitOrder = () => {
@@ -106,7 +105,7 @@ export function HomeCliente() {
           </div>
         )}
 
-        <div className="home-hero-row">
+        <div className="home-grid-2x2">
           <div className="home-hero">
             <div className="home-hero__blob home-hero__blob--1" />
             <div className="home-hero__blob home-hero__blob--2" />
@@ -138,138 +137,121 @@ export function HomeCliente() {
                 Ver todos
               </a>
             </div>
-            {RECENT_ORDERS.map((r) => (
-              <div key={r.name} className="home-recent__row">
+            {recentOrders.length === 0 && <div className="empty-state">Nenhum pedido realizado ainda.</div>}
+            {recentOrders.map((r) => (
+              <div key={r.id} className="home-recent__row">
                 <div className="home-recent__left">
                   <div className="avatar-circle">{r.mono}</div>
                   <div>
-                    <div className="home-recent__name">{r.name}</div>
-                    <div className="home-recent__date">{r.date}</div>
+                    <div className="home-recent__name">{r.type}</div>
+                    <div className="home-recent__date">{formatDateTimePt(r.createdAt)}</div>
                   </div>
                 </div>
-                <button className="btn btn--outline btn--sm" onClick={() => repeatOrder(r)}>
-                  Repetir pedido
-                </button>
+                <div className="home-recent__buttons">
+                  {r.mono === "CB" && (
+                    <button className="btn btn--primary btn--sm" onClick={() => navigate("/pedido/coffee-break")}>
+                      ☕ Pedir agora
+                    </button>
+                  )}
+                  <button className="btn btn--outline btn--sm" onClick={() => repeatOrder(r)}>
+                    Repetir pedido
+                  </button>
+                </div>
               </div>
             ))}
           </div>
-        </div>
 
-        <div className="card home-open-orders">
-          <div className="home-open-orders__header">
-            <div className="home-open-orders__title-row">
-              <span className="home-open-orders__title">Pedidos em aberto</span>
-              <span className="pill-count">{openOrders.length}</span>
+          <div className="card home-promos-compact">
+            <div className="home-compact-card__header">
+              <span className="home-compact-card__title">Novidades e Promoções</span>
+              <a href="#" onClick={(e) => e.preventDefault()} className="link">
+                Ver todas
+              </a>
             </div>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate("/pedidos"); }} className="link">
-              Ver todos os pedidos &rsaquo;
-            </a>
-          </div>
-          <div className="home-open-orders__subtitle">Acompanhe e gerencie seus pedidos em andamento.</div>
-
-          {openOrders.length > 0 && (
-            <div className="orders-table">
-              <div className="orders-table__head">
-                <div>Pedido</div>
-                <div>Tipo</div>
-                <div>Data/Hora</div>
-                <div>Status</div>
-                <div>Valor</div>
-                <div>Ações</div>
-              </div>
-              {openOrders.map((o) => {
-                const st = STATUS_STYLE[o.status] || { bg: "#eee", color: "#555" };
-                return (
-                  <div key={o.id} className="orders-table__row">
-                    <div>
-                      <div className="orders-table__id">{o.id}</div>
-                      <div className="orders-table__category">{o.category}</div>
+            <div className="home-promos-compact__list">
+              {PROMOS.map((p) => (
+                <div key={p.id} className="home-promo-row" onClick={() => p.route && navigate(p.route)}>
+                  <div className="home-promo-row__thumb" style={{ background: p.bg }}>
+                    {PROMO_ICON[p.id] ?? "🎉"}
+                  </div>
+                  <div className="home-promo-row__body">
+                    <div className="home-promo-row__tag" style={{ color: p.color }}>
+                      {p.tag}
+                      {p.discount ? ` · ${p.discount}` : ""}
                     </div>
-                    <div className="orders-table__type">
-                      <div className="avatar-circle avatar-circle--sm">{o.mono}</div>
-                      <div>
-                        <div className="orders-table__type-name">{o.type}</div>
-                        <div className="orders-table__qty">{o.qty}</div>
+                    <div className="home-promo-row__title">{p.title}</div>
+                    <div className="home-promo-row__desc">{p.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card home-open-compact">
+            <div className="home-compact-card__header">
+              <div className="home-compact-card__title-row">
+                <span className="home-compact-card__title">Pedidos em aberto</span>
+                <span className="pill-count">{openOrders.length}</span>
+              </div>
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate("/pedidos"); }} className="link">
+                Ver todos &rsaquo;
+              </a>
+            </div>
+            <div className="home-compact-card__subtitle">Acompanhe e gerencie seus pedidos em andamento.</div>
+
+            {openOrders.length === 0 && <div className="empty-state">Nenhum pedido em aberto no momento.</div>}
+
+            {openOrders.length > 0 && (
+              <div className="home-open-compact__list">
+                {openOrders.map((o) => {
+                  const st = STATUS_STYLE[o.status] || { bg: "#eee", color: "#555" };
+                  return (
+                    <div key={o.id} className="home-open-row">
+                      <div className="home-open-row__left">
+                        <div className="avatar-circle avatar-circle--sm">{o.mono}</div>
+                        <div>
+                          <div className="home-open-row__id">{o.id} &bull; {o.type}</div>
+                          <div className="home-open-row__sub">{o.qty} &bull; {o.datetime}</div>
+                        </div>
+                      </div>
+                      <div className="home-open-row__right">
+                        <span className="status-pill" style={{ background: st.bg, color: st.color }}>
+                          {o.status}
+                        </span>
+                        <span className="home-open-row__value">{o.value}</span>
+                        <button className="btn btn--outline btn--sm" onClick={() => setModal({ type: "order", order: o })}>
+                          Ver
+                        </button>
+                        <button className="kebab-btn" onClick={() => setKebabOpenId(kebabOpenId === o.id ? null : o.id)} aria-label="Mais ações">
+                          &#8942;
+                        </button>
+                        {kebabOpenId === o.id && (
+                          <div className="kebab-menu">
+                            <button
+                              onClick={() => {
+                                duplicateOrder(o.id);
+                                setKebabOpenId(null);
+                              }}
+                            >
+                              Duplicar pedido
+                            </button>
+                            <button
+                              className="kebab-menu__danger"
+                              onClick={() => {
+                                cancelOrder(o.id);
+                                setKebabOpenId(null);
+                              }}
+                            >
+                              Cancelar pedido
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="orders-table__datetime">{o.datetime}</div>
-                    <div>
-                      <span className="status-pill" style={{ background: st.bg, color: st.color }}>
-                        {o.status}
-                      </span>
-                    </div>
-                    <div className="orders-table__value">{o.value}</div>
-                    <div className="orders-table__actions">
-                      <button className="btn btn--outline btn--sm" onClick={() => setModal({ type: "order", order: o })}>
-                        Visualizar
-                      </button>
-                      <button className="kebab-btn" onClick={() => setKebabOpenId(kebabOpenId === o.id ? null : o.id)} aria-label="Mais ações">
-                        &#8942;
-                      </button>
-                      {kebabOpenId === o.id && (
-                        <div className="kebab-menu">
-                          <button
-                            onClick={() => {
-                              duplicateOrder(o.id);
-                              setKebabOpenId(null);
-                            }}
-                          >
-                            Duplicar pedido
-                          </button>
-                          <button
-                            className="kebab-menu__danger"
-                            onClick={() => {
-                              cancelOrder(o.id);
-                              setKebabOpenId(null);
-                            }}
-                          >
-                            Cancelar pedido
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          {openOrders.length === 0 && <div className="empty-state">Nenhum pedido em aberto no momento.</div>}
-        </div>
-
-        <div className="home-promos">
-          <div className="home-promos__header">
-            <div className="home-open-orders__title-row">
-              <span className="home-open-orders__title">Novidades e Promoções</span>
-              <span className="pill-tag">Novidades da semana</span>
-            </div>
-            <a href="#" className="link" onClick={(e) => e.preventDefault()}>
-              Ver todas
-            </a>
-          </div>
-          <div className="home-open-orders__subtitle">Aproveite oportunidades exclusivas para você.</div>
-          <div className="home-promos__grid">
-            {PROMOS.map((p) => (
-              <div key={p.id} className="promo-card" style={{ background: p.bg }}>
-                <span className="promo-card__tag" style={{ color: p.color }}>
-                  {p.tag}
-                </span>
-                {p.discount && (
-                  <span className="promo-card__badge" style={{ background: p.color }}>
-                    {p.discount}
-                  </span>
-                )}
-                <div className="promo-card__title">{p.title}</div>
-                <div className="promo-card__desc">{p.desc}</div>
-                <div className="promo-card__image">Imagem</div>
-                <button
-                  className="promo-card__cta"
-                  style={{ background: p.color }}
-                  onClick={() => p.route && navigate(p.route)}
-                >
-                  {p.ctaLabel}
-                </button>
+                  );
+                })}
               </div>
-            ))}
+            )}
           </div>
         </div>
 

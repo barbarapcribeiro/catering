@@ -31,8 +31,9 @@ const STEP_DEFS = [
 ];
 
 export function Surpreenda() {
-  const { addOrder, showToast } = useAppData();
+  const { addOrder, showToast, costCenters } = useAppData();
   const navigate = useNavigate();
+  const activeCostCenters = costCenters.filter((c) => c.active);
 
   const [orderId] = useState(() => `#SP-${Math.floor(15200 + Math.random() * 800)}`);
   const [step, setStep] = useState(1);
@@ -49,6 +50,8 @@ export function Surpreenda() {
   const [dietaryDetails, setDietaryDetails] = useState("");
   const [payment, setPayment] = useState<string | null>(null);
   const [feeInput, setFeeInput] = useState("");
+  const [costCenter, setCostCenter] = useState("");
+  const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
 
   const setQty = (id: string, v: number) => setQtys((s) => ({ ...s, [id]: Math.max(0, v) }));
 
@@ -112,6 +115,7 @@ export function Surpreenda() {
       eventTime,
       dietaryRestrictions: hasDietary ? dietaryDetails || "Sim, sem detalhes" : "Nenhuma",
       notes: obs,
+      costCenters: [{ code: costCenter, percent: 100 }],
       requiresApproval: needsApproval,
     });
     setStep(5);
@@ -505,11 +509,40 @@ export function Surpreenda() {
               </button>
             </div>
 
+            <div className="step-card">
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Centro de custo</div>
+              <div style={{ fontSize: 12.5, color: "var(--color-text-muted)", marginBottom: 14 }}>Selecione o centro de custo ao qual este pedido será atribuído.</div>
+              <div style={{ position: "relative", maxWidth: 360 }}>
+                <div
+                  onClick={() => setCostCenterMenuOpen((v) => !v)}
+                  style={{ cursor: "pointer", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--color-border-input)", fontSize: 13, fontWeight: 600, color: costCenter ? "var(--color-text)" : "var(--color-text-muted)", boxSizing: "border-box" }}
+                >
+                  {costCenter ? `${costCenter} · ${activeCostCenters.find((c) => c.code === costCenter)?.name}` : "Selecionar centro de custo"}
+                </div>
+                {costCenterMenuOpen && (
+                  <div className="location-dropdown">
+                    {activeCostCenters.map((c) => (
+                      <button
+                        key={c.code}
+                        onClick={() => {
+                          setCostCenter(c.code);
+                          setCostCenterMenuOpen(false);
+                        }}
+                      >
+                        {c.code} · {c.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {!costCenter && <div className="error-text">Selecione um centro de custo.</div>}
+            </div>
+
             <div className="step-actions">
               <button className="btn btn--outline" onClick={() => setStep(2)}>
                 Voltar
               </button>
-              <button className="btn btn--primary" onClick={() => setStep(4)}>
+              <button className="btn btn--primary" disabled={!costCenter} onClick={() => setStep(4)}>
                 Continuar para pagamento
               </button>
             </div>

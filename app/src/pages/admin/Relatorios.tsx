@@ -5,23 +5,10 @@ import { useAppData } from "../../mock/AppDataContext";
 import { STATUS_STYLE } from "../../mock/services";
 import { money } from "../../mock/money";
 import { Modal } from "../../components/Modal";
+import type { CostCenter, Order } from "../../types";
 import "./Relatorios.css";
 
-// Status styles used only by this report's sample data, not present in the
-// shared STATUS_STYLE map (e.g. "Atrasado" / "Pronto para entrega" logistics states).
-const LOCAL_STATUS_STYLE: Record<string, { bg: string; color: string }> = {
-  ...STATUS_STYLE,
-  "Pronto para entrega": { bg: "#e6f5ec", color: "#1a7a4f" },
-  Atrasado: { bg: "#fbe4e0", color: "#c0392b" },
-};
-
-const CC_LABELS: Record<string, string> = {
-  CC001: "Administrativo",
-  CC002: "Comercial",
-  CC003: "Operações",
-  CC004: "Recursos Humanos",
-  CC005: "Industrial",
-};
+const PALETTE = ["#283897", "#1e4fa3", "#1a7a4f", "#b5690f", "#5a4a8a", "#c99a1f", "#c0392b"];
 
 export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "pesquisa-satisfacao" | "pesquisa-aplicacao";
 
@@ -32,63 +19,6 @@ const DASH_TABS: { key: ReportDash; label: string }[] = [
   { key: "centros-custo", label: "Centros de Custo" },
   { key: "pesquisa-satisfacao", label: "Pesquisa de Satisfação" },
   { key: "pesquisa-aplicacao", label: "Pesquisa da Aplicação" },
-];
-
-const KPIS: { glyph: string; label: string; value: string; trend: string; seed: number; sparkColor: string; dash: ReportDash }[] = [
-  { glyph: "💰", label: "Faturamento total", value: money(248750.6), trend: "↑ 18,0% vs período anterior", seed: 1, sparkColor: "#283897", dash: "faturamento" },
-  { glyph: "📦", label: "Pedidos realizados", value: "156", trend: "↑ 12,4% vs período anterior", seed: 2, sparkColor: "#1e4fa3", dash: "pedidos" },
-  { glyph: "🎟", label: "Ticket médio", value: money(1594.56), trend: "↑ 5,2% vs período anterior", seed: 3, sparkColor: "#1a7a4f", dash: "faturamento" },
-  { glyph: "👥", label: "Unidades atendidas", value: "24", trend: "↑ 9,1% vs período anterior", seed: 4, sparkColor: "#b5690f", dash: "centros-custo" },
-  { glyph: "⭐", label: "Satisfação (NPS)", value: "59", trend: "↑ 7 pts vs período anterior", seed: 5, sparkColor: "#c99a1f", dash: "pesquisa-satisfacao" },
-];
-
-const BAR_VALUES = [24000, 31000, 20000, 38000, 42000, 29000, 45000, 36000];
-const BAR_LABELS = ["01/07", "04/07", "08/07", "12/07", "15/07", "19/07", "21/07", "24/07"];
-
-const SERVICE_BREAKDOWN = [
-  { label: "Coffee Break", pct: 45, color: "#283897", value: 111938.27, orders: 72, trend: "↑ 18%", up: true },
-  { label: "Lanches", pct: 25, color: "#1e4fa3", value: 62187.65, orders: 48, trend: "↑ 8,4%", up: true },
-  { label: "Refeições", pct: 20, color: "#1a7a4f", value: 49750.12, orders: 24, trend: "↑ 10,2%", up: true },
-  { label: "Eventos", pct: 10, color: "#b5690f", value: 24874.56, orders: 12, trend: "↓ 2,1%", up: false },
-];
-const SERVICE_TOTAL = 248750.6;
-
-const TOP_COST_CENTERS = [
-  { code: "CC001", pct: 100, value: 78540.2 },
-  { code: "CC002", pct: 67, value: 52430.1 },
-  { code: "CC003", pct: 50, value: 38920.9 },
-  { code: "CC004", pct: 37, value: 28850.3 },
-  { code: "CC005", pct: 31, value: 24209.1 },
-];
-
-const STATUS_CARDS: { glyph: string; label: string; value: string; bg: string; border: string; color: string; dash: ReportDash }[] = [
-  { glyph: "🕓", label: "Aguardando aprovação", value: "8 pedidos", bg: "#fdf6ea", border: "#f0d49a", color: "#8a5a0f", dash: "pedidos" },
-  { glyph: "🔥", label: "Em produção", value: "12 pedidos", bg: "#eef4fc", border: "#c7dcf5", color: "#1e4fa3", dash: "pedidos" },
-  { glyph: "📬", label: "Prontos para entrega", value: "5 pedidos", bg: "#eef8f1", border: "#bfe4cc", color: "#1a7a4f", dash: "pedidos" },
-  { glyph: "⏰", label: "Atrasados", value: "2 pedidos", bg: "#fdf1ef", border: "#f0c6bd", color: "#c0392b", dash: "pedidos" },
-  { glyph: "⚠", label: "Ocorrências abertas", value: "3 ocorrências", bg: "#f6f0fb", border: "#ddc7ee", color: "#5a4a8a", dash: "pedidos" },
-];
-
-const RECENT_ORDERS = [
-  { id: "#CB-15234", type: "Coffee Break", unidade: "Unidade Matriz", datetime: "24/07 • 09:30", status: "Em preparação" },
-  { id: "#LAN-15210", type: "Lanche", unidade: "Unidade Matriz", datetime: "24/07 • 10:00", status: "Pronto para entrega" },
-  { id: "#EVT-15188", type: "Evento", unidade: "Unidade RH", datetime: "23/07 • 18:40", status: "Entregue" },
-  { id: "#REF-15123", type: "Refeição", unidade: "Unidade Industrial", datetime: "23/07 • 12:30", status: "Entregue" },
-  { id: "#CB-15098", type: "Coffee Break", unidade: "Unidade Financeira", datetime: "23/07 • 09:00", status: "Aguardando aprovação" },
-];
-
-// Sample order set used both for the "Pedidos" dash table and the CSV export.
-const EXPORT_ORDERS = [
-  { id: "#CB-15234", type: "Coffee Break", unidade: "Unidade Matriz", datetime: "24/07 • 09:30", people: 20, value: 240, status: "Em preparação" },
-  { id: "#LAN-15210", type: "Lanche", unidade: "Unidade Matriz", datetime: "24/07 • 10:00", people: 15, value: 187.5, status: "Pronto para entrega" },
-  { id: "#EVT-15188", type: "Evento", unidade: "Unidade RH", datetime: "23/07 • 18:40", people: 30, value: 1250, status: "Entregue" },
-  { id: "#REF-15123", type: "Refeição", unidade: "Unidade Industrial", datetime: "23/07 • 12:30", people: 25, value: 550, status: "Entregue" },
-  { id: "#CB-15098", type: "Coffee Break", unidade: "Unidade Financeira", datetime: "23/07 • 09:00", people: 18, value: 320, status: "Aguardando aprovação" },
-  { id: "#SA-15075", type: "Água", unidade: "Unidade Comercial", datetime: "22/07 • 08:00", people: 12, value: 72, status: "Entregue" },
-  { id: "#RM-15040", type: "Refeição Marmitex", unidade: "Unidade Industrial", datetime: "22/07 • 12:00", people: 40, value: 720, status: "Entregue" },
-  { id: "#CB-14990", type: "Coffee Break", unidade: "Unidade Matriz", datetime: "21/07 • 15:00", people: 22, value: 275, status: "Atrasado" },
-  { id: "#EE-14955", type: "Evento", unidade: "Unidade RH", datetime: "20/07 • 09:00", people: 35, value: 1480, status: "Entregue" },
-  { id: "#LAN-14920", type: "Lanche", unidade: "Unidade Financeira", datetime: "19/07 • 10:30", people: 10, value: 125, status: "Entregue" },
 ];
 
 const EXPORT_FIELD_DEFS = [
@@ -103,6 +33,15 @@ const EXPORT_FIELD_DEFS = [
 type ExportFieldKey = (typeof EXPORT_FIELD_DEFS)[number]["key"];
 
 const APP_SURVEY_CATEGORY_COLOR: Record<string, string> = { CX: "#1e4fa3", UX: "#283897", NPS: "#c99a1f" };
+
+function orderUnitLabel(o: Order, costCenters: CostCenter[]): string {
+  const primary = o.costCenters?.[0];
+  if (primary) {
+    const cc = costCenters.find((c) => c.code === primary.code);
+    return cc ? `${cc.code} · ${cc.name}` : primary.code;
+  }
+  return o.location || "—";
+}
 
 /** Respostas numéricas de uma pergunta específica, dentre as respostas de um dos dois formulários. */
 function numericAnswers(responses: { answers: { questionId: string; value: number | string }[] }[], questionId: string): number[] {
@@ -120,17 +59,16 @@ interface NpsStats {
   detractor: number;
   count: number;
 }
-/** Calcula NPS real a partir das respostas; usa o "fallback" ilustrativo enquanto não há respostas suficientes. */
-function npsStats(values: number[], fallback: NpsStats): NpsStats {
-  if (values.length === 0) return fallback;
+function npsStats(values: number[]): NpsStats {
+  if (values.length === 0) return { score: 0, avg: 0, promoter: 0, neutral: 0, detractor: 0, count: 0 };
   const promoter = Math.round((values.filter((v) => v >= 9).length / values.length) * 100);
   const detractor = Math.round((values.filter((v) => v <= 6).length / values.length) * 100);
   const neutral = 100 - promoter - detractor;
   const avg = values.reduce((s, v) => s + v, 0) / values.length;
   return { score: promoter - detractor, avg, promoter, neutral, detractor, count: values.length };
 }
-function avgOf(values: number[], fallback: number): { avg: number; count: number } {
-  if (values.length === 0) return { avg: fallback, count: 0 };
+function avgOf(values: number[]): { avg: number; count: number } {
+  if (values.length === 0) return { avg: 0, count: 0 };
   return { avg: values.reduce((s, v) => s + v, 0) / values.length, count: values.length };
 }
 
@@ -154,7 +92,7 @@ function Sparkline({ seed, color }: { seed: number; color: string }) {
 }
 
 export function Relatorios() {
-  const { showToast, costCenters, surveyQuestions, appSurveyQuestions, surveyResponses } = useAppData();
+  const { orders, costCenters, occurrences, showToast, surveyQuestions, appSurveyQuestions, surveyResponses } = useAppData();
   const navigate = useNavigate();
   const params = useParams<{ dash?: string }>();
   const dash: ReportDash = (DASH_TABS.some((t) => t.key === params.dash) ? params.dash : "geral") as ReportDash;
@@ -170,7 +108,116 @@ export function Relatorios() {
     status: true,
   });
 
-  const barData = useMemo(() => BAR_VALUES.map((v, i) => ({ day: BAR_LABELS[i], value: v })), []);
+  // ---- real data, computed from orders/centros de custo/ocorrências ----
+  const activeOrders = useMemo(() => orders.filter((o) => o.status !== "Cancelado"), [orders]);
+  const ordersByDateDesc = useMemo(
+    () => [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    [orders],
+  );
+
+  const totalFaturamento = activeOrders.reduce((s, o) => s + (o.valueNumber ?? 0), 0);
+  const totalPedidos = activeOrders.length;
+  const ticketMedio = totalPedidos > 0 ? totalFaturamento / totalPedidos : 0;
+  const unidadesAtendidas = useMemo(() => {
+    const set = new Set<string>();
+    activeOrders.forEach((o) => o.costCenters?.forEach((cc) => set.add(cc.code)));
+    return set.size;
+  }, [activeOrders]);
+
+  const barData = useMemo(() => {
+    const map = new Map<string, { label: string; value: number }>();
+    activeOrders.forEach((o) => {
+      const d = new Date(o.createdAt);
+      const key = d.toISOString().slice(0, 10);
+      const label = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      const cur = map.get(key) ?? { label, value: 0 };
+      cur.value += o.valueNumber ?? 0;
+      map.set(key, cur);
+    });
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-10)
+      .map(([, v]) => ({ day: v.label, value: v.value }));
+  }, [activeOrders]);
+
+  const serviceBreakdown = useMemo(() => {
+    const map = new Map<string, { value: number; orders: number }>();
+    activeOrders.forEach((o) => {
+      const cur = map.get(o.category) ?? { value: 0, orders: 0 };
+      cur.value += o.valueNumber ?? 0;
+      cur.orders += 1;
+      map.set(o.category, cur);
+    });
+    const total = Array.from(map.values()).reduce((s, v) => s + v.value, 0);
+    return Array.from(map.entries())
+      .map(([label, v], i) => ({ label, value: v.value, orders: v.orders, pct: total > 0 ? Math.round((v.value / total) * 100) : 0, color: PALETTE[i % PALETTE.length] }))
+      .sort((a, b) => b.value - a.value);
+  }, [activeOrders]);
+  const serviceTotal = serviceBreakdown.reduce((s, sb) => s + sb.value, 0);
+
+  const topCostCenters = useMemo(() => {
+    const withValue = costCenters
+      .map((cc) => {
+        const value = activeOrders.reduce((sum, o) => {
+          const alloc = o.costCenters?.find((a) => a.code === cc.code);
+          return sum + (alloc ? (o.valueNumber ?? 0) * (alloc.percent / 100) : 0);
+        }, 0);
+        return { code: cc.code, name: cc.name, value };
+      })
+      .filter((c) => c.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+    const max = withValue[0]?.value || 1;
+    return withValue.map((c) => ({ ...c, pct: Math.round((c.value / max) * 100) }));
+  }, [activeOrders, costCenters]);
+
+  const countStatus = (s: Order["status"]) => activeOrders.filter((o) => o.status === s).length;
+  const openOccurrences = occurrences.filter((o) => o.status === "Aberta" || o.status === "Em análise").length;
+  const statusCards: { glyph: string; label: string; value: string; bg: string; border: string; color: string; dash: ReportDash }[] = [
+    { glyph: "🕓", label: "Aguardando aprovação", value: `${countStatus("Aguardando aprovação")} pedidos`, bg: "#fdf6ea", border: "#f0d49a", color: "#8a5a0f", dash: "pedidos" },
+    { glyph: "🔥", label: "Em produção", value: `${countStatus("Em preparação")} pedidos`, bg: "#eef4fc", border: "#c7dcf5", color: "#1e4fa3", dash: "pedidos" },
+    { glyph: "📬", label: "Prontos para entrega", value: `${countStatus("Pronto para entrega")} pedidos`, bg: "#eef8f1", border: "#bfe4cc", color: "#1a7a4f", dash: "pedidos" },
+    { glyph: "📝", label: "Aguardando confirmação", value: `${countStatus("Solicitado")} pedidos`, bg: "#f3f0fb", border: "#d9d0f0", color: "#5a4a8a", dash: "pedidos" },
+    { glyph: "⚠", label: "Ocorrências abertas", value: `${openOccurrences} ocorrências`, bg: "#fdf1ef", border: "#f0c6bd", color: "#c0392b", dash: "pedidos" },
+  ];
+
+  const pedidoResponses = useMemo(() => surveyResponses.filter((r) => r.kind === "pedido"), [surveyResponses]);
+  const aplicacaoResponses = useMemo(() => surveyResponses.filter((r) => r.kind === "aplicacao"), [surveyResponses]);
+
+  const npsQuestion = surveyQuestions.find((q) => q.type === "NPS" && q.active);
+  const pedidoNps = npsStats(npsQuestion ? numericAnswers(pedidoResponses, npsQuestion.id) : []);
+  const starQuestions = surveyQuestions.filter((q) => q.type === "Estrelas" && q.active);
+  const textQuestions = surveyQuestions.filter((q) => q.type === "Texto" && q.active);
+
+  const appNpsQuestion = appSurveyQuestions.find((q) => q.type === "NPS" && q.active);
+  const appNps = npsStats(appNpsQuestion ? numericAnswers(aplicacaoResponses, appNpsQuestion.id) : []);
+  const appRatedQuestions = appSurveyQuestions.filter((q) => q.active && (q.type === "Estrelas" || q.type === "Escala 1-5"));
+  const appTextQuestions = appSurveyQuestions.filter((q) => q.active && q.type === "Texto");
+
+  const kpis: { glyph: string; label: string; value: string; seed: number; sparkColor: string; dash: ReportDash }[] = [
+    { glyph: "💰", label: "Faturamento total", value: money(totalFaturamento), seed: 1, sparkColor: "#283897", dash: "faturamento" },
+    { glyph: "📦", label: "Pedidos realizados", value: String(totalPedidos), seed: 2, sparkColor: "#1e4fa3", dash: "pedidos" },
+    { glyph: "🎟", label: "Ticket médio", value: money(ticketMedio), seed: 3, sparkColor: "#1a7a4f", dash: "faturamento" },
+    { glyph: "👥", label: "Unidades atendidas", value: String(unidadesAtendidas), seed: 4, sparkColor: "#b5690f", dash: "centros-custo" },
+    { glyph: "⭐", label: "Satisfação (NPS)", value: pedidoNps.count > 0 ? String(pedidoNps.score) : "—", seed: 5, sparkColor: "#c99a1f", dash: "pesquisa-satisfacao" },
+  ];
+
+  const recentOrders = ordersByDateDesc.slice(0, 5);
+  const periodOrders = ordersByDateDesc;
+
+  const exportRows = useMemo(
+    () =>
+      ordersByDateDesc.map((o) => ({
+        id: o.id,
+        type: o.type,
+        unidade: orderUnitLabel(o, costCenters),
+        datetime: o.datetime,
+        people: o.peopleCount ?? 0,
+        value: o.valueNumber ?? 0,
+        status: o.status,
+      })),
+    [ordersByDateDesc, costCenters],
+  );
 
   const activeFieldDefs = EXPORT_FIELD_DEFS.filter((f) => exportFields[f.key]);
   const noFieldsSelected = activeFieldDefs.length === 0;
@@ -180,7 +227,7 @@ export function Relatorios() {
   const doExport = () => {
     if (noFieldsSelected) return;
     const rows = [activeFieldDefs.map((f) => f.label).join(";")];
-    EXPORT_ORDERS.forEach((o) => {
+    exportRows.forEach((o) => {
       rows.push(
         activeFieldDefs
           .map((f) => (f.key === "value" ? money(o.value) : String(o[f.key as keyof typeof o])))
@@ -203,33 +250,14 @@ export function Relatorios() {
 
   const goDash = (d: ReportDash) => navigate(d === "geral" ? "/admin/relatorios" : `/admin/relatorios/${d}`);
 
-  const pedidoResponses = useMemo(() => surveyResponses.filter((r) => r.kind === "pedido"), [surveyResponses]);
-  const aplicacaoResponses = useMemo(() => surveyResponses.filter((r) => r.kind === "aplicacao"), [surveyResponses]);
-
-  const npsQuestion = surveyQuestions.find((q) => q.type === "NPS" && q.active);
-  const pedidoNps = npsStats(npsQuestion ? numericAnswers(pedidoResponses, npsQuestion.id) : [], {
-    score: 59, avg: 8.1, promoter: 68, neutral: 22, detractor: 10, count: 0,
-  });
-  const starQuestions = surveyQuestions.filter((q) => q.type === "Estrelas" && q.active);
-  const textQuestions = surveyQuestions.filter((q) => q.type === "Texto" && q.active);
-
-  const appNpsQuestion = appSurveyQuestions.find((q) => q.type === "NPS" && q.active);
-  const appNps = npsStats(appNpsQuestion ? numericAnswers(aplicacaoResponses, appNpsQuestion.id) : [], {
-    score: 42, avg: 7.2, promoter: 55, neutral: 32, detractor: 13, count: 0,
-  });
-  const appRatedQuestions = appSurveyQuestions.filter((q) => q.active && (q.type === "Estrelas" || q.type === "Escala 1-5"));
-  const appTextQuestions = appSurveyQuestions.filter((q) => q.active && q.type === "Texto");
-
   return (
     <div className="relatorios-page">
       <div className="relatorios-header">
         <div>
           <h1 className="relatorios-title">Relatórios</h1>
-          <div className="relatorios-subtitle">Acompanhe indicadores, análise de pedidos e faturamento da sua operação.</div>
+          <div className="relatorios-subtitle">Acompanhe indicadores, análise de pedidos e faturamento da sua operação — calculados a partir dos pedidos reais.</div>
         </div>
         <div className="relatorios-header__actions">
-          <div className="relatorios-period">📅 01/07/2026 — 24/07/2026</div>
-          <button className="btn btn--outline">Comparar período</button>
           <button className="btn btn--primary" onClick={() => setExportOpen(true)}>
             ⭳ Exportar Excel
           </button>
@@ -247,14 +275,13 @@ export function Relatorios() {
       {dash === "geral" && (
         <>
           <div className="relatorios-kpis">
-            {KPIS.map((k) => (
+            {kpis.map((k) => (
               <button className="card relatorios-kpi relatorios-kpi--clickable" key={k.label} onClick={() => goDash(k.dash)}>
                 <div className="relatorios-kpi__head">
                   <div className="relatorios-kpi__label">{k.label}</div>
                   <span>{k.glyph}</span>
                 </div>
                 <div className="relatorios-kpi__value">{k.value}</div>
-                <div className="relatorios-kpi__trend">{k.trend}</div>
                 <Sparkline seed={k.seed} color={k.sparkColor} />
               </button>
             ))}
@@ -263,15 +290,19 @@ export function Relatorios() {
           <div className="relatorios-row-1">
             <div className="card relatorios-panel">
               <div className="relatorios-panel-title">Faturamento por dia</div>
-              <ResponsiveContainer width="100%" height={140}>
-                <BarChart data={barData} margin={{ top: 6, right: 4, left: 4, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="#edf1f7" />
-                  <XAxis dataKey="day" tick={{ fontSize: 9.5, fill: "#7d8798" }} axisLine={false} tickLine={false} />
-                  <YAxis hide />
-                  <Tooltip formatter={(v) => [money(Number(v)), "Faturamento"]} contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e3e8f0" }} />
-                  <Bar dataKey="value" fill="#283897" radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {barData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={140}>
+                  <BarChart data={barData} margin={{ top: 6, right: 4, left: 4, bottom: 0 }}>
+                    <CartesianGrid vertical={false} stroke="#edf1f7" />
+                    <XAxis dataKey="day" tick={{ fontSize: 9.5, fill: "#7d8798" }} axisLine={false} tickLine={false} />
+                    <YAxis hide />
+                    <Tooltip formatter={(v) => [money(Number(v)), "Faturamento"]} contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e3e8f0" }} />
+                    <Bar dataKey="value" fill="#283897" radius={[2, 2, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="empty-state">Nenhum pedido faturável ainda.</div>
+              )}
             </div>
 
             <div className="card relatorios-panel">
@@ -280,7 +311,7 @@ export function Relatorios() {
                 <button className="link" onClick={() => goDash("faturamento")}>Ver mais &rsaquo;</button>
               </div>
               <div className="relatorios-service-list">
-                {SERVICE_BREAKDOWN.map((sb) => (
+                {serviceBreakdown.map((sb) => (
                   <div key={sb.label}>
                     <div className="relatorios-service-row">
                       <span className="relatorios-service-label">
@@ -294,25 +325,26 @@ export function Relatorios() {
                     </div>
                   </div>
                 ))}
+                {serviceBreakdown.length === 0 && <div className="relatorios-muted-sm">Nenhum pedido faturável ainda.</div>}
               </div>
               <div className="relatorios-panel-total">
                 <span>Total</span>
-                <span className="relatorios-panel-total__value">{money(SERVICE_TOTAL)}</span>
+                <span className="relatorios-panel-total__value">{money(serviceTotal)}</span>
               </div>
             </div>
 
             <div className="card relatorios-panel">
               <div className="relatorios-panel-head">
-                <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Top 5 Centros de custo</div>
+                <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Top centros de custo</div>
                 <button className="link" onClick={() => goDash("centros-custo")}>Ver mais &rsaquo;</button>
               </div>
               <div className="relatorios-topunits">
-                {TOP_COST_CENTERS.map((u, i) => (
+                {topCostCenters.map((u, i) => (
                   <button className="relatorios-topunit relatorios-topunit--clickable" key={u.code} onClick={() => goDash("centros-custo")}>
                     <div className="relatorios-topunit__rank">{i + 1}</div>
                     <div className="relatorios-topunit__body">
                       <div className="relatorios-topunit__name">
-                        {u.code} • {CC_LABELS[u.code]}
+                        {u.code} • {u.name}
                       </div>
                       <div className="relatorios-bar-track relatorios-bar-track--sm">
                         <div className="relatorios-bar-fill" style={{ width: `${u.pct}%`, background: "#283897" }} />
@@ -321,12 +353,13 @@ export function Relatorios() {
                     <div className="relatorios-topunit__value">{money(u.value)}</div>
                   </button>
                 ))}
+                {topCostCenters.length === 0 && <div className="relatorios-muted-sm">Nenhum pedido com centro de custo alocado ainda.</div>}
               </div>
             </div>
           </div>
 
           <div className="relatorios-status-row">
-            {STATUS_CARDS.map((s) => (
+            {statusCards.map((s) => (
               <button
                 key={s.label}
                 className="relatorios-status-card"
@@ -358,10 +391,9 @@ export function Relatorios() {
                 <div>Fat.</div>
                 <div>%</div>
                 <div>Pedidos</div>
-                <div>vs período</div>
               </div>
-              {SERVICE_BREAKDOWN.map((sb) => (
-                <div className="relatorios-summary__row" key={sb.label}>
+              {serviceBreakdown.map((sb) => (
+                <div className="relatorios-summary__row" key={sb.label} style={{ gridTemplateColumns: "1.3fr 0.8fr 0.8fr 0.9fr" }}>
                   <div className="relatorios-summary__type">
                     <span className="relatorios-dot" style={{ background: sb.color }} />
                     {sb.label}
@@ -369,9 +401,9 @@ export function Relatorios() {
                   <div className="relatorios-summary__value">{money(sb.value)}</div>
                   <div className="relatorios-muted">{sb.pct}%</div>
                   <div>{sb.orders}</div>
-                  <div className={`relatorios-trend ${sb.up ? "is-up" : "is-down"}`}>{sb.trend}</div>
                 </div>
               ))}
+              {serviceBreakdown.length === 0 && <div className="empty-state">Nenhum pedido faturável ainda.</div>}
             </div>
 
             <div className="card relatorios-panel">
@@ -387,15 +419,15 @@ export function Relatorios() {
                 <div>Data/Hora</div>
                 <div>Status</div>
               </div>
-              {RECENT_ORDERS.map((o) => {
-                const st = LOCAL_STATUS_STYLE[o.status] || { bg: "#eee", color: "#555" };
+              {recentOrders.map((o) => {
+                const st = STATUS_STYLE[o.status] || { bg: "#eee", color: "#555" };
                 return (
                   <div className="relatorios-orders__row" key={o.id}>
                     <div className="relatorios-orders__id-wrap">
                       <div className="relatorios-orders__id">{o.id}</div>
                       <div className="relatorios-muted-sm">{o.type}</div>
                     </div>
-                    <div className="relatorios-orders__unidade">{o.unidade}</div>
+                    <div className="relatorios-orders__unidade">{orderUnitLabel(o, costCenters)}</div>
                     <div className="relatorios-orders__datetime">{o.datetime}</div>
                     <span className="status-pill" style={{ background: st.bg, color: st.color }}>
                       {o.status}
@@ -403,6 +435,7 @@ export function Relatorios() {
                   </div>
                 );
               })}
+              {recentOrders.length === 0 && <div className="empty-state">Nenhum pedido registrado ainda.</div>}
             </div>
           </div>
         </>
@@ -411,14 +444,13 @@ export function Relatorios() {
       {dash === "faturamento" && (
         <>
           <div className="relatorios-kpis">
-            {KPIS.filter((k) => k.dash === "faturamento").map((k) => (
+            {kpis.filter((k) => k.dash === "faturamento").map((k) => (
               <div className="card relatorios-kpi" key={k.label}>
                 <div className="relatorios-kpi__head">
                   <div className="relatorios-kpi__label">{k.label}</div>
                   <span>{k.glyph}</span>
                 </div>
                 <div className="relatorios-kpi__value">{k.value}</div>
-                <div className="relatorios-kpi__trend">{k.trend}</div>
                 <Sparkline seed={k.seed} color={k.sparkColor} />
               </div>
             ))}
@@ -426,20 +458,24 @@ export function Relatorios() {
           <div className="relatorios-row-1">
             <div className="card relatorios-panel" style={{ gridColumn: "span 2" }}>
               <div className="relatorios-panel-title">Faturamento por dia</div>
-              <ResponsiveContainer width="100%" height={160}>
-                <BarChart data={barData} margin={{ top: 6, right: 4, left: 4, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="#edf1f7" />
-                  <XAxis dataKey="day" tick={{ fontSize: 9.5, fill: "#7d8798" }} axisLine={false} tickLine={false} />
-                  <YAxis hide />
-                  <Tooltip formatter={(v) => [money(Number(v)), "Faturamento"]} contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e3e8f0" }} />
-                  <Bar dataKey="value" fill="#283897" radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {barData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={160}>
+                  <BarChart data={barData} margin={{ top: 6, right: 4, left: 4, bottom: 0 }}>
+                    <CartesianGrid vertical={false} stroke="#edf1f7" />
+                    <XAxis dataKey="day" tick={{ fontSize: 9.5, fill: "#7d8798" }} axisLine={false} tickLine={false} />
+                    <YAxis hide />
+                    <Tooltip formatter={(v) => [money(Number(v)), "Faturamento"]} contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e3e8f0" }} />
+                    <Bar dataKey="value" fill="#283897" radius={[2, 2, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="empty-state">Nenhum pedido faturável ainda.</div>
+              )}
             </div>
             <div className="card relatorios-panel">
               <div className="relatorios-panel-title">Faturamento por tipo</div>
               <div className="relatorios-service-list">
-                {SERVICE_BREAKDOWN.map((sb) => (
+                {serviceBreakdown.map((sb) => (
                   <div key={sb.label}>
                     <div className="relatorios-service-row">
                       <span className="relatorios-service-label">
@@ -456,7 +492,7 @@ export function Relatorios() {
               </div>
               <div className="relatorios-panel-total">
                 <span>Total</span>
-                <span className="relatorios-panel-total__value">{money(SERVICE_TOTAL)}</span>
+                <span className="relatorios-panel-total__value">{money(serviceTotal)}</span>
               </div>
             </div>
           </div>
@@ -473,10 +509,9 @@ export function Relatorios() {
               <div>Fat.</div>
               <div>%</div>
               <div>Pedidos</div>
-              <div>vs período</div>
             </div>
-            {SERVICE_BREAKDOWN.map((sb) => (
-              <div className="relatorios-summary__row" key={sb.label}>
+            {serviceBreakdown.map((sb) => (
+              <div className="relatorios-summary__row" key={sb.label} style={{ gridTemplateColumns: "1.3fr 0.8fr 0.8fr 0.9fr" }}>
                 <div className="relatorios-summary__type">
                   <span className="relatorios-dot" style={{ background: sb.color }} />
                   {sb.label}
@@ -484,9 +519,9 @@ export function Relatorios() {
                 <div className="relatorios-summary__value">{money(sb.value)}</div>
                 <div className="relatorios-muted">{sb.pct}%</div>
                 <div>{sb.orders}</div>
-                <div className={`relatorios-trend ${sb.up ? "is-up" : "is-down"}`}>{sb.trend}</div>
               </div>
             ))}
+            {serviceBreakdown.length === 0 && <div className="empty-state">Nenhum pedido faturável ainda.</div>}
           </div>
         </>
       )}
@@ -494,7 +529,7 @@ export function Relatorios() {
       {dash === "pedidos" && (
         <>
           <div className="relatorios-status-row">
-            {STATUS_CARDS.map((s) => (
+            {statusCards.map((s) => (
               <div key={s.label} className="relatorios-status-card" style={{ background: s.bg, borderColor: s.border, cursor: "default" }}>
                 <div className="relatorios-status-card__head">
                   <span>{s.glyph}</span>
@@ -517,15 +552,15 @@ export function Relatorios() {
               <div>Data/Hora</div>
               <div>Status</div>
             </div>
-            {EXPORT_ORDERS.map((o) => {
-              const st = LOCAL_STATUS_STYLE[o.status] || { bg: "#eee", color: "#555" };
+            {periodOrders.map((o) => {
+              const st = STATUS_STYLE[o.status] || { bg: "#eee", color: "#555" };
               return (
                 <div className="relatorios-orders__row" key={o.id}>
                   <div className="relatorios-orders__id-wrap">
                     <div className="relatorios-orders__id">{o.id}</div>
-                    <div className="relatorios-muted-sm">{o.type} • {o.people} pessoas</div>
+                    <div className="relatorios-muted-sm">{o.type}{o.peopleCount ? ` • ${o.peopleCount} pessoas` : ""}</div>
                   </div>
-                  <div className="relatorios-orders__unidade">{o.unidade}</div>
+                  <div className="relatorios-orders__unidade">{orderUnitLabel(o, costCenters)}</div>
                   <div className="relatorios-orders__datetime">{o.datetime}</div>
                   <span className="status-pill" style={{ background: st.bg, color: st.color }}>
                     {o.status}
@@ -533,6 +568,7 @@ export function Relatorios() {
                 </div>
               );
             })}
+            {periodOrders.length === 0 && <div className="empty-state">Nenhum pedido registrado ainda.</div>}
           </div>
         </>
       )}
@@ -542,12 +578,12 @@ export function Relatorios() {
           <div className="card relatorios-panel">
             <div className="relatorios-panel-title">Faturamento por centro de custo</div>
             <div className="relatorios-topunits">
-              {TOP_COST_CENTERS.map((u, i) => (
+              {topCostCenters.map((u, i) => (
                 <div className="relatorios-topunit" key={u.code}>
                   <div className="relatorios-topunit__rank">{i + 1}</div>
                   <div className="relatorios-topunit__body">
                     <div className="relatorios-topunit__name">
-                      {u.code} • {CC_LABELS[u.code]}
+                      {u.code} • {u.name}
                     </div>
                     <div className="relatorios-bar-track relatorios-bar-track--sm">
                       <div className="relatorios-bar-fill" style={{ width: `${u.pct}%`, background: "#283897" }} />
@@ -556,6 +592,7 @@ export function Relatorios() {
                   <div className="relatorios-topunit__value">{money(u.value)}</div>
                 </div>
               ))}
+              {topCostCenters.length === 0 && <div className="empty-state">Nenhum pedido com centro de custo alocado ainda.</div>}
             </div>
           </div>
 
@@ -594,41 +631,47 @@ export function Relatorios() {
                 Configurar perguntas &rsaquo;
               </Link>
             </div>
-            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginTop: 10, marginBottom: 4 }}>{pedidoNps.score}</div>
+            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginTop: 10, marginBottom: 4 }}>{pedidoNps.count > 0 ? pedidoNps.score : "—"}</div>
             <div className="relatorios-muted-sm" style={{ marginBottom: 14 }}>
-              {pedidoNps.count > 0 ? `Calculado a partir de ${pedidoNps.count} resposta(s) reais` : "Exemplo ilustrativo — nenhuma resposta recebida ainda"}
+              {pedidoNps.count > 0 ? `Calculado a partir de ${pedidoNps.count} resposta(s) reais` : "Nenhuma resposta recebida ainda"}
             </div>
-            <div className="relatorios-service-list">
-              {[
-                { label: "Promotores (9-10)", pct: pedidoNps.promoter, color: "#1a7a4f" },
-                { label: "Neutros (7-8)", pct: pedidoNps.neutral, color: "#c99a1f" },
-                { label: "Detratores (0-6)", pct: pedidoNps.detractor, color: "#c0392b" },
-              ].map((n) => (
-                <div key={n.label}>
-                  <div className="relatorios-service-row">
-                    <span className="relatorios-service-label">
-                      <span className="relatorios-dot" style={{ background: n.color }} />
-                      {n.label}
-                    </span>
-                    <span className="relatorios-muted">{n.pct}%</span>
+            {pedidoNps.count > 0 ? (
+              <div className="relatorios-service-list">
+                {[
+                  { label: "Promotores (9-10)", pct: pedidoNps.promoter, color: "#1a7a4f" },
+                  { label: "Neutros (7-8)", pct: pedidoNps.neutral, color: "#c99a1f" },
+                  { label: "Detratores (0-6)", pct: pedidoNps.detractor, color: "#c0392b" },
+                ].map((n) => (
+                  <div key={n.label}>
+                    <div className="relatorios-service-row">
+                      <span className="relatorios-service-label">
+                        <span className="relatorios-dot" style={{ background: n.color }} />
+                        {n.label}
+                      </span>
+                      <span className="relatorios-muted">{n.pct}%</span>
+                    </div>
+                    <div className="relatorios-bar-track">
+                      <div className="relatorios-bar-fill" style={{ width: `${n.pct}%`, background: n.color }} />
+                    </div>
                   </div>
-                  <div className="relatorios-bar-track">
-                    <div className="relatorios-bar-fill" style={{ width: `${n.pct}%`, background: n.color }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">Sem dados suficientes para o gráfico.</div>
+            )}
           </div>
 
           <div className="card relatorios-panel">
             <div className="relatorios-panel-title">Avaliações por pergunta</div>
             <div className="relatorios-service-list">
               {starQuestions.map((q) => {
-                const { avg, count } = avgOf(numericAnswers(pedidoResponses, q.id), 4.3);
+                const { avg, count } = avgOf(numericAnswers(pedidoResponses, q.id));
                 return (
                   <div key={q.id} className="relatorios-service-row" style={{ marginBottom: 8 }}>
                     <span className="relatorios-service-label">{q.text}</span>
-                    <span className="relatorios-muted">{"★".repeat(Math.round(avg))}{"☆".repeat(5 - Math.round(avg))} {count === 0 && "(exemplo)"}</span>
+                    <span className="relatorios-muted">
+                      {count > 0 ? `${"★".repeat(Math.round(avg))}${"☆".repeat(5 - Math.round(avg))}` : "Sem avaliações ainda"}
+                    </span>
                   </div>
                 );
               })}
@@ -656,44 +699,48 @@ export function Relatorios() {
                 Configurar perguntas &rsaquo;
               </Link>
             </div>
-            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginTop: 10, marginBottom: 4 }}>{appNps.score}</div>
+            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginTop: 10, marginBottom: 4 }}>{appNps.count > 0 ? appNps.score : "—"}</div>
             <div className="relatorios-muted-sm" style={{ marginBottom: 14 }}>
-              {appNps.count > 0 ? `Calculado a partir de ${appNps.count} resposta(s) reais` : "Exemplo ilustrativo — nenhuma resposta recebida ainda"}
+              {appNps.count > 0 ? `Calculado a partir de ${appNps.count} resposta(s) reais` : "Nenhuma resposta recebida ainda"}
             </div>
-            <div className="relatorios-service-list">
-              {[
-                { label: "Promotores (9-10)", pct: appNps.promoter, color: "#1a7a4f" },
-                { label: "Neutros (7-8)", pct: appNps.neutral, color: "#c99a1f" },
-                { label: "Detratores (0-6)", pct: appNps.detractor, color: "#c0392b" },
-              ].map((n) => (
-                <div key={n.label}>
-                  <div className="relatorios-service-row">
-                    <span className="relatorios-service-label">
-                      <span className="relatorios-dot" style={{ background: n.color }} />
-                      {n.label}
-                    </span>
-                    <span className="relatorios-muted">{n.pct}%</span>
+            {appNps.count > 0 ? (
+              <div className="relatorios-service-list">
+                {[
+                  { label: "Promotores (9-10)", pct: appNps.promoter, color: "#1a7a4f" },
+                  { label: "Neutros (7-8)", pct: appNps.neutral, color: "#c99a1f" },
+                  { label: "Detratores (0-6)", pct: appNps.detractor, color: "#c0392b" },
+                ].map((n) => (
+                  <div key={n.label}>
+                    <div className="relatorios-service-row">
+                      <span className="relatorios-service-label">
+                        <span className="relatorios-dot" style={{ background: n.color }} />
+                        {n.label}
+                      </span>
+                      <span className="relatorios-muted">{n.pct}%</span>
+                    </div>
+                    <div className="relatorios-bar-track">
+                      <div className="relatorios-bar-fill" style={{ width: `${n.pct}%`, background: n.color }} />
+                    </div>
                   </div>
-                  <div className="relatorios-bar-track">
-                    <div className="relatorios-bar-fill" style={{ width: `${n.pct}%`, background: n.color }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">Sem dados suficientes para o gráfico.</div>
+            )}
           </div>
 
           <div className="card relatorios-panel">
             <div className="relatorios-panel-title">CX &amp; UX por pergunta</div>
             <div className="relatorios-service-list">
               {appRatedQuestions.map((q) => {
-                const { avg, count } = avgOf(numericAnswers(aplicacaoResponses, q.id), 4.0);
+                const { avg, count } = avgOf(numericAnswers(aplicacaoResponses, q.id));
                 return (
                   <div key={q.id} className="relatorios-service-row" style={{ marginBottom: 8 }}>
                     <span className="relatorios-service-label">
                       <span className="relatorios-dot" style={{ background: APP_SURVEY_CATEGORY_COLOR[q.category] }} />
                       {q.text}
                     </span>
-                    <span className="relatorios-muted">{avg.toFixed(1)}/5 {count === 0 && "(exemplo)"}</span>
+                    <span className="relatorios-muted">{count > 0 ? `${avg.toFixed(1)}/5` : "Sem avaliações ainda"}</span>
                   </div>
                 );
               })}
@@ -727,7 +774,7 @@ export function Relatorios() {
             ))}
           </div>
           <div className="relatorios-export-count">
-            {activeFieldDefs.length} campo(s) selecionado(s) &bull; {EXPORT_ORDERS.length} pedidos no período
+            {activeFieldDefs.length} campo(s) selecionado(s) &bull; {exportRows.length} pedidos no total
           </div>
           <div className="modal-actions">
             <button className="btn btn--outline" onClick={() => setExportOpen(false)}>

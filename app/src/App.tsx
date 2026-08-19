@@ -23,6 +23,7 @@ import { Produtos } from "./pages/admin/Produtos";
 import { Kits } from "./pages/admin/Kits";
 import { Servicos } from "./pages/admin/Servicos";
 import { Decoracoes } from "./pages/admin/Decoracoes";
+import { Popups } from "./pages/admin/Popups";
 import { Usuarios } from "./pages/admin/Usuarios";
 import { Permissoes } from "./pages/admin/Permissoes";
 import { Ocorrencias } from "./pages/admin/Ocorrencias";
@@ -61,6 +62,7 @@ export default function App() {
             <Route path="kits" element={<Kits />} />
             <Route path="servicos" element={<Servicos />} />
             <Route path="decoracoes" element={<Decoracoes />} />
+            <Route path="popups" element={<Popups />} />
             <Route path="fornecedores" element={<Fornecedores />} />
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="permissoes" element={<Permissoes />} />
