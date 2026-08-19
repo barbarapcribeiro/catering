@@ -59,17 +59,16 @@ interface NpsStats {
   detractor: number;
   count: number;
 }
-/** Calcula NPS real a partir das respostas; usa o "fallback" ilustrativo enquanto não há respostas suficientes. */
-function npsStats(values: number[], fallback: NpsStats): NpsStats {
-  if (values.length === 0) return fallback;
+function npsStats(values: number[]): NpsStats {
+  if (values.length === 0) return { score: 0, avg: 0, promoter: 0, neutral: 0, detractor: 0, count: 0 };
   const promoter = Math.round((values.filter((v) => v >= 9).length / values.length) * 100);
   const detractor = Math.round((values.filter((v) => v <= 6).length / values.length) * 100);
   const neutral = 100 - promoter - detractor;
   const avg = values.reduce((s, v) => s + v, 0) / values.length;
   return { score: promoter - detractor, avg, promoter, neutral, detractor, count: values.length };
 }
-function avgOf(values: number[], fallback: number): { avg: number; count: number } {
-  if (values.length === 0) return { avg: fallback, count: 0 };
+function avgOf(values: number[]): { avg: number; count: number } {
+  if (values.length === 0) return { avg: 0, count: 0 };
   return { avg: values.reduce((s, v) => s + v, 0) / values.length, count: values.length };
 }
 
@@ -186,16 +185,12 @@ export function Relatorios() {
   const aplicacaoResponses = useMemo(() => surveyResponses.filter((r) => r.kind === "aplicacao"), [surveyResponses]);
 
   const npsQuestion = surveyQuestions.find((q) => q.type === "NPS" && q.active);
-  const pedidoNps = npsStats(npsQuestion ? numericAnswers(pedidoResponses, npsQuestion.id) : [], {
-    score: 59, avg: 8.1, promoter: 68, neutral: 22, detractor: 10, count: 0,
-  });
+  const pedidoNps = npsStats(npsQuestion ? numericAnswers(pedidoResponses, npsQuestion.id) : []);
   const starQuestions = surveyQuestions.filter((q) => q.type === "Estrelas" && q.active);
   const textQuestions = surveyQuestions.filter((q) => q.type === "Texto" && q.active);
 
   const appNpsQuestion = appSurveyQuestions.find((q) => q.type === "NPS" && q.active);
-  const appNps = npsStats(appNpsQuestion ? numericAnswers(aplicacaoResponses, appNpsQuestion.id) : [], {
-    score: 42, avg: 7.2, promoter: 55, neutral: 32, detractor: 13, count: 0,
-  });
+  const appNps = npsStats(appNpsQuestion ? numericAnswers(aplicacaoResponses, appNpsQuestion.id) : []);
   const appRatedQuestions = appSurveyQuestions.filter((q) => q.active && (q.type === "Estrelas" || q.type === "Escala 1-5"));
   const appTextQuestions = appSurveyQuestions.filter((q) => q.active && q.type === "Texto");
 
@@ -204,7 +199,7 @@ export function Relatorios() {
     { glyph: "📦", label: "Pedidos realizados", value: String(totalPedidos), seed: 2, sparkColor: "#1e4fa3", dash: "pedidos" },
     { glyph: "🎟", label: "Ticket médio", value: money(ticketMedio), seed: 3, sparkColor: "#1a7a4f", dash: "faturamento" },
     { glyph: "👥", label: "Unidades atendidas", value: String(unidadesAtendidas), seed: 4, sparkColor: "#b5690f", dash: "centros-custo" },
-    { glyph: "⭐", label: "Satisfação (NPS)", value: String(pedidoNps.score), seed: 5, sparkColor: "#c99a1f", dash: "pesquisa-satisfacao" },
+    { glyph: "⭐", label: "Satisfação (NPS)", value: pedidoNps.count > 0 ? String(pedidoNps.score) : "—", seed: 5, sparkColor: "#c99a1f", dash: "pesquisa-satisfacao" },
   ];
 
   const recentOrders = ordersByDateDesc.slice(0, 5);
@@ -636,41 +631,47 @@ export function Relatorios() {
                 Configurar perguntas &rsaquo;
               </Link>
             </div>
-            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginTop: 10, marginBottom: 4 }}>{pedidoNps.score}</div>
+            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginTop: 10, marginBottom: 4 }}>{pedidoNps.count > 0 ? pedidoNps.score : "—"}</div>
             <div className="relatorios-muted-sm" style={{ marginBottom: 14 }}>
-              {pedidoNps.count > 0 ? `Calculado a partir de ${pedidoNps.count} resposta(s) reais` : "Exemplo ilustrativo — nenhuma resposta recebida ainda"}
+              {pedidoNps.count > 0 ? `Calculado a partir de ${pedidoNps.count} resposta(s) reais` : "Nenhuma resposta recebida ainda"}
             </div>
-            <div className="relatorios-service-list">
-              {[
-                { label: "Promotores (9-10)", pct: pedidoNps.promoter, color: "#1a7a4f" },
-                { label: "Neutros (7-8)", pct: pedidoNps.neutral, color: "#c99a1f" },
-                { label: "Detratores (0-6)", pct: pedidoNps.detractor, color: "#c0392b" },
-              ].map((n) => (
-                <div key={n.label}>
-                  <div className="relatorios-service-row">
-                    <span className="relatorios-service-label">
-                      <span className="relatorios-dot" style={{ background: n.color }} />
-                      {n.label}
-                    </span>
-                    <span className="relatorios-muted">{n.pct}%</span>
+            {pedidoNps.count > 0 ? (
+              <div className="relatorios-service-list">
+                {[
+                  { label: "Promotores (9-10)", pct: pedidoNps.promoter, color: "#1a7a4f" },
+                  { label: "Neutros (7-8)", pct: pedidoNps.neutral, color: "#c99a1f" },
+                  { label: "Detratores (0-6)", pct: pedidoNps.detractor, color: "#c0392b" },
+                ].map((n) => (
+                  <div key={n.label}>
+                    <div className="relatorios-service-row">
+                      <span className="relatorios-service-label">
+                        <span className="relatorios-dot" style={{ background: n.color }} />
+                        {n.label}
+                      </span>
+                      <span className="relatorios-muted">{n.pct}%</span>
+                    </div>
+                    <div className="relatorios-bar-track">
+                      <div className="relatorios-bar-fill" style={{ width: `${n.pct}%`, background: n.color }} />
+                    </div>
                   </div>
-                  <div className="relatorios-bar-track">
-                    <div className="relatorios-bar-fill" style={{ width: `${n.pct}%`, background: n.color }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">Sem dados suficientes para o gráfico.</div>
+            )}
           </div>
 
           <div className="card relatorios-panel">
             <div className="relatorios-panel-title">Avaliações por pergunta</div>
             <div className="relatorios-service-list">
               {starQuestions.map((q) => {
-                const { avg, count } = avgOf(numericAnswers(pedidoResponses, q.id), 4.3);
+                const { avg, count } = avgOf(numericAnswers(pedidoResponses, q.id));
                 return (
                   <div key={q.id} className="relatorios-service-row" style={{ marginBottom: 8 }}>
                     <span className="relatorios-service-label">{q.text}</span>
-                    <span className="relatorios-muted">{"★".repeat(Math.round(avg))}{"☆".repeat(5 - Math.round(avg))} {count === 0 && "(exemplo)"}</span>
+                    <span className="relatorios-muted">
+                      {count > 0 ? `${"★".repeat(Math.round(avg))}${"☆".repeat(5 - Math.round(avg))}` : "Sem avaliações ainda"}
+                    </span>
                   </div>
                 );
               })}
@@ -698,44 +699,48 @@ export function Relatorios() {
                 Configurar perguntas &rsaquo;
               </Link>
             </div>
-            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginTop: 10, marginBottom: 4 }}>{appNps.score}</div>
+            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginTop: 10, marginBottom: 4 }}>{appNps.count > 0 ? appNps.score : "—"}</div>
             <div className="relatorios-muted-sm" style={{ marginBottom: 14 }}>
-              {appNps.count > 0 ? `Calculado a partir de ${appNps.count} resposta(s) reais` : "Exemplo ilustrativo — nenhuma resposta recebida ainda"}
+              {appNps.count > 0 ? `Calculado a partir de ${appNps.count} resposta(s) reais` : "Nenhuma resposta recebida ainda"}
             </div>
-            <div className="relatorios-service-list">
-              {[
-                { label: "Promotores (9-10)", pct: appNps.promoter, color: "#1a7a4f" },
-                { label: "Neutros (7-8)", pct: appNps.neutral, color: "#c99a1f" },
-                { label: "Detratores (0-6)", pct: appNps.detractor, color: "#c0392b" },
-              ].map((n) => (
-                <div key={n.label}>
-                  <div className="relatorios-service-row">
-                    <span className="relatorios-service-label">
-                      <span className="relatorios-dot" style={{ background: n.color }} />
-                      {n.label}
-                    </span>
-                    <span className="relatorios-muted">{n.pct}%</span>
+            {appNps.count > 0 ? (
+              <div className="relatorios-service-list">
+                {[
+                  { label: "Promotores (9-10)", pct: appNps.promoter, color: "#1a7a4f" },
+                  { label: "Neutros (7-8)", pct: appNps.neutral, color: "#c99a1f" },
+                  { label: "Detratores (0-6)", pct: appNps.detractor, color: "#c0392b" },
+                ].map((n) => (
+                  <div key={n.label}>
+                    <div className="relatorios-service-row">
+                      <span className="relatorios-service-label">
+                        <span className="relatorios-dot" style={{ background: n.color }} />
+                        {n.label}
+                      </span>
+                      <span className="relatorios-muted">{n.pct}%</span>
+                    </div>
+                    <div className="relatorios-bar-track">
+                      <div className="relatorios-bar-fill" style={{ width: `${n.pct}%`, background: n.color }} />
+                    </div>
                   </div>
-                  <div className="relatorios-bar-track">
-                    <div className="relatorios-bar-fill" style={{ width: `${n.pct}%`, background: n.color }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">Sem dados suficientes para o gráfico.</div>
+            )}
           </div>
 
           <div className="card relatorios-panel">
             <div className="relatorios-panel-title">CX &amp; UX por pergunta</div>
             <div className="relatorios-service-list">
               {appRatedQuestions.map((q) => {
-                const { avg, count } = avgOf(numericAnswers(aplicacaoResponses, q.id), 4.0);
+                const { avg, count } = avgOf(numericAnswers(aplicacaoResponses, q.id));
                 return (
                   <div key={q.id} className="relatorios-service-row" style={{ marginBottom: 8 }}>
                     <span className="relatorios-service-label">
                       <span className="relatorios-dot" style={{ background: APP_SURVEY_CATEGORY_COLOR[q.category] }} />
                       {q.text}
                     </span>
-                    <span className="relatorios-muted">{avg.toFixed(1)}/5 {count === 0 && "(exemplo)"}</span>
+                    <span className="relatorios-muted">{count > 0 ? `${avg.toFixed(1)}/5` : "Sem avaliações ainda"}</span>
                   </div>
                 );
               })}
