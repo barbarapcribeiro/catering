@@ -94,7 +94,7 @@ export function PesquisaAppForm() {
           <div className="card paf-thanks">
             <div className="paf-thanks-icon">✓</div>
             <h1 className="paf-thanks-title">Obrigado pelo seu feedback!</h1>
-            <p className="paf-thanks-sub">Suas respostas ajudam a melhorar a plataforma Sodexo Direct.</p>
+            <p className="paf-thanks-sub">Suas respostas ajudam a melhorar o Direct Eventos by Spark XP.</p>
           </div>
         ) : (
           <>

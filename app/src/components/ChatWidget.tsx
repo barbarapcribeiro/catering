@@ -27,7 +27,7 @@ export function ChatWidget() {
         <div className="chat-widget__panel">
           <div className="chat-widget__header">
             <div>
-              <div className="chat-widget__title">Fale com o time Sodexo</div>
+              <div className="chat-widget__title">Fale com o time Direct Eventos</div>
               <div className="chat-widget__subtitle">Prazos, itens especiais e dúvidas</div>
             </div>
             <button className="chat-widget__close" onClick={toggle} aria-label="Fechar chat">

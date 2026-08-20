@@ -5,18 +5,19 @@ import { useAppData } from "../../mock/AppDataContext";
 import { STATUS_STYLE } from "../../mock/services";
 import { money } from "../../mock/money";
 import { Modal } from "../../components/Modal";
-import type { CostCenter, Order } from "../../types";
+import { ORDER_CATEGORIES, type CostCenter, type Order } from "../../types";
 import "./Relatorios.css";
 
 const PALETTE = ["var(--color-primary)", "#1e4fa3", "#1a7a4f", "#b5690f", "#5a4a8a", "#c99a1f", "#c0392b"];
 
-export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "pesquisa-satisfacao" | "pesquisa-aplicacao";
+export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "lucro-produto" | "pesquisa-satisfacao" | "pesquisa-aplicacao";
 
 const DASH_TABS: { key: ReportDash; label: string }[] = [
   { key: "geral", label: "Visão Geral" },
   { key: "faturamento", label: "Faturamento" },
   { key: "pedidos", label: "Pedidos" },
   { key: "centros-custo", label: "Centros de Custo" },
+  { key: "lucro-produto", label: "Lucro por Produto" },
   { key: "pesquisa-satisfacao", label: "Pesquisa de Satisfação" },
   { key: "pesquisa-aplicacao", label: "Pesquisa da Aplicação" },
 ];
@@ -92,7 +93,7 @@ function Sparkline({ seed, color }: { seed: number; color: string }) {
 }
 
 export function Relatorios() {
-  const { orders, costCenters, occurrences, showToast, surveyQuestions, appSurveyQuestions, surveyResponses } = useAppData();
+  const { orders, costCenters, occurrences, showToast, surveyQuestions, appSurveyQuestions, surveyResponses, products } = useAppData();
   const navigate = useNavigate();
   const params = useParams<{ dash?: string }>();
   const dash: ReportDash = (DASH_TABS.some((t) => t.key === params.dash) ? params.dash : "geral") as ReportDash;
@@ -171,6 +172,47 @@ export function Relatorios() {
     return withValue.map((c) => ({ ...c, pct: Math.round((c.value / max) * 100) }));
   }, [activeOrders, costCenters]);
 
+  // ---- Lucro por Produto: margem cadastrada (todo produto) + lucro realizado (produtos com vendas reais rastreadas) ----
+  const productProfit = useMemo(() => {
+    const soldById = new Map<string, { unitsSold: number; revenue: number }>();
+    activeOrders.forEach((o) => {
+      (o.items ?? []).forEach((it) => {
+        if (!it.productId) return;
+        const cur = soldById.get(it.productId) ?? { unitsSold: 0, revenue: 0 };
+        cur.unitsSold += it.qty;
+        cur.revenue += it.qty * it.price;
+        soldById.set(it.productId, cur);
+      });
+    });
+    return products
+      .map((p) => {
+        const sold = soldById.get(p.id);
+        const unitsSold = sold?.unitsSold ?? 0;
+        const revenue = sold?.revenue ?? 0;
+        const cost = unitsSold * p.costPrice;
+        const profit = revenue - cost;
+        return {
+          id: p.id,
+          name: p.name,
+          type: p.type,
+          costPrice: p.costPrice,
+          price: p.price,
+          marginPercent: p.marginPercent,
+          active: p.active,
+          unitsSold,
+          revenue,
+          profit,
+          hasSales: unitsSold > 0,
+        };
+      })
+      .sort((a, b) => b.profit - a.profit || b.marginPercent - a.marginPercent);
+  }, [activeOrders, products]);
+  const productProfitTotals = productProfit.reduce(
+    (acc, p) => ({ revenue: acc.revenue + p.revenue, profit: acc.profit + p.profit, unitsSold: acc.unitsSold + p.unitsSold }),
+    { revenue: 0, profit: 0, unitsSold: 0 },
+  );
+  const topProfitProduct = productProfit.find((p) => p.hasSales);
+
   const countStatus = (s: Order["status"]) => activeOrders.filter((o) => o.status === s).length;
   const openOccurrences = occurrences.filter((o) => o.status === "Aberta" || o.status === "Em análise").length;
   const statusCards: { glyph: string; label: string; value: string; bg: string; border: string; color: string; dash: ReportDash }[] = [
@@ -184,10 +226,20 @@ export function Relatorios() {
   const pedidoResponses = useMemo(() => surveyResponses.filter((r) => r.kind === "pedido"), [surveyResponses]);
   const aplicacaoResponses = useMemo(() => surveyResponses.filter((r) => r.kind === "aplicacao"), [surveyResponses]);
 
-  const npsQuestion = surveyQuestions.find((q) => q.type === "NPS" && q.active);
-  const pedidoNps = npsStats(npsQuestion ? numericAnswers(pedidoResponses, npsQuestion.id) : []);
-  const starQuestions = surveyQuestions.filter((q) => q.type === "Estrelas" && q.active);
-  const textQuestions = surveyQuestions.filter((q) => q.type === "Texto" && q.active);
+  // NPS "geral" (Visão Geral) combina a resposta de NPS de todos os tipos de pedido — cada
+  // tipo tem sua própria pergunta de NPS (uma pesquisa por tipo), então aqui juntamos todas.
+  const allPedidoNpsIds = surveyQuestions.filter((q) => q.type === "NPS" && q.active).map((q) => q.id);
+  const blendedNpsValues = pedidoResponses.flatMap((r) => r.answers.filter((a) => allPedidoNpsIds.includes(a.questionId) && typeof a.value === "number").map((a) => a.value as number));
+  const pedidoNps = npsStats(blendedNpsValues);
+
+  const [pesquisaCategory, setPesquisaCategory] = useState<(typeof ORDER_CATEGORIES)[number]>(ORDER_CATEGORIES[0]);
+  const categoryOrderIds = useMemo(() => new Set(orders.filter((o) => o.category === pesquisaCategory).map((o) => o.id)), [orders, pesquisaCategory]);
+  const categoryPedidoResponses = useMemo(() => pedidoResponses.filter((r) => r.orderId && categoryOrderIds.has(r.orderId)), [pedidoResponses, categoryOrderIds]);
+  const categoryQuestions = surveyQuestions.filter((q) => q.orderCategory === pesquisaCategory);
+  const categoryNpsQuestion = categoryQuestions.find((q) => q.type === "NPS" && q.active);
+  const categoryNps = npsStats(categoryNpsQuestion ? numericAnswers(categoryPedidoResponses, categoryNpsQuestion.id) : []);
+  const starQuestions = categoryQuestions.filter((q) => q.type === "Estrelas" && q.active);
+  const textQuestions = categoryQuestions.filter((q) => q.type === "Texto" && q.active);
 
   const appNpsQuestion = appSurveyQuestions.find((q) => q.type === "NPS" && q.active);
   const appNps = npsStats(appNpsQuestion ? numericAnswers(aplicacaoResponses, appNpsQuestion.id) : []);
@@ -622,72 +674,154 @@ export function Relatorios() {
         </div>
       )}
 
-      {dash === "pesquisa-satisfacao" && (
-        <div className="relatorios-row-2">
-          <div className="card relatorios-panel">
-            <div className="relatorios-panel-head">
-              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>NPS geral do pedido</div>
-              <Link to="/admin/pesquisa-satisfacao" className="link">
-                Configurar perguntas &rsaquo;
-              </Link>
-            </div>
-            <div className="relatorios-kpi__value" style={{ fontSize: 32, marginTop: 10, marginBottom: 4 }}>{pedidoNps.count > 0 ? pedidoNps.score : "—"}</div>
-            <div className="relatorios-muted-sm" style={{ marginBottom: 14 }}>
-              {pedidoNps.count > 0 ? `Calculado a partir de ${pedidoNps.count} resposta(s) reais` : "Nenhuma resposta recebida ainda"}
-            </div>
-            {pedidoNps.count > 0 ? (
-              <div className="relatorios-service-list">
-                {[
-                  { label: "Promotores (9-10)", pct: pedidoNps.promoter, color: "#1a7a4f" },
-                  { label: "Neutros (7-8)", pct: pedidoNps.neutral, color: "#c99a1f" },
-                  { label: "Detratores (0-6)", pct: pedidoNps.detractor, color: "#c0392b" },
-                ].map((n) => (
-                  <div key={n.label}>
-                    <div className="relatorios-service-row">
-                      <span className="relatorios-service-label">
-                        <span className="relatorios-dot" style={{ background: n.color }} />
-                        {n.label}
-                      </span>
-                      <span className="relatorios-muted">{n.pct}%</span>
-                    </div>
-                    <div className="relatorios-bar-track">
-                      <div className="relatorios-bar-fill" style={{ width: `${n.pct}%`, background: n.color }} />
-                    </div>
-                  </div>
-                ))}
+      {dash === "lucro-produto" && (
+        <>
+          <div className="relatorios-kpis">
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Lucro realizado</span>
+                <span>💰</span>
               </div>
-            ) : (
-              <div className="empty-state">Sem dados suficientes para o gráfico.</div>
-            )}
+              <div className="relatorios-kpi__value">{money(productProfitTotals.profit)}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Faturamento rastreado</span>
+                <span>📦</span>
+              </div>
+              <div className="relatorios-kpi__value">{money(productProfitTotals.revenue)}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Unidades vendidas</span>
+                <span>🔢</span>
+              </div>
+              <div className="relatorios-kpi__value">{productProfitTotals.unitsSold}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Produto mais lucrativo</span>
+                <span>⭐</span>
+              </div>
+              <div className="relatorios-kpi__value" style={{ fontSize: 15 }}>{topProfitProduct ? topProfitProduct.name : "—"}</div>
+            </div>
           </div>
 
           <div className="card relatorios-panel">
-            <div className="relatorios-panel-title">Avaliações por pergunta</div>
-            <div className="relatorios-service-list">
-              {starQuestions.map((q) => {
-                const { avg, count } = avgOf(numericAnswers(pedidoResponses, q.id));
-                return (
-                  <div key={q.id} className="relatorios-service-row" style={{ marginBottom: 8 }}>
-                    <span className="relatorios-service-label">{q.text}</span>
-                    <span className="relatorios-muted">
-                      {count > 0 ? `${"★".repeat(Math.round(avg))}${"☆".repeat(5 - Math.round(avg))}` : "Sem avaliações ainda"}
-                    </span>
-                  </div>
-                );
-              })}
-              {starQuestions.length === 0 && <div className="relatorios-muted-sm">Nenhuma pergunta de estrelas configurada.</div>}
+            <div className="relatorios-panel-head">
+              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Lucro por produto</div>
+              <Link to="/admin/produtos" className="link">
+                Gerenciar catálogo &rsaquo;
+              </Link>
             </div>
-            <div className="relatorios-panel-total" style={{ flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
-              <span>Comentários recentes</span>
-              {textQuestions.flatMap((q) => textAnswers(pedidoResponses, q.id)).slice(0, 3).map((t, i) => (
-                <div key={i} className="relatorios-muted-sm">“{t}”</div>
-              ))}
-              {textQuestions.flatMap((q) => textAnswers(pedidoResponses, q.id)).length === 0 && (
-                <div className="relatorios-muted-sm">Nenhum comentário recebido ainda.</div>
+            <div className="relatorios-muted-sm" style={{ marginBottom: 14 }}>
+              Margem e preço vêm do cadastro do produto. Unidades vendidas, faturamento e lucro realizado são calculados a partir dos pedidos reais que usaram esse produto (Coffee Break, Água e Abastecimento Simples) — pedidos com itens de kit ainda não rastreiam produto individual.
+            </div>
+            <div className="relatorios-summary__head" style={{ gridTemplateColumns: "1.6fr 0.8fr 0.8fr 0.9fr 0.8fr 0.9fr 0.9fr" }}>
+              <div>Produto</div>
+              <div>Custo</div>
+              <div>Preço</div>
+              <div>Margem cadastrada</div>
+              <div>Vendidos</div>
+              <div>Faturamento</div>
+              <div>Lucro realizado</div>
+            </div>
+            {productProfit.map((p) => (
+              <div className="relatorios-summary__row" key={p.id} style={{ gridTemplateColumns: "1.6fr 0.8fr 0.8fr 0.9fr 0.8fr 0.9fr 0.9fr" }}>
+                <div>
+                  <div className="relatorios-summary__type">{p.name}</div>
+                  <div className="relatorios-muted-sm">{p.type}{!p.active && " · inativo"}</div>
+                </div>
+                <div className="relatorios-muted">{money(p.costPrice)}</div>
+                <div className="relatorios-muted">{money(p.price)}</div>
+                <div className="relatorios-muted">{p.marginPercent}%</div>
+                <div className="relatorios-muted">{p.hasSales ? p.unitsSold : "—"}</div>
+                <div className="relatorios-muted">{p.hasSales ? money(p.revenue) : "—"}</div>
+                <div style={{ fontWeight: 700, color: p.hasSales ? (p.profit >= 0 ? "var(--color-success)" : "var(--color-danger)") : "var(--color-text-muted)" }}>
+                  {p.hasSales ? money(p.profit) : "—"}
+                </div>
+              </div>
+            ))}
+            {productProfit.length === 0 && <div className="empty-state">Nenhum produto cadastrado.</div>}
+          </div>
+        </>
+      )}
+
+      {dash === "pesquisa-satisfacao" && (
+        <>
+          <div className="tab-row" style={{ marginBottom: 18 }}>
+            {ORDER_CATEGORIES.map((c) => (
+              <button key={c} className={pesquisaCategory === c ? "is-active" : ""} onClick={() => setPesquisaCategory(c)}>
+                {c}
+              </button>
+            ))}
+          </div>
+          <div className="relatorios-row-2">
+            <div className="card relatorios-panel">
+              <div className="relatorios-panel-head">
+                <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>NPS &middot; {pesquisaCategory}</div>
+                <Link to="/admin/pesquisa-satisfacao" className="link">
+                  Configurar perguntas &rsaquo;
+                </Link>
+              </div>
+              <div className="relatorios-kpi__value" style={{ fontSize: 32, marginTop: 10, marginBottom: 4 }}>{categoryNps.count > 0 ? categoryNps.score : "—"}</div>
+              <div className="relatorios-muted-sm" style={{ marginBottom: 14 }}>
+                {categoryNps.count > 0 ? `Calculado a partir de ${categoryNps.count} resposta(s) reais` : "Nenhuma resposta recebida ainda"}
+              </div>
+              {categoryNps.count > 0 ? (
+                <div className="relatorios-service-list">
+                  {[
+                    { label: "Promotores (9-10)", pct: categoryNps.promoter, color: "#1a7a4f" },
+                    { label: "Neutros (7-8)", pct: categoryNps.neutral, color: "#c99a1f" },
+                    { label: "Detratores (0-6)", pct: categoryNps.detractor, color: "#c0392b" },
+                  ].map((n) => (
+                    <div key={n.label}>
+                      <div className="relatorios-service-row">
+                        <span className="relatorios-service-label">
+                          <span className="relatorios-dot" style={{ background: n.color }} />
+                          {n.label}
+                        </span>
+                        <span className="relatorios-muted">{n.pct}%</span>
+                      </div>
+                      <div className="relatorios-bar-track">
+                        <div className="relatorios-bar-fill" style={{ width: `${n.pct}%`, background: n.color }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">Sem dados suficientes para o gráfico.</div>
               )}
             </div>
+
+            <div className="card relatorios-panel">
+              <div className="relatorios-panel-title">Avaliações por pergunta</div>
+              <div className="relatorios-service-list">
+                {starQuestions.map((q) => {
+                  const { avg, count } = avgOf(numericAnswers(categoryPedidoResponses, q.id));
+                  return (
+                    <div key={q.id} className="relatorios-service-row" style={{ marginBottom: 8 }}>
+                      <span className="relatorios-service-label">{q.text}</span>
+                      <span className="relatorios-muted">
+                        {count > 0 ? `${"★".repeat(Math.round(avg))}${"☆".repeat(5 - Math.round(avg))}` : "Sem avaliações ainda"}
+                      </span>
+                    </div>
+                  );
+                })}
+                {starQuestions.length === 0 && <div className="relatorios-muted-sm">Nenhuma pergunta de estrelas configurada para {pesquisaCategory}.</div>}
+              </div>
+              <div className="relatorios-panel-total" style={{ flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
+                <span>Comentários recentes</span>
+                {textQuestions.flatMap((q) => textAnswers(categoryPedidoResponses, q.id)).slice(0, 3).map((t, i) => (
+                  <div key={i} className="relatorios-muted-sm">“{t}”</div>
+                ))}
+                {textQuestions.flatMap((q) => textAnswers(categoryPedidoResponses, q.id)).length === 0 && (
+                  <div className="relatorios-muted-sm">Nenhum comentário recebido ainda.</div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {dash === "pesquisa-aplicacao" && (

@@ -24,7 +24,7 @@ import {
 } from "../types";
 import { computeProductPrice } from "./pricing";
 
-const STORAGE_KEY = "sodexo-eventos-mock-v2";
+const STORAGE_KEY = "direct-eventos-mock-v3";
 
 interface StoredState {
   orders: Order[];
@@ -56,11 +56,36 @@ const initialOrders: Order[] = [];
 const initialNotifications: Notification[] = [];
 
 const initialSurveyQuestions: SurveyQuestion[] = [
-  { id: "q1", text: "De 0 a 10, quanto você recomendaria nosso serviço?", type: "NPS", active: true },
-  { id: "q2", text: "Como você avalia a qualidade dos alimentos?", type: "Estrelas", active: true },
-  { id: "q3", text: "Como você avalia a pontualidade da entrega?", type: "Estrelas", active: true },
-  { id: "q4", text: "Como você avalia o atendimento da equipe?", type: "Estrelas", active: true },
-  { id: "q5", text: "Deixe um comentário sobre sua experiência", type: "Texto", active: true },
+  // Coffee Break
+  { id: "q-cb-1", text: "De 0 a 10, quanto você recomendaria nosso Coffee Break?", type: "NPS", active: true, orderCategory: "Coffee Break" },
+  { id: "q-cb-2", text: "Como você avalia a qualidade dos alimentos?", type: "Estrelas", active: true, orderCategory: "Coffee Break" },
+  { id: "q-cb-3", text: "Como você avalia a pontualidade da entrega?", type: "Estrelas", active: true, orderCategory: "Coffee Break" },
+  { id: "q-cb-4", text: "Como você avalia o atendimento da equipe?", type: "Estrelas", active: true, orderCategory: "Coffee Break" },
+  { id: "q-cb-5", text: "Deixe um comentário sobre sua experiência", type: "Texto", active: true, orderCategory: "Coffee Break" },
+  // Evento Especial
+  { id: "q-evt-1", text: "De 0 a 10, quanto você recomendaria nosso Evento Especial?", type: "NPS", active: true, orderCategory: "Evento Especial" },
+  { id: "q-evt-2", text: "Como você avalia a qualidade do buffet e da decoração?", type: "Estrelas", active: true, orderCategory: "Evento Especial" },
+  { id: "q-evt-3", text: "Como você avalia a pontualidade da montagem?", type: "Estrelas", active: true, orderCategory: "Evento Especial" },
+  { id: "q-evt-4", text: "Como você avalia o atendimento da equipe no evento?", type: "Estrelas", active: true, orderCategory: "Evento Especial" },
+  { id: "q-evt-5", text: "Deixe um comentário sobre o evento", type: "Texto", active: true, orderCategory: "Evento Especial" },
+  // Solicitação de Água
+  { id: "q-agua-1", text: "De 0 a 10, quanto você recomendaria nossa Solicitação de Água?", type: "NPS", active: true, orderCategory: "Solicitação de Água" },
+  { id: "q-agua-2", text: "Como você avalia a qualidade das garrafas/galões entregues?", type: "Estrelas", active: true, orderCategory: "Solicitação de Água" },
+  { id: "q-agua-3", text: "Como você avalia a pontualidade da entrega?", type: "Estrelas", active: true, orderCategory: "Solicitação de Água" },
+  { id: "q-agua-4", text: "Como você avalia o atendimento no momento da entrega?", type: "Estrelas", active: true, orderCategory: "Solicitação de Água" },
+  { id: "q-agua-5", text: "Deixe um comentário sobre a entrega de água", type: "Texto", active: true, orderCategory: "Solicitação de Água" },
+  // Abastecimento Simples
+  { id: "q-ab-1", text: "De 0 a 10, quanto você recomendaria o Abastecimento Simples?", type: "NPS", active: true, orderCategory: "Abastecimento Simples" },
+  { id: "q-ab-2", text: "Como você avalia a qualidade dos itens de copa entregues?", type: "Estrelas", active: true, orderCategory: "Abastecimento Simples" },
+  { id: "q-ab-3", text: "Como você avalia a pontualidade do abastecimento?", type: "Estrelas", active: true, orderCategory: "Abastecimento Simples" },
+  { id: "q-ab-4", text: "Como você avalia o atendimento da equipe?", type: "Estrelas", active: true, orderCategory: "Abastecimento Simples" },
+  { id: "q-ab-5", text: "Deixe um comentário sobre o abastecimento", type: "Texto", active: true, orderCategory: "Abastecimento Simples" },
+  // Surpreenda
+  { id: "q-sp-1", text: "De 0 a 10, quanto você recomendaria o Surpreenda?", type: "NPS", active: true, orderCategory: "Surpreenda" },
+  { id: "q-sp-2", text: "Como você avalia a qualidade dos kits recebidos?", type: "Estrelas", active: true, orderCategory: "Surpreenda" },
+  { id: "q-sp-3", text: "Como você avalia a pontualidade da entrega?", type: "Estrelas", active: true, orderCategory: "Surpreenda" },
+  { id: "q-sp-4", text: "Como você avalia o atendimento da equipe?", type: "Estrelas", active: true, orderCategory: "Surpreenda" },
+  { id: "q-sp-5", text: "Deixe um comentário sobre o Surpreenda", type: "Texto", active: true, orderCategory: "Surpreenda" },
 ];
 
 const initialSurveyResponses: SurveyResponse[] = [];
@@ -78,10 +103,28 @@ function product(base: Omit<Product, "price">): Product {
 }
 
 const initialProducts: Product[] = [
-  product({ id: "prod1", name: "Coca-Cola lata 350ml", type: "Bebida", unit: "un", costPrice: 6, marginPercent: 40, description: "Refrigerante em lata.", supplierId: "sup1", active: true }),
-  product({ id: "prod2", name: "Água Mineral 500ml", type: "Bebida", unit: "un", costPrice: 3.5, marginPercent: 50, description: "Sem gás.", supplierId: "sup1", active: true }),
-  product({ id: "prod3", name: "Mini Salgados (100 unidades)", type: "Salgado", unit: "pacote", costPrice: 60, marginPercent: 40, description: "Sortidos, assados.", supplierId: "sup1", active: true }),
+  product({ id: "prod1", name: "Coca-Cola lata 350ml", type: "Bebida", unit: "un", costPrice: 6, marginPercent: 67, description: "Refrigerante em lata.", supplierId: "sup1", active: true }),
+  product({ id: "prod2", name: "Água Mineral 500ml", type: "Bebida", unit: "un", costPrice: 3.5, marginPercent: 71, description: "Sem gás — individual, para coffee break.", supplierId: "sup1", active: true }),
+  product({ id: "prod3", name: "Mini Salgados (100 unidades)", type: "Salgado", unit: "pacote", costPrice: 60, marginPercent: 50, description: "Sortidos, assados.", supplierId: "sup1", active: true }),
   product({ id: "prod4", name: "Copo descartável 200ml", type: "Descartável", unit: "pacote", costPrice: 7, marginPercent: 45, description: "Pacote com 100 unidades.", supplierId: "sup2", active: true }),
+  product({ id: "prod5", name: "Suco Natural 300ml", type: "Bebida", unit: "un", costPrice: 5, marginPercent: 60, description: "Sabores variados.", supplierId: "sup1", active: true }),
+  product({ id: "prod6", name: "Café Térmico 1L", type: "Bebida", unit: "un", costPrice: 15, marginPercent: 67, description: "Garrafa térmica para coffee break.", supplierId: "sup1", active: true }),
+  product({ id: "prod7", name: "Mini Pães (50 unidades)", type: "Pão e Bolo", unit: "pacote", costPrice: 46, marginPercent: 52, description: "Pão de queijo e mini pães sortidos.", supplierId: "sup1", active: true }),
+  product({ id: "prod8", name: "Mini Doces (30 unidades)", type: "Doce", unit: "pacote", costPrice: 40, marginPercent: 50, description: "Docinhos sortidos.", supplierId: "sup1", active: true }),
+  product({ id: "prod9", name: "Fruta Picada (porção 300g)", type: "Fruta", unit: "un", costPrice: 2.7, marginPercent: 48, description: "Mix de frutas da estação.", supplierId: "sup1", active: true }),
+  product({ id: "prod10", name: "Garrafa de Água 500ml", type: "Bebida", unit: "un", costPrice: 2, marginPercent: 50, description: "Água mineral individual, para abastecimento/entrega em galão ou garrafa.", supplierId: "sup1", active: true }),
+  product({ id: "prod11", name: "Garrafa de Água 1,5L", type: "Bebida", unit: "un", costPrice: 4, marginPercent: 50, description: "Ideal para mesas de reunião.", supplierId: "sup1", active: true }),
+  product({ id: "prod12", name: "Galão de Água 5L", type: "Bebida", unit: "un", costPrice: 17, marginPercent: 47, description: "Galão compacto, salas e escritórios.", supplierId: "sup1", active: true }),
+  product({ id: "prod13", name: "Galão de Água 20L", type: "Bebida", unit: "un", costPrice: 40, marginPercent: 50, description: "Galão com suporte, eventos maiores.", supplierId: "sup1", active: true }),
+  product({ id: "prod14", name: "Garrafa de Café 500ml", type: "Bebida", unit: "un", costPrice: 5, marginPercent: 60, description: "Térmica, individual.", supplierId: "sup1", active: true }),
+  product({ id: "prod15", name: "Garrafa de Café 1L", type: "Bebida", unit: "un", costPrice: 9, marginPercent: 56, description: "Ideal para grupos pequenos.", supplierId: "sup1", active: true }),
+  product({ id: "prod16", name: "Garrafa de Café 3L", type: "Bebida", unit: "un", costPrice: 20, marginPercent: 60, description: "Ideal para setores e salas de reunião.", supplierId: "sup1", active: true }),
+  product({ id: "prod17", name: "Garrafa de Café 5L", type: "Bebida", unit: "un", costPrice: 30, marginPercent: 60, description: "Ideal para andares e áreas maiores.", supplierId: "sup1", active: true }),
+  product({ id: "prod18", name: "Adoçante", type: "Outro", unit: "pacote", costPrice: 3, marginPercent: 67, description: "Sachês individuais.", supplierId: "sup1", active: true }),
+  product({ id: "prod19", name: "Açúcar", type: "Outro", unit: "pacote", costPrice: 2.5, marginPercent: 60, description: "Sachês individuais.", supplierId: "sup1", active: true }),
+  product({ id: "prod20", name: "Biscoitos Simples", type: "Salgado", unit: "pacote", costPrice: 4, marginPercent: 50, description: "Pacotes individuais, sabores variados.", supplierId: "sup1", active: true }),
+  product({ id: "prod21", name: "Balas", type: "Doce", unit: "pacote", costPrice: 4.5, marginPercent: 56, description: "Pacote sortido.", supplierId: "sup1", active: true }),
+  product({ id: "prod22", name: "Bombons", type: "Doce", unit: "un", costPrice: 1.2, marginPercent: 67, description: "Unidade, sabores variados.", supplierId: "sup1", active: true }),
 ];
 
 const initialKits: Kit[] = [
@@ -103,7 +146,7 @@ const initialDecorations: Decoration[] = [
 ];
 
 const initialAppSurveyQuestions: AppSurveyQuestion[] = [
-  { id: "aq1", text: "De 0 a 10, quanto você recomendaria a plataforma Sodexo Direct a um colega?", category: "NPS", type: "NPS", active: true },
+  { id: "aq1", text: "De 0 a 10, quanto você recomendaria o Direct Eventos by Spark XP a um colega?", category: "NPS", type: "NPS", active: true },
   { id: "aq2", text: "O quão fácil foi encontrar o que você precisava no sistema?", category: "UX", type: "Estrelas", active: true },
   { id: "aq3", text: "A navegação entre as telas fez sentido para você?", category: "UX", type: "Escala 1-5", active: true },
   { id: "aq4", text: "Como você avalia o atendimento recebido ao usar a plataforma?", category: "CX", type: "Estrelas", active: true },
@@ -192,7 +235,7 @@ const initialProfiles: Profile[] = [
   {
     id: "prof-gu",
     name: "GU",
-    whoIs: "Gerente de Unidade Sodexo.",
+    whoIs: "Gerente de Unidade Direct Eventos.",
     responsibilities: "Confirma pedidos, gerencia a operação, registra status (produção, entrega, finalização), configura regras, conduz o faturamento.",
     active: true,
     permissions: perms({
@@ -234,7 +277,7 @@ const initialProfiles: Profile[] = [
   {
     id: "prof-faturamento",
     name: "Faturamento / Backoffice",
-    whoIs: "Apoio Administrativo; Ponto Focal Sodexo; GU; outros.",
+    whoIs: "Apoio Administrativo; Ponto Focal Direct Eventos; GU; outros.",
     responsibilities: "Realiza o fechamento, aprova com cliente e carrega no ERP para geração do faturamento.",
     active: true,
     permissions: perms({
@@ -264,14 +307,14 @@ const initialProfiles: Profile[] = [
 ];
 
 const initialUsers: AppUser[] = [
-  { id: "user1", name: "Bárbara C. Ribeiro", email: "barbara.ribeiro@sodexo.com", profileId: "prof-gu", active: true, createdAt: "2026-01-12T09:00:00Z" },
-  { id: "user2", name: "Marina Silva", email: "marina.silva@sodexo.com", profileId: "prof-gu", active: true, createdAt: "2026-02-03T09:00:00Z" },
+  { id: "user1", name: "Bárbara C. Ribeiro", email: "barbara.ribeiro@sparkxp.com", profileId: "prof-gu", active: true, createdAt: "2026-01-12T09:00:00Z" },
+  { id: "user2", name: "Marina Silva", email: "marina.silva@sparkxp.com", profileId: "prof-gu", active: true, createdAt: "2026-02-03T09:00:00Z" },
   { id: "user3", name: "Carlos Santos", email: "carlos.santos@clienteempresa.com", profileId: "prof-gestor", costCenterCode: "CC001", active: true, createdAt: "2026-02-10T09:00:00Z" },
   { id: "user4", name: "Paula Costa", email: "paula.costa@clienteempresa.com", profileId: "prof-gestor", costCenterCode: "CC002", active: true, createdAt: "2026-02-10T09:00:00Z" },
   { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", profileId: "prof-cliente", costCenterCode: "CC001", active: true, createdAt: "2026-03-01T09:00:00Z" },
-  { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sodexo.com", profileId: "prof-producao", active: true, createdAt: "2026-03-05T09:00:00Z" },
-  { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sodexo.com", profileId: "prof-faturamento", active: true, createdAt: "2026-03-08T09:00:00Z" },
-  { id: "user8", name: "Administrador do Sistema", email: "admin@sodexo.com", profileId: "prof-admin", active: true, createdAt: "2026-01-01T09:00:00Z" },
+  { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sparkxp.com", profileId: "prof-producao", active: true, createdAt: "2026-03-05T09:00:00Z" },
+  { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sparkxp.com", profileId: "prof-faturamento", active: true, createdAt: "2026-03-08T09:00:00Z" },
+  { id: "user8", name: "Administrador do Sistema", email: "admin@sparkxp.com", profileId: "prof-admin", active: true, createdAt: "2026-01-01T09:00:00Z" },
 ];
 
 const initialCostCenters: CostCenter[] = [
@@ -344,7 +387,7 @@ interface AppDataValue {
   sendChatMessage: (text: string) => void;
 
   surveyQuestions: SurveyQuestion[];
-  addSurveyQuestion: (text: string, type: SurveyQuestion["type"]) => void;
+  addSurveyQuestion: (text: string, type: SurveyQuestion["type"], orderCategory: SurveyQuestion["orderCategory"]) => void;
   updateSurveyQuestion: (id: string, patch: Partial<SurveyQuestion>) => void;
   removeSurveyQuestion: (id: string) => void;
   reorderSurveyQuestion: (id: string, dir: -1 | 1) => void;
@@ -541,10 +584,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }, 900);
   };
 
-  const addSurveyQuestion = (text: string, type: SurveyQuestion["type"]) => {
+  const addSurveyQuestion: AppDataValue["addSurveyQuestion"] = (text, type, orderCategory) => {
     setState((s) => ({
       ...s,
-      surveyQuestions: [...s.surveyQuestions, { id: `q${Date.now()}`, text, type, active: true }],
+      surveyQuestions: [...s.surveyQuestions, { id: `q${Date.now()}`, text, type, active: true, orderCategory }],
     }));
   };
 
@@ -563,9 +606,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setState((s) => {
       const list = [...s.surveyQuestions];
       const idx = list.findIndex((q) => q.id === id);
-      const newIdx = idx + dir;
-      if (idx < 0 || newIdx < 0 || newIdx >= list.length) return s;
-      [list[idx], list[newIdx]] = [list[newIdx], list[idx]];
+      if (idx < 0) return s;
+      const category = list[idx].orderCategory;
+      let swapIdx = idx + dir;
+      while (swapIdx >= 0 && swapIdx < list.length && list[swapIdx].orderCategory !== category) swapIdx += dir;
+      if (swapIdx < 0 || swapIdx >= list.length) return s;
+      [list[idx], list[swapIdx]] = [list[swapIdx], list[idx]];
       return { ...s, surveyQuestions: list };
     });
   };

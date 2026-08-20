@@ -600,7 +600,7 @@ export function GerenciarPedidos() {
                       <div key={m.id} className="gp-conv-message">
                         <div className={`gp-conv-message__avatar ${m.from === "me" ? "is-me" : ""}`}>{m.from === "me" ? "B" : "S"}</div>
                         <div>
-                          <div className="gp-conv-message__author">{m.from === "me" ? "Você" : "Sodexo"}</div>
+                          <div className="gp-conv-message__author">{m.from === "me" ? "Você" : "Direct Eventos"}</div>
                           <div className="gp-conv-message__text">{m.text}</div>
                         </div>
                       </div>

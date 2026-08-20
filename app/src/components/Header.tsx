@@ -22,7 +22,7 @@ export function Header() {
         </button>
         <div>
           <div className="app-header__name">Olá, {displayName}</div>
-          <div className="app-header__subtitle">Sodexo &bull; {currentProfile?.name ?? "Demonstração"}</div>
+          <div className="app-header__subtitle">Direct Eventos &bull; {currentProfile?.name ?? "Demonstração"}</div>
         </div>
       </div>
       <nav className="app-header__nav">

@@ -1,4 +1,4 @@
-# Eventos - solicitação (Sodexo)
+# Direct Eventos by Spark XP
 
 Production React implementation of the "Eventos - solicitação" Claude Design prototype (see `../project` and `../chats` for the original design handoff).
 
