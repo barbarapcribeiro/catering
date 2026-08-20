@@ -1,8 +1,15 @@
 :root {
-  --color-primary: #283897;
-  --color-primary-hover: #1f2d78;
-  --color-primary-soft: #e9edf9;
-  --color-primary-soft-2: #f1eef9;
+  --color-primary: #ae8749;
+  --color-primary-hover: #8f6f3c;
+  --color-primary-soft: #f5f1e9;
+  --color-primary-soft-2: #f0e9de;
+
+  /* Navy accent reserved for navigation chrome (Header, admin sidebar) —
+     the brand palette keeps buttons/details in gold and backgrounds in
+     the pale blue below; navy is intentionally used sparingly. */
+  --color-menu-accent: #2a2a5d;
+  --color-menu-accent-hover: #24244f;
+  --color-menu-accent-soft: #eaeaef;
 
   --color-text: #1a2233;
   --color-text-secondary: #46526a;
@@ -12,8 +19,8 @@
   --color-border-input: #d3dae6;
   --color-border-soft: #edf1f7;
 
-  --color-bg: #f5f7fa;
-  --color-bg-hover: #eff2f8;
+  --color-bg: #ecf1fa;
+  --color-bg-hover: #dae2f1;
   --color-white: #ffffff;
 
   --color-danger: #c0392b;

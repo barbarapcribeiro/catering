@@ -19,7 +19,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--color-primary);
+  background: var(--color-menu-accent);
   color: #fff;
   border: none;
   display: flex;
@@ -56,7 +56,7 @@
 }
 
 .app-header__nav a:hover {
-  color: var(--color-primary);
+  color: var(--color-menu-accent);
 }
 
 .app-header__divider {
@@ -162,7 +162,7 @@
 .app-header__dropdown-footer button {
   border: none;
   background: none;
-  color: var(--color-primary);
+  color: var(--color-menu-accent);
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;

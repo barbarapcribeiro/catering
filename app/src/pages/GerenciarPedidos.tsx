@@ -88,6 +88,8 @@ export function GerenciarPedidos() {
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportType, setReportType] = useState<OccurrenceType>(OCCURRENCE_TYPES[0]);
   const [reportDescription, setReportDescription] = useState("");
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ date: "", time: "", location: "", peopleCount: "", notes: "" });
 
   const selectOrder = (id: string) => {
     setSelectedId(id);
@@ -107,9 +109,38 @@ export function GerenciarPedidos() {
 
   const selected = orders.find((o) => o.id === selectedId) ?? null;
 
-  const editOrder = () => {
+  const openEditModal = () => {
+    if (!selected) return;
     setQuickActionsOpen(false);
-    showToast("Abrindo edição do pedido...");
+    if (selected.status === "Cancelado" || selected.status === "Finalizado") {
+      showToast("Pedidos cancelados ou finalizados não podem ser editados.");
+      return;
+    }
+    const [d, t] = splitDateTime(selected.datetime);
+    setEditForm({
+      date: d === "—" ? "" : d,
+      time: t === "—" ? "" : t,
+      location: selected.location ?? "",
+      peopleCount: selected.peopleCount ? String(selected.peopleCount) : "",
+      notes: selected.notes ?? "",
+    });
+    setEditModalOpen(true);
+  };
+  const saveEdit = () => {
+    if (!selected) return;
+    const patch: Partial<Order> = {
+      datetime: `${editForm.date || "A definir"} ${editForm.time}`.trim(),
+      location: editForm.location || undefined,
+      notes: editForm.notes || undefined,
+    };
+    if (editForm.peopleCount) {
+      const peopleCount = Math.max(1, parseInt(editForm.peopleCount) || 1);
+      patch.peopleCount = peopleCount;
+      if (/pessoas/.test(selected.qty)) patch.qty = `${peopleCount} pessoas`;
+    }
+    updateOrder(selected.id, patch);
+    showToast("Pedido atualizado.");
+    setEditModalOpen(false);
   };
   const duplicate = () => {
     if (!selected) return;
@@ -329,7 +360,7 @@ export function GerenciarPedidos() {
                         {(selected.status === "Entregue" || selected.status === "Finalizado") && (
                           <button onClick={openReportModal}>Reportar problema</button>
                         )}
-                        <button onClick={editOrder}>Editar pedido</button>
+                        <button onClick={openEditModal}>Editar pedido</button>
                         <button onClick={duplicate}>Duplicar pedido</button>
                         <button className="kebab-menu__danger" onClick={cancel}>
                           Cancelar pedido
@@ -419,8 +450,8 @@ export function GerenciarPedidos() {
                       ))}
                     </div>
                     <div className="gp-resumo-footer">
-                      <button className="btn btn--outline" onClick={editOrder}>
-                        ✎ Editar itens
+                      <button className="btn btn--outline" onClick={openEditModal}>
+                        ✎ Editar pedido
                       </button>
                       <div className="gp-resumo-totals">
                         <div className="gp-resumo-totals__col">
@@ -600,7 +631,7 @@ export function GerenciarPedidos() {
             <button className="btn btn--outline" onClick={() => setDetailTab("informacoes")}>
               👁 Ver detalhes
             </button>
-            <button className="btn btn--outline gp-action-bar__primary-outline" onClick={editOrder}>
+            <button className="btn btn--outline gp-action-bar__primary-outline" onClick={openEditModal}>
               ✎ Editar pedido
             </button>
             <button className="btn btn--outline" onClick={converse}>
@@ -630,6 +661,48 @@ export function GerenciarPedidos() {
           </div>
         )}
       </div>
+
+      {editModalOpen && selected && (
+        <Modal onClose={() => setEditModalOpen(false)} width={440}>
+          <div className="modal-title" style={{ marginBottom: 18 }}>
+            Editar pedido — {selected.id}
+          </div>
+          <div className="modal-form">
+            <div className="field-row">
+              <label className="field-label">
+                Data
+                <input value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} placeholder="Ex.: 20/08/2026" />
+              </label>
+              <label className="field-label">
+                Horário
+                <input value={editForm.time} onChange={(e) => setEditForm({ ...editForm, time: e.target.value })} placeholder="Ex.: 14:00" />
+              </label>
+            </div>
+            <label className="field-label">
+              Local
+              <input value={editForm.location} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} placeholder="Sala, andar ou endereço" />
+            </label>
+            {selected.peopleCount !== undefined && (
+              <label className="field-label">
+                Nº de pessoas
+                <input type="number" min={1} value={editForm.peopleCount} onChange={(e) => setEditForm({ ...editForm, peopleCount: e.target.value })} />
+              </label>
+            )}
+            <label className="field-label">
+              Observações
+              <textarea rows={3} value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} placeholder="Instruções, restrições, observações..." />
+            </label>
+          </div>
+          <div className="modal-actions">
+            <button className="btn btn--outline" onClick={() => setEditModalOpen(false)}>
+              Cancelar
+            </button>
+            <button className="btn btn--primary" onClick={saveEdit}>
+              Salvar alterações
+            </button>
+          </div>
+        </Modal>
+      )}
 
       {reportModalOpen && selected && (
         <Modal onClose={() => setReportModalOpen(false)} width={440}>

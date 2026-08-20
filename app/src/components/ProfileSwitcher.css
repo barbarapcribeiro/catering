@@ -19,6 +19,6 @@
   max-width: 180px;
 }
 .profile-switcher select:focus {
-  outline: 2px solid var(--color-primary-soft);
-  border-color: var(--color-primary);
+  outline: 2px solid var(--color-menu-accent-soft);
+  border-color: var(--color-menu-accent);
 }

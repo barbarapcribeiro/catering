@@ -51,7 +51,7 @@ export function HomeGestor() {
   const ccPeople = ccOrders.reduce((sum, o) => sum + (o.peopleCount ?? 0), 0);
 
   const ccKpis = [
-    { glyph: "💰", label: "Faturamento total", value: money(ccRevenue), seed: 1, sparkColor: "#283897" },
+    { glyph: "💰", label: "Faturamento total", value: money(ccRevenue), seed: 1, sparkColor: "var(--color-primary)" },
     { glyph: "📦", label: "Pedidos realizados", value: String(ccOrders.length), seed: 2, sparkColor: "#1e4fa3" },
     { glyph: "🎟", label: "Ticket médio", value: money(ccAvgTicket), seed: 3, sparkColor: "#1a7a4f" },
     { glyph: "👥", label: "Unidades atendidas", value: String(ccPeople), seed: 4, sparkColor: "#b5690f" },

@@ -13,7 +13,7 @@ interface ActivityEntry {
   time: string;
 }
 
-const ICON = { glyph: "\u{1F4E6}", bg: "#e9edf9", color: "#283897" };
+const ICON = { glyph: "\u{1F4E6}", bg: "var(--color-primary-soft)", color: "var(--color-primary)" };
 
 // order.history[].time is a formatted pt-BR string ("dd/mm/yyyy HH:mm" or
 // the comma/seconds variant from toLocaleString), never ISO — parse just the
