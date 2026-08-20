@@ -6,13 +6,22 @@ import { Toast } from "../components/Toast";
 import "./HomeConsumidor.css";
 
 export function HomeConsumidor() {
-  const { surveyQuestions, showToast } = useAppData();
+  const { orders, surveyQuestions, addSurveyResponse, showToast } = useAppData();
   const [rating, setRating] = useState(0);
   const [sent, setSent] = useState(false);
 
   const starsQuestion = surveyQuestions.find((q) => q.active && q.type === "Estrelas");
 
   const submit = () => {
+    if (!starsQuestion || rating === 0) return;
+    const lastDelivered = [...orders]
+      .filter((o) => o.status === "Entregue" || o.status === "Finalizado")
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+    addSurveyResponse({
+      kind: "pedido",
+      orderId: lastDelivered?.id,
+      answers: [{ questionId: starsQuestion.id, value: rating }],
+    });
     setSent(true);
     showToast("Obrigado pelo seu feedback!");
   };
@@ -43,9 +52,14 @@ export function HomeConsumidor() {
                 </button>
               ))}
             </div>
-            <button className="btn btn--primary btn--full" disabled={rating === 0} onClick={submit}>
+            <button className="btn btn--primary btn--full" disabled={rating === 0 || !starsQuestion} onClick={submit}>
               Enviar avaliação
             </button>
+            {!starsQuestion && (
+              <div className="consumidor-card__subtitle" style={{ marginTop: 8 }}>
+                Nenhuma pergunta de estrelas configurada ainda.
+              </div>
+            )}
           </>
         ) : (
           <div className="consumidor-card__thanks">Avaliação enviada. Obrigado! 🎉</div>
