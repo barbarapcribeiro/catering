@@ -13,7 +13,7 @@ const KITS = [
   { id: "manha", name: "Kit Café da Manhã", desc: "Pães, frios, frutas, bolos, café, leite e sucos para começar o dia.", price: 180, badge: "CAFÉ DA MANHÃ", badgeBg: "#b5690f" },
   { id: "tarde", name: "Kit Café da Tarde", desc: "Bolos, biscoitos, salgados assados, café e chás para a pausa da tarde.", price: 170, badge: "CAFÉ DA TARDE", badgeBg: "#1a7a4f" },
   { id: "horaextra", name: "Kit Hora Extra", desc: "Lanches reforçados, sanduíches, sucos e café para quem fica além do horário.", price: 190, badge: "HORA EXTRA", badgeBg: "#2c5f8a" },
-  { id: "aniversariante", name: "Kit Aniversariante", desc: "Bolo confeitado, salgadinhos, doces e refrigerantes para celebrar.", price: 220, badge: "ANIVERSARIANTE", badgeBg: "#283897" },
+  { id: "aniversariante", name: "Kit Aniversariante", desc: "Bolo confeitado, salgadinhos, doces e refrigerantes para celebrar.", price: 220, badge: "ANIVERSARIANTE", badgeBg: "var(--color-primary)" },
 ];
 
 const PAYMENTS = [

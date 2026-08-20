@@ -22,7 +22,7 @@ const CATEGORIES = [
 
 const KITS = [
   { id: "exec", name: "Coffee Executivo", serves: "Serve até 20 pessoas", desc: "Seleção clássica com bebidas quentes, frias e acompanhamentos.", price: 240, badge: "MAIS VENDIDO", badgeBg: "#1a7a4f" },
-  { id: "premium", name: "Coffee Premium", serves: "Serve até 20 pessoas", desc: "Opção sofisticada com mais variedades e itens especiais.", price: 320, badge: "RECOMENDADO", badgeBg: "#283897" },
+  { id: "premium", name: "Coffee Premium", serves: "Serve até 20 pessoas", desc: "Opção sofisticada com mais variedades e itens especiais.", price: 320, badge: "RECOMENDADO", badgeBg: "var(--color-primary)" },
   { id: "economico", name: "Coffee Econômico", serves: "Serve até 20 pessoas", desc: "Ideal para eventos rápidos com ótimo custo-benefício.", price: 180, badge: "MELHOR CUSTO", badgeBg: "#b5690f" },
 ];
 

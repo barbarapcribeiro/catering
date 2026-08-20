@@ -42,7 +42,7 @@ export function AdminOperacao() {
     return [
       { label: "Aguardando aprovação", pct: pct(orders.filter((o) => o.status === "Aguardando aprovação").length), color: "#e0a83a" },
       { label: "Em preparação", pct: pct(orders.filter((o) => o.status === "Em preparação").length), color: "#1e4fa3" },
-      { label: "Pronto para entrega", pct: pct(orders.filter((o) => o.status === "Pronto para entrega").length), color: "#283897" },
+      { label: "Pronto para entrega", pct: pct(orders.filter((o) => o.status === "Pronto para entrega").length), color: "var(--color-primary)" },
       { label: "Entregues", pct: pct(orders.filter((o) => o.status === "Entregue" || o.status === "Finalizado").length), color: "#1a7a4f" },
       { label: "Cancelados", pct: pct(orders.filter((o) => o.status === "Cancelado").length), color: "#c0392b" },
     ];
@@ -125,7 +125,7 @@ export function AdminOperacao() {
                     formatter={(v) => [v, "Pedidos"]}
                     contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e3e8f0" }}
                   />
-                  <Line type="monotone" dataKey="value" stroke="#283897" strokeWidth={2.5} dot={{ r: 3, fill: "#283897" }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="value" stroke="var(--color-primary)" strokeWidth={2.5} dot={{ r: 3, fill: "var(--color-primary)" }} activeDot={{ r: 5 }} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -177,7 +177,7 @@ export function AdminOperacao() {
               <div className="operacao-orders__row" key={o.id}>
                 <div className="operacao-orders__left">
                   <div className="operacao-orders__avatar">
-                    {o.mono === "CB" ? <PathIcon path={COFFEE_PATH} color="#283897" size={15} /> : o.mono}
+                    {o.mono === "CB" ? <PathIcon path={COFFEE_PATH} color="var(--color-primary)" size={15} /> : o.mono}
                   </div>
                   <div className="operacao-orders__id-wrap">
                     <div className="operacao-orders__name">{o.type}</div>

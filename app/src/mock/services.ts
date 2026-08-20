@@ -113,7 +113,7 @@ export const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
   Entregue: { bg: "#e6f5ec", color: "#1a7a4f" },
   Finalizado: { bg: "#e6f5ec", color: "#1a7a4f" },
   Cancelado: { bg: "#fbe4e0", color: "#c0392b" },
-  Recebido: { bg: "#e9edf9", color: "#283897" },
+  Recebido: { bg: "var(--color-primary-soft)", color: "var(--color-primary)" },
 };
 
 /** Um pedido é considerado "em aberto" enquanto não chega a um estado final (entregue, finalizado ou cancelado). */

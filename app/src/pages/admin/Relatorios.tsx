@@ -8,7 +8,7 @@ import { Modal } from "../../components/Modal";
 import type { CostCenter, Order } from "../../types";
 import "./Relatorios.css";
 
-const PALETTE = ["#283897", "#1e4fa3", "#1a7a4f", "#b5690f", "#5a4a8a", "#c99a1f", "#c0392b"];
+const PALETTE = ["var(--color-primary)", "#1e4fa3", "#1a7a4f", "#b5690f", "#5a4a8a", "#c99a1f", "#c0392b"];
 
 export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "pesquisa-satisfacao" | "pesquisa-aplicacao";
 
@@ -32,7 +32,7 @@ const EXPORT_FIELD_DEFS = [
 ] as const;
 type ExportFieldKey = (typeof EXPORT_FIELD_DEFS)[number]["key"];
 
-const APP_SURVEY_CATEGORY_COLOR: Record<string, string> = { CX: "#1e4fa3", UX: "#283897", NPS: "#c99a1f" };
+const APP_SURVEY_CATEGORY_COLOR: Record<string, string> = { CX: "#1e4fa3", UX: "var(--color-primary)", NPS: "#c99a1f" };
 
 function orderUnitLabel(o: Order, costCenters: CostCenter[]): string {
   const primary = o.costCenters?.[0];
@@ -195,7 +195,7 @@ export function Relatorios() {
   const appTextQuestions = appSurveyQuestions.filter((q) => q.active && q.type === "Texto");
 
   const kpis: { glyph: string; label: string; value: string; seed: number; sparkColor: string; dash: ReportDash }[] = [
-    { glyph: "💰", label: "Faturamento total", value: money(totalFaturamento), seed: 1, sparkColor: "#283897", dash: "faturamento" },
+    { glyph: "💰", label: "Faturamento total", value: money(totalFaturamento), seed: 1, sparkColor: "var(--color-primary)", dash: "faturamento" },
     { glyph: "📦", label: "Pedidos realizados", value: String(totalPedidos), seed: 2, sparkColor: "#1e4fa3", dash: "pedidos" },
     { glyph: "🎟", label: "Ticket médio", value: money(ticketMedio), seed: 3, sparkColor: "#1a7a4f", dash: "faturamento" },
     { glyph: "👥", label: "Unidades atendidas", value: String(unidadesAtendidas), seed: 4, sparkColor: "#b5690f", dash: "centros-custo" },
@@ -297,7 +297,7 @@ export function Relatorios() {
                     <XAxis dataKey="day" tick={{ fontSize: 9.5, fill: "#7d8798" }} axisLine={false} tickLine={false} />
                     <YAxis hide />
                     <Tooltip formatter={(v) => [money(Number(v)), "Faturamento"]} contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e3e8f0" }} />
-                    <Bar dataKey="value" fill="#283897" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="value" fill="var(--color-primary)" radius={[2, 2, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -347,7 +347,7 @@ export function Relatorios() {
                         {u.code} • {u.name}
                       </div>
                       <div className="relatorios-bar-track relatorios-bar-track--sm">
-                        <div className="relatorios-bar-fill" style={{ width: `${u.pct}%`, background: "#283897" }} />
+                        <div className="relatorios-bar-fill" style={{ width: `${u.pct}%`, background: "var(--color-primary)" }} />
                       </div>
                     </div>
                     <div className="relatorios-topunit__value">{money(u.value)}</div>
@@ -465,7 +465,7 @@ export function Relatorios() {
                     <XAxis dataKey="day" tick={{ fontSize: 9.5, fill: "#7d8798" }} axisLine={false} tickLine={false} />
                     <YAxis hide />
                     <Tooltip formatter={(v) => [money(Number(v)), "Faturamento"]} contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e3e8f0" }} />
-                    <Bar dataKey="value" fill="#283897" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="value" fill="var(--color-primary)" radius={[2, 2, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -586,7 +586,7 @@ export function Relatorios() {
                       {u.code} • {u.name}
                     </div>
                     <div className="relatorios-bar-track relatorios-bar-track--sm">
-                      <div className="relatorios-bar-fill" style={{ width: `${u.pct}%`, background: "#283897" }} />
+                      <div className="relatorios-bar-fill" style={{ width: `${u.pct}%`, background: "var(--color-primary)" }} />
                     </div>
                   </div>
                   <div className="relatorios-topunit__value">{money(u.value)}</div>

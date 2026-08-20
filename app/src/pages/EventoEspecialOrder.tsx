@@ -29,7 +29,7 @@ const OCCASIONS = [
 
 const KITS = [
   { id: "happyhour", name: "Kit Happy Hour", serves: "Serve até 20 pessoas", desc: "Petiscos, cervejas e drinks sem álcool para uma confraternização descontraída.", price: 300, badge: "HAPPY HOUR", badgeBg: "#b5690f" },
-  { id: "aniversariantes", name: "Kit Aniversariantes do Mês", serves: "Serve até 20 pessoas", desc: "Bolo confeitado, salgadinhos, sucos e kit de decoração para comemorar os aniversariantes do mês.", price: 250, badge: "ANIVERSARIANTES", badgeBg: "#283897" },
+  { id: "aniversariantes", name: "Kit Aniversariantes do Mês", serves: "Serve até 20 pessoas", desc: "Bolo confeitado, salgadinhos, sucos e kit de decoração para comemorar os aniversariantes do mês.", price: 250, badge: "ANIVERSARIANTES", badgeBg: "var(--color-primary)" },
   { id: "pais", name: "Kit Dia dos Pais", serves: "Serve até 20 pessoas", desc: "Petiscos, cervejas sem álcool e sobremesas para homenagear os pais.", price: 280, badge: "DIA DOS PAIS", badgeBg: "#1a7a4f" },
   { id: "junina", name: "Kit Festa Junina", serves: "Serve até 20 pessoas", desc: "Quentão, pipoca, canjica, pé-de-moleque e milho cozido.", price: 260, badge: "FESTA JUNINA", badgeBg: "#b5690f" },
   { id: "natal", name: "Kit Natal", serves: "Serve até 20 pessoas", desc: "Panetone, ceia leve, espumante sem álcool e decoração natalina.", price: 340, badge: "NATAL", badgeBg: "#c0392b" },
@@ -250,8 +250,8 @@ export function EventoEspecialOrder() {
                         fontSize: 13,
                         fontWeight: 700,
                         cursor: "pointer",
-                        border: `1px solid ${sel ? "#283897" : "#d3dae6"}`,
-                        background: sel ? "#283897" : "#fff",
+                        border: `1px solid ${sel ? "var(--color-primary)" : "#d3dae6"}`,
+                        background: sel ? "var(--color-primary)" : "#fff",
                         color: sel ? "#fff" : "#46526a",
                       }}
                     >

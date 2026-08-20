@@ -9,8 +9,8 @@ export const PROMOS: PromoItem[] = [
   {
     id: "combo",
     tag: "NOVIDADE",
-    color: "#283897",
-    bg: "#e9edf9",
+    color: "var(--color-primary)",
+    bg: "var(--color-primary-soft)",
     title: "Combo Reunião",
     desc: "Um novo combo pensado para reuniões produtivas: coffee break completo com opções quentes e frias, montado em até 2h úteis.",
     fullDesc: "Um novo combo pensado para reuniões produtivas: coffee break completo com opções quentes e frias, montado em até 2h úteis.",
