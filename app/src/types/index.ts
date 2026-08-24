@@ -26,6 +26,8 @@ export interface OrderItem {
   name: string;
   qty: number;
   price: number;
+  /** Referencia o Produto real do catálogo (quando o item veio de lá), usado no relatório de Lucro por Produto. */
+  productId?: string;
 }
 
 export interface Order {
@@ -72,11 +74,17 @@ export interface Notification {
   read: boolean;
 }
 
+/** Tipos de pedido do cliente — cada um tem seu próprio conjunto de perguntas de satisfação. */
+export const ORDER_CATEGORIES = ["Coffee Break", "Evento Especial", "Solicitação de Água", "Abastecimento Simples", "Surpreenda"] as const;
+export type OrderCategoryName = (typeof ORDER_CATEGORIES)[number];
+
 export interface SurveyQuestion {
   id: string;
   text: string;
   type: "NPS" | "Estrelas" | "Texto";
   active: boolean;
+  /** A qual tipo de pedido essa pergunta pertence — a pesquisa de satisfação é própria por tipo. */
+  orderCategory: OrderCategoryName;
 }
 
 export type SurveyKind = "pedido" | "aplicacao";
@@ -142,7 +150,7 @@ export interface Product {
   name: string;
   type: ProductType;
   unit: ProductUnit;
-  /** Preço de custo (o que a Sodexo paga ao fornecedor). */
+  /** Preço de custo (o que a Direct Eventos paga ao fornecedor). */
   costPrice: number;
   /** Margem negociada em contrato, em % sobre o custo. Editável no MVP; futuramente deve vir do contrato. */
   marginPercent: number;

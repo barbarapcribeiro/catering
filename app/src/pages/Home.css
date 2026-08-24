@@ -667,3 +667,29 @@
   font-size: 13.5px;
   color: var(--color-text-secondary);
 }
+
+.home-app-survey-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.home-app-survey-cta__text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13.5px;
+  color: var(--color-text);
+}
+.home-app-survey-cta__text strong {
+  color: var(--color-primary);
+}
+.home-app-survey-cta__btn {
+  flex-shrink: 0;
+}

@@ -8,22 +8,16 @@ import { LOCATIONS } from "../mock/services";
 import "../pages/OrderFlow.css";
 import "./AguaOrder.css";
 
-type ItemKey = "b500" | "b15" | "g5" | "g20";
-
-const ITEM_DEFS: { key: ItemKey; name: string; desc: string; price: number }[] = [
-  { key: "b500", name: "Garrafa 500ml", desc: "Água mineral individual", price: 3 },
-  { key: "b15", name: "Garrafa 1,5L", desc: "Água mineral, ideal para mesas de reunião.", price: 6 },
-  { key: "g5", name: "Galão 5L", desc: "Galão compacto, ideal para salas e escritórios.", price: 25 },
-  { key: "g20", name: "Galão 20L", desc: "Galão com suporte, ideal para eventos maiores.", price: 60 },
-];
+const WATER_PRODUCT_IDS = ["prod10", "prod11", "prod12", "prod13"];
 
 export function AguaOrder() {
-  const { addOrder, showToast, costCenters } = useAppData();
+  const { addOrder, showToast, costCenters, products } = useAppData();
   const navigate = useNavigate();
   const activeCostCenters = costCenters.filter((c) => c.active);
+  const items = products.filter((p) => WATER_PRODUCT_IDS.includes(p.id) && p.active);
 
   const [orderId] = useState(() => `#SA-${Math.floor(15200 + Math.random() * 800)}`);
-  const [qty, setQty] = useState<Record<ItemKey, number>>({ b500: 0, b15: 0, g5: 0, g20: 0 });
+  const [qty, setQty] = useState<Record<string, number>>({});
   const [deliveryDate, setDeliveryDate] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
   const [deliverTo, setDeliverTo] = useState("");
@@ -35,12 +29,12 @@ export function AguaOrder() {
   const [hasError, setHasError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const change = (key: ItemKey, delta: number) => {
-    setQty((s) => ({ ...s, [key]: Math.max(0, s[key] + delta) }));
+  const change = (id: string, delta: number) => {
+    setQty((s) => ({ ...s, [id]: Math.max(0, (s[id] ?? 0) + delta) }));
   };
 
-  const totalUnits = qty.b500 + qty.b15 + qty.g5 + qty.g20;
-  const total = ITEM_DEFS.reduce((sum, d) => sum + qty[d.key] * d.price, 0);
+  const totalUnits = Object.values(qty).reduce((sum, v) => sum + v, 0);
+  const total = items.reduce((sum, p) => sum + (qty[p.id] ?? 0) * p.price, 0);
 
   const submitOrder = () => {
     if (totalUnits === 0) {
@@ -71,7 +65,7 @@ export function AguaOrder() {
       status: "Solicitado",
       value: money(total),
       valueNumber: total,
-      items: ITEM_DEFS.filter((d) => qty[d.key] > 0).map((d) => ({ name: d.name, qty: qty[d.key], price: d.price })),
+      items: items.filter((p) => (qty[p.id] ?? 0) > 0).map((p) => ({ name: p.name, qty: qty[p.id], price: p.price, productId: p.id })),
       location: local,
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Entregar para: ${deliverTo}${observations ? " • " + observations : ""}`,
@@ -100,24 +94,29 @@ export function AguaOrder() {
 
         <div className="catalog-heading">1. Escolha os itens e quantidades</div>
         <div className="agua-items-grid">
-          {ITEM_DEFS.map((it) => (
-            <div key={it.key} className="kit-card">
-              <ImagePlaceholder label="Foto do produto" style={{ width: "100%", height: 140, borderRadius: 0 }} />
+          {items.map((p) => (
+            <div key={p.id} className="kit-card">
+              {p.photoUrl ? (
+                <img src={p.photoUrl} alt="" style={{ width: "100%", height: 140, objectFit: "cover" }} />
+              ) : (
+                <ImagePlaceholder label="Foto do produto" style={{ width: "100%", height: 140, borderRadius: 0 }} />
+              )}
               <div className="kit-card__body">
-                <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 3 }}>{it.name}</div>
-                <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 6 }}>{it.desc}</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-primary)", marginBottom: 12 }}>{money(it.price)}</div>
+                <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 3 }}>{p.name}</div>
+                <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 6 }}>{p.description}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-primary)", marginBottom: 12 }}>{money(p.price)}</div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>Quantidade</span>
                   <div className="qty-stepper">
-                    <button onClick={() => change(it.key, -1)}>&minus;</button>
-                    <span>{qty[it.key]}</span>
-                    <button onClick={() => change(it.key, 1)}>+</button>
+                    <button onClick={() => change(p.id, -1)}>&minus;</button>
+                    <span>{qty[p.id] ?? 0}</span>
+                    <button onClick={() => change(p.id, 1)}>+</button>
                   </div>
                 </div>
               </div>
             </div>
           ))}
+          {items.length === 0 && <div className="empty-state">Nenhum produto de água ativo no catálogo.</div>}
         </div>
 
         <div className="step-card">

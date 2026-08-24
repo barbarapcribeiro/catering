@@ -5,64 +5,26 @@ import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
+import type { Product } from "../types";
 import "./OrderFlow.css";
 import "./AbastecimentoOrder.css";
 
-type ItemKey =
-  | "cafe500"
-  | "cafe1l"
-  | "cafe3l"
-  | "cafe5l"
-  | "agua500"
-  | "agua15"
-  | "galao5"
-  | "galao20"
-  | "adocante"
-  | "acucar"
-  | "biscoitos"
-  | "balas"
-  | "bombons";
-
-interface ItemDef {
-  key: ItemKey;
-  name: string;
-  desc: string;
-  price: number;
-}
-
-const CAFE_ITEMS: ItemDef[] = [
-  { key: "cafe500", name: "Garrafa de Café 500ml", desc: "Térmica, mantém a temperatura por mais tempo.", price: 8 },
-  { key: "cafe1l", name: "Garrafa de Café 1L", desc: "Ideal para grupos pequenos.", price: 14 },
-  { key: "cafe3l", name: "Garrafa de Café 3L", desc: "Ideal para setores e salas de reunião.", price: 32 },
-  { key: "cafe5l", name: "Garrafa de Café 5L", desc: "Ideal para andares e áreas maiores.", price: 48 },
-];
-
-const AGUA_ITEMS: ItemDef[] = [
-  { key: "agua500", name: "Garrafa 500ml", desc: "Água mineral individual.", price: 3 },
-  { key: "agua15", name: "Garrafa 1,5L", desc: "Água mineral, ideal para mesas de reunião.", price: 6 },
-  { key: "galao5", name: "Galão 5L", desc: "Galão compacto, ideal para salas e escritórios.", price: 25 },
-  { key: "galao20", name: "Galão 20L", desc: "Galão com suporte, ideal para eventos maiores.", price: 60 },
-];
-
-const OUTROS_ITEMS: ItemDef[] = [
-  { key: "adocante", name: "Adoçante", desc: "Sachês individuais.", price: 5 },
-  { key: "acucar", name: "Açúcar", desc: "Sachês individuais.", price: 4 },
-  { key: "biscoitos", name: "Biscoitos Simples", desc: "Pacotes individuais, sabores variados.", price: 6 },
-  { key: "balas", name: "Balas", desc: "Pacote sortido.", price: 7 },
-  { key: "bombons", name: "Bombons", desc: "Unidade, sabores variados.", price: 2 },
-];
-
-const ALL_ITEMS = [...CAFE_ITEMS, ...AGUA_ITEMS, ...OUTROS_ITEMS];
-
-const INITIAL_QTY = ALL_ITEMS.reduce((acc, it) => ({ ...acc, [it.key]: 0 }), {} as Record<ItemKey, number>);
+const CAFE_PRODUCT_IDS = ["prod14", "prod15", "prod16", "prod17"];
+const AGUA_PRODUCT_IDS = ["prod10", "prod11", "prod12", "prod13"];
+const OUTROS_PRODUCT_IDS = ["prod18", "prod19", "prod20", "prod21", "prod22"];
 
 export function AbastecimentoOrder() {
-  const { addOrder, showToast, costCenters } = useAppData();
+  const { addOrder, showToast, costCenters, products } = useAppData();
   const navigate = useNavigate();
   const activeCostCenters = costCenters.filter((c) => c.active);
 
+  const cafeItems = products.filter((p) => CAFE_PRODUCT_IDS.includes(p.id) && p.active);
+  const aguaItems = products.filter((p) => AGUA_PRODUCT_IDS.includes(p.id) && p.active);
+  const outrosItems = products.filter((p) => OUTROS_PRODUCT_IDS.includes(p.id) && p.active);
+  const allItems = [...cafeItems, ...aguaItems, ...outrosItems];
+
   const [orderId] = useState(() => `#AS-${Math.floor(15200 + Math.random() * 800)}`);
-  const [qty, setQty] = useState<Record<ItemKey, number>>(INITIAL_QTY);
+  const [qty, setQty] = useState<Record<string, number>>({});
   const [deliveryDate, setDeliveryDate] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
   const [deliverTo, setDeliverTo] = useState("");
@@ -74,12 +36,12 @@ export function AbastecimentoOrder() {
   const [hasError, setHasError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const change = (key: ItemKey, delta: number) => {
-    setQty((s) => ({ ...s, [key]: Math.max(0, s[key] + delta) }));
+  const change = (id: string, delta: number) => {
+    setQty((s) => ({ ...s, [id]: Math.max(0, (s[id] ?? 0) + delta) }));
   };
 
   const totalUnits = Object.values(qty).reduce((sum, v) => sum + v, 0);
-  const total = ALL_ITEMS.reduce((sum, d) => sum + qty[d.key] * d.price, 0);
+  const total = allItems.reduce((sum, p) => sum + (qty[p.id] ?? 0) * p.price, 0);
 
   const submitOrder = () => {
     if (totalUnits === 0) {
@@ -110,7 +72,7 @@ export function AbastecimentoOrder() {
       status: "Solicitado",
       value: money(total),
       valueNumber: total,
-      items: ALL_ITEMS.filter((d) => qty[d.key] > 0).map((d) => ({ name: d.name, qty: qty[d.key], price: d.price })),
+      items: allItems.filter((p) => (qty[p.id] ?? 0) > 0).map((p) => ({ name: p.name, qty: qty[p.id], price: p.price, productId: p.id })),
       location: local,
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Entregar para: ${deliverTo}${observations ? " • " + observations : ""}`,
@@ -119,28 +81,33 @@ export function AbastecimentoOrder() {
     navigate("/");
   };
 
-  const renderSection = (title: string, items: ItemDef[]) => (
+  const renderSection = (title: string, items: Product[]) => (
     <>
       <div className="catalog-heading">{title}</div>
       <div className="abast-items-grid">
-        {items.map((it) => (
-          <div key={it.key} className="kit-card">
-            <ImagePlaceholder label="Foto do produto" style={{ width: "100%", height: 120, borderRadius: 0 }} />
+        {items.map((p) => (
+          <div key={p.id} className="kit-card">
+            {p.photoUrl ? (
+              <img src={p.photoUrl} alt="" style={{ width: "100%", height: 120, objectFit: "cover" }} />
+            ) : (
+              <ImagePlaceholder label="Foto do produto" style={{ width: "100%", height: 120, borderRadius: 0 }} />
+            )}
             <div className="kit-card__body">
-              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 3 }}>{it.name}</div>
-              <div style={{ fontSize: 11.5, color: "var(--color-text-muted)", marginBottom: 6, minHeight: 30 }}>{it.desc}</div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--color-primary)", marginBottom: 12 }}>{money(it.price)}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 3 }}>{p.name}</div>
+              <div style={{ fontSize: 11.5, color: "var(--color-text-muted)", marginBottom: 6, minHeight: 30 }}>{p.description}</div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--color-primary)", marginBottom: 12 }}>{money(p.price)}</div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>Quantidade</span>
                 <div className="qty-stepper">
-                  <button onClick={() => change(it.key, -1)}>&minus;</button>
-                  <span>{qty[it.key]}</span>
-                  <button onClick={() => change(it.key, 1)}>+</button>
+                  <button onClick={() => change(p.id, -1)}>&minus;</button>
+                  <span>{qty[p.id] ?? 0}</span>
+                  <button onClick={() => change(p.id, 1)}>+</button>
                 </div>
               </div>
             </div>
           </div>
         ))}
+        {items.length === 0 && <div className="empty-state">Nenhum produto ativo nessa categoria.</div>}
       </div>
     </>
   );
@@ -163,9 +130,9 @@ export function AbastecimentoOrder() {
           </div>
         </div>
 
-        {renderSection("Café", CAFE_ITEMS)}
-        {renderSection("Água", AGUA_ITEMS)}
-        {renderSection("Outros itens", OUTROS_ITEMS)}
+        {renderSection("Café", cafeItems)}
+        {renderSection("Água", aguaItems)}
+        {renderSection("Outros itens", outrosItems)}
 
         <div className="step-card">
           <div className="step-heading">Data, horário e entrega</div>

@@ -617,7 +617,7 @@ export function Surpreenda() {
             <div className="receipt-card">
               <div className="receipt-card__header">
                 <div className="receipt-card__eyebrow">Recibo</div>
-                <div className="receipt-card__title">Surpreenda &bull; Sodexo</div>
+                <div className="receipt-card__title">Surpreenda &bull; Direct Eventos</div>
                 <div className="receipt-card__meta">
                   Pedido {orderId} &bull; {todayLabel}
                 </div>

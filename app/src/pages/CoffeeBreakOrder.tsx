@@ -26,16 +26,16 @@ const KITS = [
   { id: "economico", name: "Coffee Econômico", serves: "Serve até 20 pessoas", desc: "Ideal para eventos rápidos com ótimo custo-benefício.", price: 180, badge: "MELHOR CUSTO", badgeBg: "#b5690f" },
 ];
 
-const AVULSOS = [
-  { id: "coca", name: "Coca-Cola", unit: "lata 350 ml", min: 1, max: 25, step: 1, price: 10, category: "bebidas" },
-  { id: "agua", name: "Água Mineral", unit: "sem gás 500 ml", min: 6, max: 60, step: 6, price: 6, category: "bebidas" },
-  { id: "suco", name: "Suco Natural", unit: "300 ml, sabores variados", min: 3, max: 30, step: 3, price: 8, category: "bebidas" },
-  { id: "cafe", name: "Café", unit: "Térmico 1 litro", min: 1, max: 10, step: 1, price: 25, category: "bebidas" },
-  { id: "salgados", name: "Mini Salgados", unit: "(100 unidades)", min: 50, max: 200, step: 10, price: 0.9, category: "salgados" },
-  { id: "paes", name: "Mini Pães", unit: "(50 unidades)", min: 25, max: 150, step: 5, price: 1.4, category: "paes" },
-  { id: "doces", name: "Mini Doces", unit: "(30 unidades)", min: 15, max: 90, step: 5, price: 2, category: "doces" },
-  { id: "frutas", name: "Fruta Picada", unit: "300g por pessoa", min: 5, max: 50, step: 5, price: 4, category: "frutas" },
-];
+// Cada avulso é um Produto real do catálogo (/admin/produtos) — ids fixos por categoria.
+const AVULSO_PRODUCT_IDS: Record<string, string[]> = {
+  bebidas: ["prod1", "prod2", "prod5", "prod6"],
+  salgados: ["prod3"],
+  paes: ["prod7"],
+  doces: ["prod8"],
+  frutas: ["prod9"],
+  outros: [],
+};
+const ALL_AVULSO_PRODUCT_IDS = Object.values(AVULSO_PRODUCT_IDS).flat();
 
 const CC_NAMES: Record<string, string> = { CC001: "Administrativo", CC002: "Comercial", CC003: "Operações" };
 
@@ -47,8 +47,9 @@ const STEP_DEFS = [
 ];
 
 export function CoffeeBreakOrder() {
-  const { addOrder, showToast } = useAppData();
+  const { addOrder, showToast, products } = useAppData();
   const navigate = useNavigate();
+  const avulsoProducts = products.filter((p) => ALL_AVULSO_PRODUCT_IDS.includes(p.id) && p.active);
 
   const [orderId] = useState(() => `#CB-${Math.floor(15200 + Math.random() * 800)}`);
   const [step, setStep] = useState(1);
@@ -88,24 +89,11 @@ export function CoffeeBreakOrder() {
     setCostCenterPct(redistributePct(sel));
   };
 
-  const setQty = (id: string, val: number, min: number, max: number) => {
-    let v = Math.max(0, val);
-    if (v > 0) v = Math.min(max, Math.max(min, v));
-    setQtys((s) => ({ ...s, [id]: v }));
+  const setQty = (id: string, val: number) => {
+    setQtys((s) => ({ ...s, [id]: Math.max(0, val) }));
   };
-  const incQty = (a: (typeof AVULSOS)[number]) => {
-    const cur = qtys[a.id] || 0;
-    const next = cur === 0 ? a.min : Math.min(a.max, cur + a.step);
-    setQty(a.id, next, a.min, a.max);
-  };
-  const decQty = (a: (typeof AVULSOS)[number]) => {
-    const cur = qtys[a.id] || 0;
-    if (cur <= a.min) {
-      setQty(a.id, 0, a.min, a.max);
-      return;
-    }
-    setQty(a.id, cur - a.step, a.min, a.max);
-  };
+  const incQty = (p: (typeof avulsoProducts)[number]) => setQty(p.id, (qtys[p.id] || 0) + 1);
+  const decQty = (p: (typeof avulsoProducts)[number]) => setQty(p.id, (qtys[p.id] || 0) - 1);
 
   const toggleKit = (kitId: string) => setSelectedKit((s) => (s === kitId ? null : kitId));
   const clearAll = () => {
@@ -114,35 +102,36 @@ export function CoffeeBreakOrder() {
     showToast("Carrinho limpo.");
   };
 
-  let avulsosList = AVULSOS;
-  if (activeCategory !== "kits") avulsosList = avulsosList.filter((a) => a.category === activeCategory);
+  let avulsosList = avulsoProducts;
+  if (activeCategory !== "kits") avulsosList = avulsosList.filter((p) => AVULSO_PRODUCT_IDS[activeCategory]?.includes(p.id));
   const q = searchQuery.trim().toLowerCase();
-  if (q) avulsosList = avulsosList.filter((a) => a.name.toLowerCase().includes(q));
+  if (q) avulsosList = avulsosList.filter((p) => p.name.toLowerCase().includes(q));
 
   const cartItems = useMemo(() => {
-    const items: { id: string; name: string; sub: string; qty: number; unitPrice: number; total: number; dec: () => void; inc: () => void; remove: () => void }[] = [];
+    const items: { id: string; name: string; sub: string; qty: number; unitPrice: number; total: number; productId?: string; dec: () => void; inc: () => void; remove: () => void }[] = [];
     if (selectedKit) {
       const k = KITS.find((x) => x.id === selectedKit)!;
       items.push({ id: "kit-" + k.id, name: k.name, sub: k.serves, qty: 1, unitPrice: k.price, total: k.price, dec: () => toggleKit(k.id), inc: () => {}, remove: () => toggleKit(k.id) });
     }
-    AVULSOS.forEach((a) => {
-      const qty = qtys[a.id] || 0;
+    avulsoProducts.forEach((p) => {
+      const qty = qtys[p.id] || 0;
       if (qty <= 0) return;
       items.push({
-        id: a.id,
-        name: a.name,
-        sub: `${qty} ${a.unit.includes("unidades") ? "unidades" : a.unit}`,
+        id: p.id,
+        name: p.name,
+        sub: `${qty} ${p.unit}`,
         qty,
-        unitPrice: a.price,
-        total: a.price * qty,
-        dec: () => decQty(a),
-        inc: () => incQty(a),
-        remove: () => setQty(a.id, 0, a.min, a.max),
+        unitPrice: p.price,
+        total: p.price * qty,
+        productId: p.id,
+        dec: () => decQty(p),
+        inc: () => incQty(p),
+        remove: () => setQty(p.id, 0),
       });
     });
     return items;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedKit, qtys]);
+  }, [selectedKit, qtys, avulsoProducts]);
 
   const subtotal = cartItems.reduce((sum, ci) => sum + ci.total, 0);
   const fee = subtotal * 0.1;
@@ -178,7 +167,7 @@ export function CoffeeBreakOrder() {
       status: needsApproval ? "Aguardando aprovação" : "Solicitado",
       value: money(total),
       valueNumber: total,
-      items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
+      items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice, productId: ci.productId })),
       eventName,
       location: eventLocal,
       eventTime,
@@ -289,24 +278,24 @@ export function CoffeeBreakOrder() {
               <div className="catalog-heading">{activeCategory === "kits" ? "Produtos avulsos" : "Resultados"}</div>
               {avulsosList.length === 0 && <div className="empty-state">Nenhum produto encontrado.</div>}
               <div className="avulsos-grid">
-                {avulsosList.map((a) => {
-                  const qty = qtys[a.id] || 0;
-                  const bulkPriceLabel = money(a.price * (a.step >= 5 ? 10 : 1)) + (a.step >= 5 ? " / 10un" : "");
+                {avulsosList.map((p) => {
+                  const qty = qtys[p.id] || 0;
                   return (
-                    <div key={a.id} className="avulso-card">
-                      <ImagePlaceholder label="Imagem" style={{ width: 56, height: 56 }} className="avulso-card__img" />
+                    <div key={p.id} className="avulso-card">
+                      {p.photoUrl ? (
+                        <img src={p.photoUrl} alt="" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8 }} className="avulso-card__img" />
+                      ) : (
+                        <ImagePlaceholder label="Imagem" style={{ width: 56, height: 56 }} className="avulso-card__img" />
+                      )}
                       <div className="avulso-card__body">
-                        <div className="avulso-name">{a.name}</div>
-                        <div className="avulso-unit">{a.unit}</div>
-                        <div className="avulso-minmax">
-                          Mín. {a.min} &bull; Máx. {a.max}
-                        </div>
+                        <div className="avulso-name">{p.name}</div>
+                        <div className="avulso-unit">{p.description}</div>
                         <div className="avulso-footer">
-                          <div className="avulso-price">{bulkPriceLabel}</div>
+                          <div className="avulso-price">{money(p.price)}</div>
                           <div className="qty-stepper">
-                            <button onClick={() => decQty(a)}>&minus;</button>
+                            <button onClick={() => decQty(p)}>&minus;</button>
                             <span>{qty}</span>
-                            <button onClick={() => incQty(a)}>+</button>
+                            <button onClick={() => incQty(p)}>+</button>
                           </div>
                         </div>
                       </div>

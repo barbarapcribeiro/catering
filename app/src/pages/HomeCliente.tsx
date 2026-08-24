@@ -377,6 +377,18 @@ export function HomeCliente() {
             <strong>Dica:</strong> Use os pedidos recentes ou em aberto para repetir solicitações com mais rapidez.
           </div>
         </div>
+
+        <div className="home-app-survey-cta">
+          <div className="home-app-survey-cta__text">
+            <span>⭐</span>
+            <div>
+              Avalie sua experiência no <strong>Direct Eventos by Spark XP</strong> — sua opinião nos ajuda a melhorar.
+            </div>
+          </div>
+          <button className="btn btn--primary home-app-survey-cta__btn" onClick={() => navigate("/pesquisa-app")}>
+            Avaliar agora
+          </button>
+        </div>
       </div>
 
       {modal?.type === "service" && (

@@ -14,7 +14,7 @@ export function PesquisaPedido() {
   const [submitted, setSubmitted] = useState(false);
 
   const order = orders.find((o) => o.id.replace(/^#/, "") === orderId);
-  const activeQuestions = surveyQuestions.filter((q) => q.active);
+  const activeQuestions = order ? surveyQuestions.filter((q) => q.active && q.orderCategory === order.category) : [];
   const answeredCount = Object.keys(answers).length;
 
   const setAnswer = (questionId: string, value: number | string) => {
@@ -81,7 +81,7 @@ export function PesquisaPedido() {
     <div className="pp-page">
       <div className="pp-card">
         <div className="pp-brand">
-          <span className="pp-brand__mark">S</span> Sodexo Direct
+          <span className="pp-brand__mark">D</span> Direct Eventos by Spark XP
         </div>
         <h1 className="pp-title">Como foi sua experiência?</h1>
         <p className="pp-subtitle">
@@ -101,7 +101,11 @@ export function PesquisaPedido() {
               {renderQuestion(q)}
             </div>
           ))}
-          {activeQuestions.length === 0 && <div className="pp-empty">Nenhuma pergunta configurada no momento.</div>}
+          {activeQuestions.length === 0 && (
+            <div className="pp-empty">
+              {order ? `Nenhuma pergunta configurada para ${order.category} no momento.` : "Pedido não encontrado."}
+            </div>
+          )}
         </div>
 
         <button className="pp-submit" disabled={answeredCount === 0} onClick={submit}>
