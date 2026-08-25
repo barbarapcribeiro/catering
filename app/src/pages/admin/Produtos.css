@@ -135,3 +135,31 @@
   accent-color: var(--color-primary);
   cursor: pointer;
 }
+
+.produtos-page-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.produtos-page-chips button {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+.produtos-page-chips button.is-active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.produtos-table__pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}

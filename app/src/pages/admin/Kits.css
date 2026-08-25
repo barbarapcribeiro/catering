@@ -215,3 +215,7 @@
   gap: 6px;
   margin: -4px 0 4px;
 }
+.kits-card__meal-tags .pill-tag--accent {
+  background: var(--color-menu-accent-soft);
+  color: var(--color-menu-accent);
+}

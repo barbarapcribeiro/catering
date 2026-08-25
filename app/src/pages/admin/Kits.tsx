@@ -4,7 +4,7 @@ import { Modal } from "../../components/Modal";
 import { PhotoUpload } from "../../components/PhotoUpload";
 import { money } from "../../mock/money";
 import { computeKitPrice } from "../../mock/pricing";
-import { MEAL_SERVICES, type Kit, type KitItem, type KitServiceItem, type MealServiceName } from "../../types";
+import { CATALOG_PAGES, MEAL_SERVICES, type CatalogPageName, type Kit, type KitItem, type KitServiceItem, type MealServiceName } from "../../types";
 import "./Kits.css";
 
 interface FormState {
@@ -15,6 +15,7 @@ interface FormState {
   serviceFeePercent: string;
   photoUrl?: string;
   mealServices: MealServiceName[];
+  pages: CatalogPageName[];
   active: boolean;
 }
 
@@ -26,6 +27,7 @@ const EMPTY_FORM: FormState = {
   serviceFeePercent: "10",
   photoUrl: undefined,
   mealServices: [],
+  pages: [],
   active: true,
 };
 
@@ -69,6 +71,7 @@ export function Kits() {
       serviceFeePercent: String(k.serviceFeePercent),
       photoUrl: k.photoUrl,
       mealServices: k.mealServices ?? [],
+      pages: k.pages ?? [],
       active: k.active,
     });
     setModalOpen(true);
@@ -79,6 +82,10 @@ export function Kits() {
       ...f,
       mealServices: f.mealServices.includes(m) ? f.mealServices.filter((x) => x !== m) : [...f.mealServices, m],
     }));
+  };
+
+  const togglePage = (page: CatalogPageName) => {
+    setForm((f) => ({ ...f, pages: f.pages.includes(page) ? f.pages.filter((x) => x !== page) : [...f.pages, page] }));
   };
 
   const setQty = (productId: string, qty: number) => {
@@ -121,6 +128,7 @@ export function Kits() {
       serviceFeePercent: parsedFee,
       photoUrl: form.photoUrl,
       mealServices: form.mealServices.length > 0 ? form.mealServices : undefined,
+      pages: form.pages.length > 0 ? form.pages : undefined,
       active: form.active,
     };
     if (editingId) {
@@ -175,10 +183,15 @@ export function Kits() {
                 {k.active ? "Ativo" : "Inativo"}
               </span>
             </div>
-            {k.mealServices && k.mealServices.length > 0 && (
+            {((k.pages && k.pages.length > 0) || (k.mealServices && k.mealServices.length > 0)) && (
               <div className="kits-card__meal-tags">
-                {k.mealServices.map((m) => (
-                  <span key={m} className="pill-tag">
+                {k.pages?.map((page) => (
+                  <span key={page} className="pill-tag">
+                    {page}
+                  </span>
+                ))}
+                {k.mealServices?.map((m) => (
+                  <span key={m} className="pill-tag pill-tag--accent">
                     {m}
                   </span>
                 ))}
@@ -287,15 +300,30 @@ export function Kits() {
               Itens: {money(formItemsTotal)} + taxa de serviço ({parsedFee || 0}%) = <strong>{money(formKitPrice)}</strong>
             </div>
             <div className="field-label">
-              Serviços de Consumo Catraca <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional — em quais refeições esse kit pode aparecer)</span>
+              Páginas onde aparece <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional — em quais pedidos esse kit pode ser oferecido)</span>
             </div>
             <div className="kits-meal-chips">
-              {MEAL_SERVICES.map((m) => (
-                <button key={m} type="button" className={form.mealServices.includes(m) ? "is-active" : ""} onClick={() => toggleMealService(m)}>
-                  {m}
+              {CATALOG_PAGES.map((page) => (
+                <button key={page} type="button" className={form.pages.includes(page) ? "is-active" : ""} onClick={() => togglePage(page)}>
+                  {page}
                 </button>
               ))}
             </div>
+
+            {form.pages.includes("Consumo Catraca") && (
+              <>
+                <div className="field-label">
+                  Serviços de Consumo Catraca <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(em quais refeições esse kit pode aparecer)</span>
+                </div>
+                <div className="kits-meal-chips">
+                  {MEAL_SERVICES.map((m) => (
+                    <button key={m} type="button" className={form.mealServices.includes(m) ? "is-active" : ""} onClick={() => toggleMealService(m)}>
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
             <PhotoUpload value={form.photoUrl} onChange={(v) => setForm({ ...form, photoUrl: v })} label="Foto do kit" />
             <label className="kits-active-check">
               <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />

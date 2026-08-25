@@ -8,6 +8,7 @@ import { PathIcon } from "../components/Icon";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
+import type { ProductType } from "../types";
 import "./OrderFlow.css";
 
 const CATEGORIES = [
@@ -20,22 +21,22 @@ const CATEGORIES = [
   { id: "outros", label: "Outros" },
 ];
 
+// Cada aba de avulsos agrupa produtos reais do catálogo (/admin/produtos) pelo campo "Tipo de produto".
+const TYPE_TO_CATEGORY: Record<ProductType, string> = {
+  Bebida: "bebidas",
+  Salgado: "salgados",
+  Doce: "doces",
+  "Pão e Bolo": "paes",
+  Fruta: "frutas",
+  Descartável: "outros",
+  Outro: "outros",
+};
+
 const KITS = [
   { id: "exec", name: "Coffee Executivo", serves: "Serve até 20 pessoas", desc: "Seleção clássica com bebidas quentes, frias e acompanhamentos.", price: 240, badge: "MAIS VENDIDO", badgeBg: "#1a7a4f" },
   { id: "premium", name: "Coffee Premium", serves: "Serve até 20 pessoas", desc: "Opção sofisticada com mais variedades e itens especiais.", price: 320, badge: "RECOMENDADO", badgeBg: "var(--color-primary)" },
   { id: "economico", name: "Coffee Econômico", serves: "Serve até 20 pessoas", desc: "Ideal para eventos rápidos com ótimo custo-benefício.", price: 180, badge: "MELHOR CUSTO", badgeBg: "#b5690f" },
 ];
-
-// Cada avulso é um Produto real do catálogo (/admin/produtos) — ids fixos por categoria.
-const AVULSO_PRODUCT_IDS: Record<string, string[]> = {
-  bebidas: ["prod1", "prod2", "prod5", "prod6"],
-  salgados: ["prod3"],
-  paes: ["prod7"],
-  doces: ["prod8"],
-  frutas: ["prod9"],
-  outros: [],
-};
-const ALL_AVULSO_PRODUCT_IDS = Object.values(AVULSO_PRODUCT_IDS).flat();
 
 const CC_NAMES: Record<string, string> = { CC001: "Administrativo", CC002: "Comercial", CC003: "Operações" };
 
@@ -50,7 +51,7 @@ export function CoffeeBreakOrder() {
   const { addOrder, showToast, products, serviceParameters } = useAppData();
   const svcParams = serviceParameters.find((s) => s.category === "Coffee Break");
   const navigate = useNavigate();
-  const avulsoProducts = products.filter((p) => ALL_AVULSO_PRODUCT_IDS.includes(p.id) && p.active);
+  const avulsoProducts = products.filter((p) => p.active && (p.pages ?? []).includes("Coffee Break"));
 
   const [orderId] = useState(() => `#CB-${Math.floor(15200 + Math.random() * 800)}`);
   const [step, setStep] = useState(1);
@@ -104,7 +105,7 @@ export function CoffeeBreakOrder() {
   };
 
   let avulsosList = avulsoProducts;
-  if (activeCategory !== "kits") avulsosList = avulsosList.filter((p) => AVULSO_PRODUCT_IDS[activeCategory]?.includes(p.id));
+  if (activeCategory !== "kits") avulsosList = avulsosList.filter((p) => TYPE_TO_CATEGORY[p.type] === activeCategory);
   const q = searchQuery.trim().toLowerCase();
   if (q) avulsosList = avulsosList.filter((p) => p.name.toLowerCase().includes(q));
 

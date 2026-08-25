@@ -37,7 +37,10 @@ export function ConsumoCatraca() {
   const [historyQrUrl, setHistoryQrUrl] = useState<string | null>(null);
 
   const activeCostCenters = costCenters.filter((c) => c.active);
-  const mealKits = useMemo(() => kits.filter((k) => k.active && (k.mealServices ?? []).includes(meal)), [kits, meal]);
+  const mealKits = useMemo(
+    () => kits.filter((k) => k.active && (k.pages ?? []).includes("Consumo Catraca") && (k.mealServices ?? []).includes(meal)),
+    [kits, meal],
+  );
   const kitById = useMemo(() => Object.fromEntries(kits.map((k) => [k.id, k])), [kits]);
   const selectedKit = selectedKitId ? kitById[selectedKitId] : undefined;
 

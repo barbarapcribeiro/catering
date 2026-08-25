@@ -9,19 +9,12 @@ import type { Product } from "../types";
 import "./OrderFlow.css";
 import "./AbastecimentoOrder.css";
 
-const CAFE_PRODUCT_IDS = ["prod14", "prod15", "prod16", "prod17"];
-const AGUA_PRODUCT_IDS = ["prod10", "prod11", "prod12", "prod13"];
-const OUTROS_PRODUCT_IDS = ["prod18", "prod19", "prod20", "prod21", "prod22"];
-
 export function AbastecimentoOrder() {
   const { addOrder, showToast, costCenters, products, serviceParameters } = useAppData();
   const navigate = useNavigate();
   const activeCostCenters = costCenters.filter((c) => c.active);
 
-  const cafeItems = products.filter((p) => CAFE_PRODUCT_IDS.includes(p.id) && p.active);
-  const aguaItems = products.filter((p) => AGUA_PRODUCT_IDS.includes(p.id) && p.active);
-  const outrosItems = products.filter((p) => OUTROS_PRODUCT_IDS.includes(p.id) && p.active);
-  const allItems = [...cafeItems, ...aguaItems, ...outrosItems];
+  const allItems = products.filter((p) => p.active && (p.pages ?? []).includes("Abastecimento Simples"));
   const linkedCostCenterCode = serviceParameters.find((s) => s.category === "Abastecimento Simples")?.linkedCostCenterCode;
 
   const [orderId] = useState(() => `#AS-${Math.floor(15200 + Math.random() * 800)}`);
@@ -136,9 +129,7 @@ export function AbastecimentoOrder() {
           </div>
         </div>
 
-        {renderSection("Café", cafeItems)}
-        {renderSection("Água", aguaItems)}
-        {renderSection("Outros itens", outrosItems)}
+        {renderSection("Itens disponíveis", allItems)}
 
         <div className="step-card">
           <div className="step-heading">Data, horário e entrega</div>
