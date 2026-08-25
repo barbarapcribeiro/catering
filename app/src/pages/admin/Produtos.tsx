@@ -4,7 +4,7 @@ import { Modal } from "../../components/Modal";
 import { PhotoUpload } from "../../components/PhotoUpload";
 import { money } from "../../mock/money";
 import { computeProductPrice } from "../../mock/pricing";
-import { PRODUCT_TYPES, PRODUCT_UNITS, type Product, type ProductType, type ProductUnit } from "../../types";
+import { CATALOG_PAGES, PRODUCT_TYPES, PRODUCT_UNITS, type CatalogPageName, type Product, type ProductType, type ProductUnit } from "../../types";
 import "./Produtos.css";
 
 const EMPTY_FORM = {
@@ -16,6 +16,7 @@ const EMPTY_FORM = {
   description: "",
   supplierId: "",
   photoUrl: undefined as string | undefined,
+  pages: [] as CatalogPageName[],
   active: true,
 };
 
@@ -45,9 +46,14 @@ export function Produtos() {
       description: p.description ?? "",
       supplierId: p.supplierId ?? "",
       photoUrl: p.photoUrl,
+      pages: p.pages ?? [],
       active: p.active,
     });
     setModalOpen(true);
+  };
+
+  const togglePage = (page: CatalogPageName) => {
+    setForm((f) => ({ ...f, pages: f.pages.includes(page) ? f.pages.filter((x) => x !== page) : [...f.pages, page] }));
   };
 
   const parsedCostPrice = parseFloat(form.costPrice.replace(",", ".")) || 0;
@@ -65,6 +71,7 @@ export function Produtos() {
       description: form.description || undefined,
       supplierId: form.supplierId || undefined,
       photoUrl: form.photoUrl,
+      pages: form.pages.length > 0 ? form.pages : undefined,
       active: form.active,
     };
     if (editingId) {
@@ -134,6 +141,15 @@ export function Produtos() {
                 <div>
                   <div className="produtos-table__name">{p.name}</div>
                   {p.description && <div className="produtos-table__desc">{p.description}</div>}
+                  {p.pages && p.pages.length > 0 && (
+                    <div className="produtos-table__pages">
+                      {p.pages.map((page) => (
+                        <span key={page} className="pill-tag">
+                          {page}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
               <div>
@@ -215,6 +231,16 @@ export function Produtos() {
               Preço de venda no pedido: <strong>{money(previewPrice)}</strong>
             </div>
             <PhotoUpload value={form.photoUrl} onChange={(v) => setForm({ ...form, photoUrl: v })} label="Foto do produto" />
+            <div className="field-label">
+              Páginas onde aparece <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional — em quais pedidos esse produto pode ser oferecido)</span>
+            </div>
+            <div className="produtos-page-chips">
+              {CATALOG_PAGES.map((page) => (
+                <button key={page} type="button" className={form.pages.includes(page) ? "is-active" : ""} onClick={() => togglePage(page)}>
+                  {page}
+                </button>
+              ))}
+            </div>
             <label className="field-label">
               Fornecedor <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span>
               <select value={form.supplierId} onChange={(e) => setForm({ ...form, supplierId: e.target.value })}>

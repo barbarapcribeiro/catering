@@ -8,6 +8,7 @@ import { PathIcon } from "../components/Icon";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
+import type { ProductType } from "../types";
 import "./OrderFlow.css";
 
 const CATEGORIES = [
@@ -20,22 +21,16 @@ const CATEGORIES = [
   { id: "outros", label: "Outros" },
 ];
 
-const KITS = [
-  { id: "exec", name: "Coffee Executivo", serves: "Serve até 20 pessoas", desc: "Seleção clássica com bebidas quentes, frias e acompanhamentos.", price: 240, badge: "MAIS VENDIDO", badgeBg: "#1a7a4f" },
-  { id: "premium", name: "Coffee Premium", serves: "Serve até 20 pessoas", desc: "Opção sofisticada com mais variedades e itens especiais.", price: 320, badge: "RECOMENDADO", badgeBg: "var(--color-primary)" },
-  { id: "economico", name: "Coffee Econômico", serves: "Serve até 20 pessoas", desc: "Ideal para eventos rápidos com ótimo custo-benefício.", price: 180, badge: "MELHOR CUSTO", badgeBg: "#b5690f" },
-];
-
-// Cada avulso é um Produto real do catálogo (/admin/produtos) — ids fixos por categoria.
-const AVULSO_PRODUCT_IDS: Record<string, string[]> = {
-  bebidas: ["prod1", "prod2", "prod5", "prod6"],
-  salgados: ["prod3"],
-  paes: ["prod7"],
-  doces: ["prod8"],
-  frutas: ["prod9"],
-  outros: [],
+// Cada aba de avulsos agrupa produtos reais do catálogo (/admin/produtos) pelo campo "Tipo de produto".
+const TYPE_TO_CATEGORY: Record<ProductType, string> = {
+  Bebida: "bebidas",
+  Salgado: "salgados",
+  Doce: "doces",
+  "Pão e Bolo": "paes",
+  Fruta: "frutas",
+  Descartável: "outros",
+  Outro: "outros",
 };
-const ALL_AVULSO_PRODUCT_IDS = Object.values(AVULSO_PRODUCT_IDS).flat();
 
 const CC_NAMES: Record<string, string> = { CC001: "Administrativo", CC002: "Comercial", CC003: "Operações" };
 
@@ -47,16 +42,17 @@ const STEP_DEFS = [
 ];
 
 export function CoffeeBreakOrder() {
-  const { addOrder, showToast, products, serviceParameters } = useAppData();
+  const { addOrder, showToast, products, kits, serviceParameters } = useAppData();
   const svcParams = serviceParameters.find((s) => s.category === "Coffee Break");
   const navigate = useNavigate();
-  const avulsoProducts = products.filter((p) => ALL_AVULSO_PRODUCT_IDS.includes(p.id) && p.active);
+  const coffeeKits = kits.filter((k) => k.active && (k.pages ?? []).includes("Coffee Break"));
+  const avulsoProducts = products.filter((p) => p.active && (p.pages ?? []).includes("Coffee Break"));
 
   const [orderId] = useState(() => `#CB-${Math.floor(15200 + Math.random() * 800)}`);
   const [step, setStep] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("kits");
-  const [selectedKit, setSelectedKit] = useState<string | null>("exec");
+  const [selectedKit, setSelectedKit] = useState<string | null>(coffeeKits[0]?.id ?? null);
   const [qtys, setQtys] = useState<Record<string, number>>({});
   const [people, setPeople] = useState(15);
   const [eventName, setEventName] = useState("");
@@ -104,15 +100,18 @@ export function CoffeeBreakOrder() {
   };
 
   let avulsosList = avulsoProducts;
-  if (activeCategory !== "kits") avulsosList = avulsosList.filter((p) => AVULSO_PRODUCT_IDS[activeCategory]?.includes(p.id));
+  if (activeCategory !== "kits") avulsosList = avulsosList.filter((p) => TYPE_TO_CATEGORY[p.type] === activeCategory);
   const q = searchQuery.trim().toLowerCase();
   if (q) avulsosList = avulsosList.filter((p) => p.name.toLowerCase().includes(q));
 
   const cartItems = useMemo(() => {
     const items: { id: string; name: string; sub: string; qty: number; unitPrice: number; total: number; productId?: string; dec: () => void; inc: () => void; remove: () => void }[] = [];
     if (selectedKit) {
-      const k = KITS.find((x) => x.id === selectedKit)!;
-      items.push({ id: "kit-" + k.id, name: k.name, sub: k.serves, qty: 1, unitPrice: k.price, total: k.price, dec: () => toggleKit(k.id), inc: () => {}, remove: () => toggleKit(k.id) });
+      const k = coffeeKits.find((x) => x.id === selectedKit);
+      if (k) {
+        const kitTotal = k.items.reduce((sum, item) => sum + (products.find((p) => p.id === item.productId)?.price ?? 0) * item.qty, 0);
+        items.push({ id: "kit-" + k.id, name: k.name, sub: k.description ?? "Kit de Coffee Break", qty: 1, unitPrice: kitTotal, total: kitTotal, dec: () => toggleKit(k.id), inc: () => {}, remove: () => toggleKit(k.id) });
+      }
     }
     avulsoProducts.forEach((p) => {
       const qty = qtys[p.id] || 0;
@@ -132,7 +131,7 @@ export function CoffeeBreakOrder() {
     });
     return items;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedKit, qtys, avulsoProducts]);
+  }, [selectedKit, qtys, avulsoProducts, coffeeKits, products]);
 
   const subtotal = cartItems.reduce((sum, ci) => sum + ci.total, 0);
   const fee = subtotal * ((svcParams?.adminFeePercent ?? 10) / 100);
@@ -240,14 +239,15 @@ export function CoffeeBreakOrder() {
                     <span className="pill-tag">Kits prontos para facilitar sua escolha</span>
                   </div>
                   <div className="kits-grid">
-                    {KITS.map((k) => {
+                    {coffeeKits.map((k, index) => {
+                      const kitTotal = k.items.reduce((sum, item) => sum + (products.find((p) => p.id === item.productId)?.price ?? 0) * item.qty, 0);
                       const selected = selectedKit === k.id;
                       return (
                         <div key={k.id} className="kit-card">
                           <div className="kit-card__image-wrap">
                             <ImagePlaceholder label="Imagem do kit" style={{ width: "100%", height: 120, borderRadius: 0 }} />
-                            <span className="kit-card__badge" style={{ background: k.badgeBg }}>
-                              {k.badge}
+                            <span className="kit-card__badge" style={{ background: index === 0 ? "#1a7a4f" : "var(--color-primary)" }}>
+                              {index === 0 ? "MAIS VENDIDO" : "RECOMENDADO"}
                             </span>
                           </div>
                           <div className="kit-card__body">
@@ -259,10 +259,10 @@ export function CoffeeBreakOrder() {
                                 <path d="M23 21v-2a4 4 0 00-3-3.87" />
                                 <path d="M16 3.13a4 4 0 010 7.75" />
                               </svg>
-                              {k.serves}
+                              {k.description ?? "Kit de Coffee Break"}
                             </div>
-                            <div className="kit-card__desc">{k.desc}</div>
-                            <div className="kit-card__price">{money(k.price)}</div>
+                            <div className="kit-card__desc">Itens selecionados no catálogo</div>
+                            <div className="kit-card__price">{money(kitTotal)}</div>
                             <button
                               className="kit-card__btn"
                               style={{ background: selected ? "var(--color-primary)" : "#fff", color: selected ? "#fff" : "var(--color-primary)" }}

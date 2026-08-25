@@ -220,6 +220,24 @@ export type ProductType = (typeof PRODUCT_TYPES)[number];
 export const PRODUCT_UNITS = ["un", "kg", "L", "pacote", "caixa"] as const;
 export type ProductUnit = (typeof PRODUCT_UNITS)[number];
 
+/** Todas as telas/serviços de pedido onde um produto ou kit pode ser oferecido. */
+export const CATALOG_PAGES = [
+  "Abastecimento Simples",
+  "Coffee Break",
+  "Consumo Catraca",
+  "Evento Especial",
+  "Lanche",
+  "Refeição Especial",
+  "Refeição Marmitex",
+  "Refeição Normal",
+  "Reserva de Refeição",
+  "Serviços Diversos",
+  "Surpreenda",
+  "Solicitação de Água",
+  "Venda à Vista",
+] as const;
+export type CatalogPageName = (typeof CATALOG_PAGES)[number];
+
 export interface Product {
   id: string;
   name: string;
@@ -235,6 +253,8 @@ export interface Product {
   supplierId?: string;
   /** Foto do produto (data URL ou link), exibida no catálogo e no pedido. */
   photoUrl?: string;
+  /** Em quais páginas/serviços de pedido esse produto pode aparecer. */
+  pages?: CatalogPageName[];
   active: boolean;
 }
 
@@ -265,6 +285,8 @@ export interface Kit {
   photoUrl?: string;
   /** Em quais refeições do Consumo Catraca esse kit pode ser oferecido (opcional — só usado por esse serviço). */
   mealServices?: MealServiceName[];
+  /** Em quais páginas/serviços de pedido esse kit pode aparecer. */
+  pages?: CatalogPageName[];
   active: boolean;
 }
 

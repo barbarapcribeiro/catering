@@ -8,13 +8,11 @@ import { LOCATIONS } from "../mock/services";
 import "../pages/OrderFlow.css";
 import "./AguaOrder.css";
 
-const WATER_PRODUCT_IDS = ["prod10", "prod11", "prod12", "prod13"];
-
 export function AguaOrder() {
   const { addOrder, showToast, costCenters, products, serviceParameters } = useAppData();
   const navigate = useNavigate();
   const activeCostCenters = costCenters.filter((c) => c.active);
-  const items = products.filter((p) => WATER_PRODUCT_IDS.includes(p.id) && p.active);
+  const items = products.filter((p) => p.active && (p.pages ?? []).includes("Solicitação de Água"));
   const linkedCostCenterCode = serviceParameters.find((s) => s.category === "Solicitação de Água")?.linkedCostCenterCode;
 
   const [orderId] = useState(() => `#SA-${Math.floor(15200 + Math.random() * 800)}`);

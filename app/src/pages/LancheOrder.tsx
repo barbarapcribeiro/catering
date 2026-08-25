@@ -21,7 +21,7 @@ export function LancheOrder() {
   const navigate = useNavigate();
 
   const activeCostCenters = costCenters.filter((c) => c.active);
-  const lancheKits = kits.filter((k) => k.active && (k.mealServices ?? []).includes("Lanche"));
+  const lancheKits = kits.filter((k) => k.active && (k.pages ?? []).includes("Lanche"));
 
   const kitPrice = (k: Kit) => {
     const itemsTotal = k.items.reduce((sum, it) => sum + (products.find((p) => p.id === it.productId)?.price ?? 0) * it.qty, 0);
