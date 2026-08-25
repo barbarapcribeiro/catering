@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
@@ -14,7 +14,7 @@ const AGUA_PRODUCT_IDS = ["prod10", "prod11", "prod12", "prod13"];
 const OUTROS_PRODUCT_IDS = ["prod18", "prod19", "prod20", "prod21", "prod22"];
 
 export function AbastecimentoOrder() {
-  const { addOrder, showToast, costCenters, products } = useAppData();
+  const { addOrder, showToast, costCenters, products, serviceParameters } = useAppData();
   const navigate = useNavigate();
   const activeCostCenters = costCenters.filter((c) => c.active);
 
@@ -22,6 +22,7 @@ export function AbastecimentoOrder() {
   const aguaItems = products.filter((p) => AGUA_PRODUCT_IDS.includes(p.id) && p.active);
   const outrosItems = products.filter((p) => OUTROS_PRODUCT_IDS.includes(p.id) && p.active);
   const allItems = [...cafeItems, ...aguaItems, ...outrosItems];
+  const linkedCostCenterCode = serviceParameters.find((s) => s.category === "Abastecimento Simples")?.linkedCostCenterCode;
 
   const [orderId] = useState(() => `#AS-${Math.floor(15200 + Math.random() * 800)}`);
   const [qty, setQty] = useState<Record<string, number>>({});
@@ -31,6 +32,11 @@ export function AbastecimentoOrder() {
   const [local, setLocal] = useState("");
   const [localMenuOpen, setLocalMenuOpen] = useState(false);
   const [costCenter, setCostCenter] = useState("");
+
+  useEffect(() => {
+    if (!costCenter && linkedCostCenterCode) setCostCenter(linkedCostCenterCode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkedCostCenterCode]);
   const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
   const [observations, setObservations] = useState("");
   const [hasError, setHasError] = useState(false);

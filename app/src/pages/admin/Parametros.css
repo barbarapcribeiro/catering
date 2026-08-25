@@ -1,0 +1,131 @@
+.parametros-page {
+  max-width: 1180px;
+}
+
+.parametros-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.parametros-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
+}
+.parametros-subtitle {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  max-width: 70ch;
+}
+
+.parametros-geral-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.parametros-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.parametros-card__title {
+  font-size: 15px;
+  font-weight: 800;
+}
+.parametros-card__hint {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  margin-top: -8px;
+}
+
+.param-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.param-toggle-row input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.param-toggle-row--compact {
+  font-weight: 500;
+}
+
+.parametros-servico-card,
+.parametros-fluxo-card {
+  padding: 20px;
+}
+
+.parametros-servico-table {
+  margin-top: 14px;
+  overflow-x: auto;
+}
+.parametros-servico-table__head,
+.parametros-servico-table__row {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1.1fr 1.2fr 1.6fr;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 4px;
+  min-width: 820px;
+}
+.parametros-servico-table__head {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--color-border);
+}
+.parametros-servico-table__row {
+  border-bottom: 1px solid var(--color-border-soft);
+  font-size: 13px;
+}
+.parametros-servico-table__row:last-child {
+  border-bottom: none;
+}
+.parametros-servico-table__name {
+  font-weight: 700;
+}
+.parametros-servico-table select,
+.parametros-servico-table input {
+  width: 100%;
+}
+
+.parametros-time-input {
+  width: 84px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.parametros-fee-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.parametros-fee-input {
+  width: 64px;
+}
+
+.parametros-fluxo-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px 20px;
+}
+.param-status-row {
+  padding: 8px 0;
+}

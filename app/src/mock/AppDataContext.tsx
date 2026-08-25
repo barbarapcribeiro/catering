@@ -4,6 +4,11 @@ import {
   EMPTY_PAGE_PERMISSION,
   type AppSurveyQuestion,
   type AppUser,
+  type Asset,
+  type AssetMovement,
+  type AssetType,
+  type CatracaRedemption,
+  type CatracaStatus,
   type ChatMessage,
   type Contract,
   type CostCenter,
@@ -12,15 +17,22 @@ import {
   type Notification,
   type Occurrence,
   type Order,
+  type OrderCategoryName,
+  type OrderStatus,
+  type OperatingParameters,
   type PagePermission,
   type Popup,
   type PremiumEvent,
   type Product,
   type Profile,
+  type QuoteRequest,
   type ServiceCatalogItem,
+  type ServiceParameters,
   type Supplier,
   type SurveyQuestion,
   type SurveyResponse,
+  ORDER_CATEGORIES,
+  ORDER_STATUS_LIST,
 } from "../types";
 import { computeProductPrice } from "./pricing";
 
@@ -49,6 +61,14 @@ interface StoredState {
   dismissedPopupIds: string[];
   currentProfileId: string;
   nextOrderNum: number;
+  operatingParameters: OperatingParameters;
+  serviceParameters: ServiceParameters[];
+  statusFlowVisibility: Record<OrderStatus, boolean>;
+  assetTypes: AssetType[];
+  assets: Asset[];
+  assetMovements: AssetMovement[];
+  catracaRedemptions: CatracaRedemption[];
+  quoteRequests: QuoteRequest[];
 }
 
 const initialOrders: Order[] = [];
@@ -202,7 +222,7 @@ function fullAccessPerms(): Record<string, PagePermission> {
   return out;
 }
 
-const ORDER_PAGES = ["pedido-coffee", "pedido-evento", "pedido-agua", "pedido-abastecimento", "surpreenda"];
+const ORDER_PAGES = ["pedido-coffee", "pedido-evento", "pedido-agua", "pedido-abastecimento", "surpreenda", "pedido-lanche"];
 
 const initialProfiles: Profile[] = [
   {
@@ -217,6 +237,8 @@ const initialProfiles: Profile[] = [
       pedidos: { ver: true, criarEditar: true, excluir: true },
       "fique-por-dentro": { ver: true },
       "pesquisa-app": { ver: true, criarEditar: true },
+      "consumo-catraca": { ver: true, criarEditar: true },
+      "solicitar-orcamento": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -261,6 +283,12 @@ const initialProfiles: Profile[] = [
       "admin-centros-custo": { ver: true },
       "admin-contratos": { ver: true, criarEditar: true },
       "admin-ocorrencias": { ver: true, criarEditar: true },
+      "admin-parametros": { ver: true, criarEditar: true },
+      "admin-ativos": { ver: true, criarEditar: true, excluir: true },
+      "admin-tipos-ativo": { ver: true, criarEditar: true, excluir: true },
+      "admin-ativos-checkin": { ver: true, criarEditar: true },
+      "admin-catraca-checkin": { ver: true, criarEditar: true },
+      "admin-orcamentos": { ver: true, criarEditar: true, aprovar: true },
     }),
   },
   {
@@ -272,6 +300,7 @@ const initialProfiles: Profile[] = [
     permissions: perms({
       producao: { ver: true, criarEditar: true },
       "pesquisa-app": { ver: true, criarEditar: true },
+      "admin-catraca-checkin": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -327,6 +356,44 @@ const initialOccurrences: Occurrence[] = [];
 
 const initialPopups: Popup[] = [];
 
+const initialOperatingParameters: OperatingParameters = {
+  logoUrl: undefined,
+  showLogoOnPrint: true,
+  showAgreementMessage: true,
+  agreementMessage: 'Pedido(s) com "De Acordo" pendente(s).',
+  extensionNumber: "9090",
+  showUnitPriceInOrder: true,
+  showTotalValueInOrder: true,
+  showDeliveryLocationField: true,
+  showInstructionsField: true,
+};
+
+const SLA_DEFAULTS: Record<OrderCategoryName, number> = {
+  "Coffee Break": 120,
+  "Evento Especial": 180,
+  "Solicitação de Água": 30,
+  "Abastecimento Simples": 60,
+  Surpreenda: 90,
+};
+
+const initialServiceParameters: ServiceParameters[] = ORDER_CATEGORIES.map((category) => ({
+  category,
+  slaPrepMinutes: SLA_DEFAULTS[category],
+  requireScheduledPickup: category === "Coffee Break" || category === "Evento Especial",
+  adminFeePercent: 10,
+  linkedCostCenterCode: undefined,
+}));
+
+const initialStatusFlowVisibility: Record<OrderStatus, boolean> = Object.fromEntries(
+  ORDER_STATUS_LIST.map((s) => [s, true]),
+) as Record<OrderStatus, boolean>;
+
+const initialAssetTypes: AssetType[] = [];
+const initialAssets: Asset[] = [];
+const initialAssetMovements: AssetMovement[] = [];
+const initialCatracaRedemptions: CatracaRedemption[] = [];
+const initialQuoteRequests: QuoteRequest[] = [];
+
 const defaultState: StoredState = {
   orders: initialOrders,
   notifications: initialNotifications,
@@ -350,6 +417,14 @@ const defaultState: StoredState = {
   dismissedPopupIds: [],
   currentProfileId: "prof-cliente",
   nextOrderNum: 0,
+  operatingParameters: initialOperatingParameters,
+  serviceParameters: initialServiceParameters,
+  statusFlowVisibility: initialStatusFlowVisibility,
+  assetTypes: initialAssetTypes,
+  assets: initialAssets,
+  assetMovements: initialAssetMovements,
+  catracaRedemptions: initialCatracaRedemptions,
+  quoteRequests: initialQuoteRequests,
 };
 
 function loadState(): StoredState {
@@ -379,6 +454,7 @@ interface AppDataValue {
 
   notifications: Notification[];
   markAllNotificationsRead: () => void;
+  addNotification: (title: string) => void;
 
   favorites: Set<string>;
   toggleFavorite: (id: string) => void;
@@ -464,6 +540,37 @@ interface AppDataValue {
   updateOccurrence: (id: string, patch: Partial<Occurrence>) => void;
   removeOccurrence: (id: string) => void;
 
+  operatingParameters: OperatingParameters;
+  updateOperatingParameters: (patch: Partial<OperatingParameters>) => void;
+
+  serviceParameters: ServiceParameters[];
+  updateServiceParameters: (category: OrderCategoryName, patch: Partial<ServiceParameters>) => void;
+
+  statusFlowVisibility: Record<OrderStatus, boolean>;
+  toggleStatusFlowVisibility: (status: OrderStatus) => void;
+
+  assetTypes: AssetType[];
+  addAssetType: (assetType: Omit<AssetType, "id">) => void;
+  updateAssetType: (id: string, patch: Partial<AssetType>) => void;
+  removeAssetType: (id: string) => void;
+
+  assets: Asset[];
+  addAsset: (asset: Omit<Asset, "id" | "createdAt">) => Asset;
+  updateAsset: (id: string, patch: Partial<Asset>) => void;
+  removeAsset: (id: string) => void;
+
+  assetMovements: AssetMovement[];
+  addAssetMovement: (movement: Omit<AssetMovement, "id" | "createdAt">) => void;
+
+  catracaRedemptions: CatracaRedemption[];
+  addCatracaRedemption: (redemption: Omit<CatracaRedemption, "id" | "createdAt" | "status" | "checkInAt" | "checkOutAt">) => CatracaRedemption;
+  checkInCatraca: (id: string) => void;
+  checkOutCatraca: (id: string) => void;
+
+  quoteRequests: QuoteRequest[];
+  addQuoteRequest: (quote: Omit<QuoteRequest, "id" | "createdAt" | "status">) => QuoteRequest;
+  updateQuoteRequest: (id: string, patch: Partial<QuoteRequest>) => void;
+
   toast: string | null;
   showToast: (msg: string) => void;
 }
@@ -548,6 +655,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       return { ...s, orders: [copy, ...s.orders], nextOrderNum: num };
     });
     showToast("Pedido duplicado.");
+  };
+
+  const addNotification: AppDataValue["addNotification"] = (title) => {
+    setState((s) => ({
+      ...s,
+      notifications: [{ id: `notif${Date.now()}`, title, time: new Date().toLocaleString("pt-BR"), read: false }, ...s.notifications],
+    }));
   };
 
   const markAllNotificationsRead = () => {
@@ -782,6 +896,98 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, occurrences: s.occurrences.filter((o) => o.id !== id) }));
   };
 
+  const addAssetType: AppDataValue["addAssetType"] = (assetType) => {
+    setState((s) => ({ ...s, assetTypes: [{ ...assetType, id: `atype${Date.now()}` }, ...s.assetTypes] }));
+  };
+  const updateAssetType: AppDataValue["updateAssetType"] = (id, patch) => {
+    setState((s) => ({ ...s, assetTypes: s.assetTypes.map((t) => (t.id === id ? { ...t, ...patch } : t)) }));
+  };
+  const removeAssetType = (id: string) => {
+    setState((s) => ({ ...s, assetTypes: s.assetTypes.filter((t) => t.id !== id) }));
+  };
+
+  const addAsset: AppDataValue["addAsset"] = (asset) => {
+    let created!: Asset;
+    setState((s) => {
+      created = { ...asset, id: `asset${Date.now()}`, createdAt: new Date().toISOString() };
+      return { ...s, assets: [created, ...s.assets] };
+    });
+    return created;
+  };
+  const updateAsset: AppDataValue["updateAsset"] = (id, patch) => {
+    setState((s) => ({ ...s, assets: s.assets.map((a) => (a.id === id ? { ...a, ...patch } : a)) }));
+  };
+  const removeAsset = (id: string) => {
+    setState((s) => ({ ...s, assets: s.assets.filter((a) => a.id !== id) }));
+  };
+
+  const addAssetMovement: AppDataValue["addAssetMovement"] = (movement) => {
+    setState((s) => {
+      const record: AssetMovement = { ...movement, id: `amove${Date.now()}`, createdAt: new Date().toISOString() };
+      return {
+        ...s,
+        assetMovements: [record, ...s.assetMovements],
+        assets: s.assets.map((a) =>
+          a.id === movement.assetId
+            ? { ...a, lastMovementKind: movement.kind, currentLocation: movement.location ?? a.currentLocation, costCenterCode: movement.costCenterCode ?? a.costCenterCode }
+            : a,
+        ),
+      };
+    });
+  };
+
+  const addCatracaRedemption: AppDataValue["addCatracaRedemption"] = (redemption) => {
+    let created!: CatracaRedemption;
+    setState((s) => {
+      created = { ...redemption, id: `catraca${Date.now()}`, status: "Aguardando retirada", createdAt: new Date().toISOString() };
+      return { ...s, catracaRedemptions: [created, ...s.catracaRedemptions] };
+    });
+    return created;
+  };
+  const checkInCatraca = (id: string) => {
+    setState((s) => ({
+      ...s,
+      catracaRedemptions: s.catracaRedemptions.map((r) =>
+        r.id === id && r.status === "Aguardando retirada" ? { ...r, status: "Check-in realizado" as CatracaStatus, checkInAt: new Date().toISOString() } : r,
+      ),
+    }));
+  };
+  const checkOutCatraca = (id: string) => {
+    setState((s) => ({
+      ...s,
+      catracaRedemptions: s.catracaRedemptions.map((r) =>
+        r.id === id && r.status === "Check-in realizado" ? { ...r, status: "Check-out realizado" as CatracaStatus, checkOutAt: new Date().toISOString() } : r,
+      ),
+    }));
+  };
+
+  const addQuoteRequest: AppDataValue["addQuoteRequest"] = (quote) => {
+    let created!: QuoteRequest;
+    setState((s) => {
+      created = { ...quote, id: `quote${Date.now()}`, status: "Solicitado", createdAt: new Date().toISOString() };
+      return { ...s, quoteRequests: [created, ...s.quoteRequests] };
+    });
+    return created;
+  };
+  const updateQuoteRequest: AppDataValue["updateQuoteRequest"] = (id, patch) => {
+    setState((s) => ({ ...s, quoteRequests: s.quoteRequests.map((q) => (q.id === id ? { ...q, ...patch } : q)) }));
+  };
+
+  const updateOperatingParameters: AppDataValue["updateOperatingParameters"] = (patch) => {
+    setState((s) => ({ ...s, operatingParameters: { ...s.operatingParameters, ...patch } }));
+  };
+
+  const updateServiceParameters: AppDataValue["updateServiceParameters"] = (category, patch) => {
+    setState((s) => ({
+      ...s,
+      serviceParameters: s.serviceParameters.map((sp) => (sp.category === category ? { ...sp, ...patch } : sp)),
+    }));
+  };
+
+  const toggleStatusFlowVisibility: AppDataValue["toggleStatusFlowVisibility"] = (status) => {
+    setState((s) => ({ ...s, statusFlowVisibility: { ...s.statusFlowVisibility, [status]: !s.statusFlowVisibility[status] } }));
+  };
+
   const value = useMemo<AppDataValue>(
     () => ({
       currentProfileId: state.currentProfileId,
@@ -796,6 +1002,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       duplicateOrder,
       notifications: state.notifications,
       markAllNotificationsRead,
+      addNotification,
       favorites: new Set(state.favorites),
       toggleFavorite,
       chatMessages: state.chatMessages,
@@ -863,6 +1070,29 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       addOccurrence,
       updateOccurrence,
       removeOccurrence,
+      operatingParameters: state.operatingParameters,
+      updateOperatingParameters,
+      serviceParameters: state.serviceParameters,
+      updateServiceParameters,
+      statusFlowVisibility: state.statusFlowVisibility,
+      toggleStatusFlowVisibility,
+      assetTypes: state.assetTypes,
+      addAssetType,
+      updateAssetType,
+      removeAssetType,
+      assets: state.assets,
+      addAsset,
+      updateAsset,
+      removeAsset,
+      assetMovements: state.assetMovements,
+      addAssetMovement,
+      catracaRedemptions: state.catracaRedemptions,
+      addCatracaRedemption,
+      checkInCatraca,
+      checkOutCatraca,
+      quoteRequests: state.quoteRequests,
+      addQuoteRequest,
+      updateQuoteRequest,
       toast,
       showToast,
     }),

@@ -15,6 +15,13 @@
   gap: 12px;
 }
 
+.app-header__avatar-logo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .app-header__avatar {
   width: 40px;
   height: 40px;
@@ -26,6 +33,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 700;
+  overflow: hidden;
   font-size: 15px;
   cursor: pointer;
   flex-shrink: 0;

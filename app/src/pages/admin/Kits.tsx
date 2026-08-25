@@ -4,7 +4,7 @@ import { Modal } from "../../components/Modal";
 import { PhotoUpload } from "../../components/PhotoUpload";
 import { money } from "../../mock/money";
 import { computeKitPrice } from "../../mock/pricing";
-import type { Kit, KitItem, KitServiceItem } from "../../types";
+import { MEAL_SERVICES, type Kit, type KitItem, type KitServiceItem, type MealServiceName } from "../../types";
 import "./Kits.css";
 
 interface FormState {
@@ -14,6 +14,7 @@ interface FormState {
   itemsByService: Record<string, number>;
   serviceFeePercent: string;
   photoUrl?: string;
+  mealServices: MealServiceName[];
   active: boolean;
 }
 
@@ -24,6 +25,7 @@ const EMPTY_FORM: FormState = {
   itemsByService: {},
   serviceFeePercent: "10",
   photoUrl: undefined,
+  mealServices: [],
   active: true,
 };
 
@@ -66,9 +68,17 @@ export function Kits() {
       itemsByService: byService,
       serviceFeePercent: String(k.serviceFeePercent),
       photoUrl: k.photoUrl,
+      mealServices: k.mealServices ?? [],
       active: k.active,
     });
     setModalOpen(true);
+  };
+
+  const toggleMealService = (m: MealServiceName) => {
+    setForm((f) => ({
+      ...f,
+      mealServices: f.mealServices.includes(m) ? f.mealServices.filter((x) => x !== m) : [...f.mealServices, m],
+    }));
   };
 
   const setQty = (productId: string, qty: number) => {
@@ -110,6 +120,7 @@ export function Kits() {
       serviceItems: formServiceItems.length > 0 ? formServiceItems : undefined,
       serviceFeePercent: parsedFee,
       photoUrl: form.photoUrl,
+      mealServices: form.mealServices.length > 0 ? form.mealServices : undefined,
       active: form.active,
     };
     if (editingId) {
@@ -164,6 +175,15 @@ export function Kits() {
                 {k.active ? "Ativo" : "Inativo"}
               </span>
             </div>
+            {k.mealServices && k.mealServices.length > 0 && (
+              <div className="kits-card__meal-tags">
+                {k.mealServices.map((m) => (
+                  <span key={m} className="pill-tag">
+                    {m}
+                  </span>
+                ))}
+              </div>
+            )}
             <div className="kits-card__items">
               {k.items.map((it) => (
                 <div key={it.productId} className="kits-card__item">
@@ -265,6 +285,16 @@ export function Kits() {
             </label>
             <div className="kits-price-preview">
               Itens: {money(formItemsTotal)} + taxa de serviço ({parsedFee || 0}%) = <strong>{money(formKitPrice)}</strong>
+            </div>
+            <div className="field-label">
+              Serviços de Consumo Catraca <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional — em quais refeições esse kit pode aparecer)</span>
+            </div>
+            <div className="kits-meal-chips">
+              {MEAL_SERVICES.map((m) => (
+                <button key={m} type="button" className={form.mealServices.includes(m) ? "is-active" : ""} onClick={() => toggleMealService(m)}>
+                  {m}
+                </button>
+              ))}
             </div>
             <PhotoUpload value={form.photoUrl} onChange={(v) => setForm({ ...form, photoUrl: v })} label="Foto do kit" />
             <label className="kits-active-check">

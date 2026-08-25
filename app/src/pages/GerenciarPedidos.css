@@ -685,3 +685,14 @@
   border-color: #f0c6bd;
   color: var(--color-danger);
 }
+
+.gp-quote-banner {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}

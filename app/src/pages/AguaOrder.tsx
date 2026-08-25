@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
@@ -11,10 +11,11 @@ import "./AguaOrder.css";
 const WATER_PRODUCT_IDS = ["prod10", "prod11", "prod12", "prod13"];
 
 export function AguaOrder() {
-  const { addOrder, showToast, costCenters, products } = useAppData();
+  const { addOrder, showToast, costCenters, products, serviceParameters } = useAppData();
   const navigate = useNavigate();
   const activeCostCenters = costCenters.filter((c) => c.active);
   const items = products.filter((p) => WATER_PRODUCT_IDS.includes(p.id) && p.active);
+  const linkedCostCenterCode = serviceParameters.find((s) => s.category === "Solicitação de Água")?.linkedCostCenterCode;
 
   const [orderId] = useState(() => `#SA-${Math.floor(15200 + Math.random() * 800)}`);
   const [qty, setQty] = useState<Record<string, number>>({});
@@ -24,6 +25,11 @@ export function AguaOrder() {
   const [local, setLocal] = useState("");
   const [localMenuOpen, setLocalMenuOpen] = useState(false);
   const [costCenter, setCostCenter] = useState("");
+
+  useEffect(() => {
+    if (!costCenter && linkedCostCenterCode) setCostCenter(linkedCostCenterCode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkedCostCenterCode]);
   const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
   const [observations, setObservations] = useState("");
   const [hasError, setHasError] = useState(false);

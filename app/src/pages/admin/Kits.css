@@ -187,3 +187,31 @@
   accent-color: var(--color-primary);
   cursor: pointer;
 }
+
+.kits-meal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.kits-meal-chips button {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+.kits-meal-chips button.is-active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.kits-card__meal-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -4px 0 4px;
+}

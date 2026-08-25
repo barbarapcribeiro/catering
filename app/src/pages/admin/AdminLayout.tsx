@@ -21,9 +21,11 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Operação",
     items: [
       { label: "Gestão de pedidos", to: "/pedidos", glyph: "📋", pageId: "pedidos" },
+      { label: "Orçamentos", to: "/admin/orcamentos", glyph: "🧾", pageId: "admin-orcamentos" },
       { label: "Aprovações", to: "/aprovacoes", glyph: "✓", pageId: "aprovacoes" },
       { label: "Eventos Premium", to: "/eventos-premium", glyph: "🎉", pageId: "eventos-premium" },
       { label: "Ocorrências", to: "/admin/ocorrencias", glyph: "⚠", pageId: "admin-ocorrencias" },
+      { label: "Check-in Consumo Catraca", to: "/admin/catraca-checkin", glyph: "🍽", pageId: "admin-catraca-checkin" },
     ],
   },
   {
@@ -63,6 +65,18 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: "Configurações",
+    items: [{ label: "Parâmetros", to: "/admin/parametros", glyph: "⚙", pageId: "admin-parametros" }],
+  },
+  {
+    label: "Gestão de Ativos",
+    items: [
+      { label: "Ativos", to: "/admin/ativos", glyph: "🧴", pageId: "admin-ativos" },
+      { label: "Tipos de ativo", to: "/admin/tipos-ativo", glyph: "🏷", pageId: "admin-tipos-ativo" },
+      { label: "Check-in / Check-out", to: "/admin/ativos/checkin", glyph: "🔁", pageId: "admin-ativos-checkin" },
+    ],
+  },
+  {
     label: "Relatórios",
     items: [
       { label: "Visão Geral", to: "/admin/relatorios", glyph: "📊", pageId: "admin-relatorios" },
@@ -70,6 +84,8 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Pedidos", to: "/admin/relatorios/pedidos", glyph: "📦", pageId: "admin-relatorios" },
       { label: "Centros de Custo", to: "/admin/relatorios/centros-custo", glyph: "🏷", pageId: "admin-relatorios" },
       { label: "Lucro por Produto", to: "/admin/relatorios/lucro-produto", glyph: "💰", pageId: "admin-relatorios" },
+      { label: "Ativos", to: "/admin/relatorios/ativos", glyph: "🧴", pageId: "admin-relatorios" },
+      { label: "Consumo Catraca", to: "/admin/relatorios/catraca", glyph: "🍽", pageId: "admin-relatorios" },
       { label: "Pesquisa de Satisfação", to: "/admin/relatorios/pesquisa-satisfacao", glyph: "⭐", pageId: "admin-relatorios" },
       { label: "Pesquisa da Aplicação", to: "/admin/relatorios/pesquisa-aplicacao", glyph: "💬", pageId: "admin-relatorios" },
     ],

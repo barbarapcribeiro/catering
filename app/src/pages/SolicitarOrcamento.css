@@ -1,0 +1,131 @@
+.orc-chat-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.orc-chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.orc-msg {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  max-width: 80%;
+}
+.orc-msg--bot {
+  align-self: flex-start;
+}
+.orc-msg--user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+.orc-msg__avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-menu-accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.orc-msg__bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+.orc-msg--bot .orc-msg__bubble {
+  background: var(--color-bg-hover);
+  border-bottom-left-radius: 4px;
+}
+.orc-msg--user .orc-msg__bubble {
+  background: var(--color-primary);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.orc-chat-input {
+  border-top: 1px solid var(--color-border-soft);
+  padding: 16px 20px;
+  background: var(--color-bg);
+}
+
+.orc-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.orc-chip {
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-primary);
+  background: #fff;
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.orc-chip:hover {
+  background: var(--color-primary-soft);
+}
+
+.orc-inline-row {
+  display: flex;
+  gap: 10px;
+}
+.orc-inline-row input,
+.orc-inline-row select {
+  flex: 1;
+}
+
+.orc-inline-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.orc-inline-col textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.orc-review__title {
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+.orc-review__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  margin-bottom: 16px;
+}
+.orc-review__grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+.orc-review__grid span {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.orc-done {
+  display: flex;
+  justify-content: center;
+}

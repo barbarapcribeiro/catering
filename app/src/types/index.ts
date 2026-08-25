@@ -15,7 +15,9 @@ export type OrderStatus =
   | "Entregue"
   | "Finalizado"
   | "Cancelado"
-  | "Recebido";
+  | "Recebido"
+  /** Orçamento montado pela GU, aguardando o cliente solicitante aprovar o valor antes de entrar em produção. */
+  | "Orçamento enviado";
 
 export interface CostCenterAllocation {
   code: string;
@@ -56,6 +58,8 @@ export interface Order {
   requiresApproval?: boolean;
   managerApproved?: boolean;
   guApproved?: boolean;
+  /** Preenchido quando esse pedido nasceu de uma solicitação de orçamento aprovada. */
+  quoteRequestId?: string;
   createdAt: string;
   history?: { label: string; time: string }[];
 }
@@ -77,6 +81,77 @@ export interface Notification {
 /** Tipos de pedido do cliente — cada um tem seu próprio conjunto de perguntas de satisfação. */
 export const ORDER_CATEGORIES = ["Coffee Break", "Evento Especial", "Solicitação de Água", "Abastecimento Simples", "Surpreenda"] as const;
 export type OrderCategoryName = (typeof ORDER_CATEGORIES)[number];
+
+export const ORDER_STATUS_LIST: OrderStatus[] = [
+  "Solicitado",
+  "Aguardando aprovação",
+  "Orçamento enviado",
+  "Em preparação",
+  "Pronto para entrega",
+  "Entregue",
+  "Finalizado",
+  "Cancelado",
+  "Recebido",
+];
+
+export const QUOTE_STATUSES = ["Solicitado", "Em elaboração", "Enviado para aprovação", "Aprovado", "Recusado"] as const;
+export type QuoteStatus = (typeof QUOTE_STATUSES)[number];
+
+export const QUOTE_EXPERIENCE_OPTIONS = ["Descontraída", "Corporativa", "Sofisticada", "Divertida", "Outro"] as const;
+export type QuoteExperience = (typeof QUOTE_EXPERIENCE_OPTIONS)[number];
+
+/** Item montado pela GU na resposta ao orçamento — vira Order.items quando o orçamento é enviado. */
+export interface QuoteItem {
+  name: string;
+  qty: number;
+  price: number;
+  productId?: string;
+}
+
+/** Solicitação de orçamento feita pelo cliente via chat guiado, respondida pela GU com um pedido montado. */
+export interface QuoteRequest {
+  id: string;
+  serviceType: OrderCategoryName;
+  expectedDate: string;
+  peopleCount: number;
+  experience: QuoteExperience;
+  wants: string;
+  specialDiet: boolean;
+  specialDietDetails?: string;
+  decorationNotes?: string;
+  costCenterCode?: string;
+  requestedBy?: string;
+  status: QuoteStatus;
+  items?: QuoteItem[];
+  serviceFeePercent?: number;
+  guNotes?: string;
+  createdAt: string;
+  sentAt?: string;
+  /** Preenchido quando a GU envia o orçamento — id do Order criado como fatura para aprovação do cliente. */
+  orderId?: string;
+}
+
+/** Parâmetros globais da unidade — telas de pedido e aprovação consultam esses valores em vez de terem regras fixas. */
+export interface OperatingParameters {
+  logoUrl?: string;
+  showLogoOnPrint: boolean;
+  showAgreementMessage: boolean;
+  agreementMessage: string;
+  extensionNumber?: string;
+  showUnitPriceInOrder: boolean;
+  showTotalValueInOrder: boolean;
+  showDeliveryLocationField: boolean;
+  showInstructionsField: boolean;
+}
+
+/** Parâmetros por tipo de pedido (serviço) — SLA, retirada agendada, taxa e centro de custo padrão. */
+export interface ServiceParameters {
+  category: OrderCategoryName;
+  slaPrepMinutes: number;
+  requireScheduledPickup: boolean;
+  adminFeePercent: number;
+  linkedCostCenterCode?: string;
+}
 
 export interface SurveyQuestion {
   id: string;
@@ -173,6 +248,10 @@ export interface KitServiceItem {
   qty: number;
 }
 
+/** As 5 refeições do serviço Consumo Catraca — um kit pode ser oferecido em uma ou mais delas. */
+export const MEAL_SERVICES = ["Café da manhã", "Almoço", "Lanche", "Janta", "Ceia"] as const;
+export type MealServiceName = (typeof MEAL_SERVICES)[number];
+
 export interface Kit {
   id: string;
   name: string;
@@ -184,6 +263,8 @@ export interface Kit {
   serviceFeePercent: number;
   /** Foto do kit (data URL ou link), exibida no catálogo e no pedido. */
   photoUrl?: string;
+  /** Em quais refeições do Consumo Catraca esse kit pode ser oferecido (opcional — só usado por esse serviço). */
+  mealServices?: MealServiceName[];
   active: boolean;
 }
 
@@ -239,6 +320,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "pedido-agua", label: "Novo Pedido · Água", group: "Área do colaborador" },
   { id: "pedido-abastecimento", label: "Novo Pedido · Abastecimento Simples", group: "Área do colaborador" },
   { id: "surpreenda", label: "Surpreenda", group: "Área do colaborador" },
+  { id: "pedido-lanche", label: "Novo Pedido · Lanche", group: "Área do colaborador" },
   { id: "pedidos", label: "Gerenciar Pedidos", group: "Área do colaborador" },
   { id: "producao", label: "Produção", group: "Área do colaborador" },
   { id: "fique-por-dentro", label: "Fique por Dentro", group: "Área do colaborador" },
@@ -261,6 +343,14 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-contratos", label: "Financeiro · Contratos", group: "Painel Administrativo" },
   { id: "admin-ocorrencias", label: "Ocorrências", group: "Painel Administrativo" },
   { id: "admin-popups", label: "Pop-ups", group: "Painel Administrativo" },
+  { id: "admin-parametros", label: "Parâmetros", group: "Painel Administrativo" },
+  { id: "admin-ativos", label: "Gestão de Ativos", group: "Painel Administrativo" },
+  { id: "admin-tipos-ativo", label: "Tipos de Ativo", group: "Painel Administrativo" },
+  { id: "admin-ativos-checkin", label: "Check-in / Check-out de Ativos", group: "Painel Administrativo" },
+  { id: "consumo-catraca", label: "Consumo Catraca", group: "Área do colaborador" },
+  { id: "admin-catraca-checkin", label: "Check-in Consumo Catraca (operação)", group: "Painel Administrativo" },
+  { id: "solicitar-orcamento", label: "Solicitar Orçamento", group: "Área do colaborador" },
+  { id: "admin-orcamentos", label: "Orçamentos", group: "Painel Administrativo" },
 ];
 
 /**
@@ -403,5 +493,77 @@ export interface PremiumEvent {
   items: PremiumEventItem[];
   status: PremiumEventStatus;
   notes?: string;
+  createdAt: string;
+}
+
+export const ASSET_STATUSES = ["Ativo", "Inativo", "Em manutenção", "Extraviado"] as const;
+export type AssetStatus = (typeof ASSET_STATUSES)[number];
+
+export interface AssetUnitOfMeasure {
+  id: string;
+  qty: number;
+  unit: string;
+}
+
+/** Tipo de ativo (ex.: Garrafa térmica, Bombona) — define quais unidades de medida um ativo desse tipo pode usar. */
+export interface AssetType {
+  id: string;
+  name: string;
+  description?: string;
+  active: boolean;
+  unitsOfMeasure: AssetUnitOfMeasure[];
+}
+
+/** Ativo físico individual (patrimônio) rastreado por QR code — garrafas térmicas, bombonas etc. */
+export interface Asset {
+  id: string;
+  name: string;
+  description?: string;
+  status: AssetStatus;
+  assetTypeId: string;
+  unitOfMeasureId?: string;
+  /** Departamento do ativo — reaproveita o cadastro de Centros de Custo como unidade organizacional. */
+  costCenterCode?: string;
+  /** Última localização registrada por um check-in/check-out. */
+  currentLocation?: string;
+  lastMovementKind?: "checkin" | "checkout";
+  createdAt: string;
+}
+
+export const ASSET_MOVEMENT_KINDS = ["checkin", "checkout"] as const;
+export type AssetMovementKind = (typeof ASSET_MOVEMENT_KINDS)[number];
+
+/** Registro de check-in/check-out de um ativo, feito a partir da leitura do QR code colado nele. */
+export interface AssetMovement {
+  id: string;
+  assetId: string;
+  kind: AssetMovementKind;
+  costCenterCode?: string;
+  location?: string;
+  performedBy?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+/**
+ * Status persistido de uma retirada do Consumo Catraca. "Perda" não é persistido —
+ * é derivado (ver `catracaEffectiveStatus`) sempre que houve check-in há mais de 1h sem check-out.
+ */
+export const CATRACA_STATUSES = ["Aguardando retirada", "Check-in realizado", "Check-out realizado"] as const;
+export type CatracaStatus = (typeof CATRACA_STATUSES)[number];
+export type CatracaEffectiveStatus = CatracaStatus | "Perda";
+
+/** Uma retirada de refeição pelo Consumo Catraca — nasce com QR code, fechada por check-in (operação) + check-out (cliente). */
+export interface CatracaRedemption {
+  id: string;
+  mealService: MealServiceName;
+  kitId: string;
+  pickupDate: string;
+  pickupTime: string;
+  costCenterCode?: string;
+  requestedBy?: string;
+  status: CatracaStatus;
+  checkInAt?: string;
+  checkOutAt?: string;
   createdAt: string;
 }

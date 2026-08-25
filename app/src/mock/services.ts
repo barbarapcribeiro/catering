@@ -21,9 +21,18 @@ export const SERVICES: Service[] = [
   {
     id: "cc",
     name: "Consumo Catraca",
-    desc: "Registre consumos realizados na catraca.",
+    desc: "Escolha sua refeição e o horário de retirada no restaurante.",
     mono: "CC",
     iconPath: "M22 12h-4l-3 9L9 3l-3 9H2",
+    route: "/consumo-catraca",
+  },
+  {
+    id: "or",
+    name: "Solicitar Orçamento",
+    desc: "Conte o que você precisa e receba um orçamento personalizado da nossa equipe.",
+    mono: "OR",
+    iconPath: "M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h11",
+    route: "/solicitar-orcamento",
   },
   {
     id: "ee",
@@ -37,10 +46,11 @@ export const SERVICES: Service[] = [
   {
     id: "la",
     name: "Lanche",
-    desc: "Solicite lanches individuais.",
+    desc: "Kits de lanche prontos para retirada, com pagamento na hora.",
     mono: "LA",
     iconPath:
       "M3 10h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3zM3 10a9 6 0 0118 0M7 15v2M12 15v2M17 15v2",
+    route: "/pedido/lanche",
   },
   {
     id: "re",
@@ -114,6 +124,7 @@ export const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
   Finalizado: { bg: "#e6f5ec", color: "#1a7a4f" },
   Cancelado: { bg: "#fbe4e0", color: "#c0392b" },
   Recebido: { bg: "var(--color-primary-soft)", color: "var(--color-primary)" },
+  "Orçamento enviado": { bg: "#fdedd3", color: "#8a5a0f" },
 };
 
 /** Um pedido é considerado "em aberto" enquanto não chega a um estado final (entregue, finalizado ou cancelado). */

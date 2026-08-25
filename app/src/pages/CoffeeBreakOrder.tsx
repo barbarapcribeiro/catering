@@ -47,7 +47,8 @@ const STEP_DEFS = [
 ];
 
 export function CoffeeBreakOrder() {
-  const { addOrder, showToast, products } = useAppData();
+  const { addOrder, showToast, products, serviceParameters } = useAppData();
+  const svcParams = serviceParameters.find((s) => s.category === "Coffee Break");
   const navigate = useNavigate();
   const avulsoProducts = products.filter((p) => ALL_AVULSO_PRODUCT_IDS.includes(p.id) && p.active);
 
@@ -134,7 +135,7 @@ export function CoffeeBreakOrder() {
   }, [selectedKit, qtys, avulsoProducts]);
 
   const subtotal = cartItems.reduce((sum, ci) => sum + ci.total, 0);
-  const fee = subtotal * 0.1;
+  const fee = subtotal * ((svcParams?.adminFeePercent ?? 10) / 100);
   const total = subtotal + fee;
   const cartEmpty = cartItems.length === 0;
 
@@ -144,6 +145,8 @@ export function CoffeeBreakOrder() {
   const pctTotalInvalid = multiSel && pctTotal !== 100;
   const noCostCenter = selCodes.length === 0;
   const step3Invalid = noCostCenter || pctTotalInvalid;
+  const pickupMissing = !!svcParams?.requireScheduledPickup && (!pickupDate || !pickupTime);
+  const step2Invalid = pickupMissing;
 
   const todayLabel = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 
@@ -499,14 +502,19 @@ export function CoffeeBreakOrder() {
 
               <div className="step-card-divider step-card-grid2">
                 <label className="field-label">
-                  Data de recolhimento dos utensílios
+                  Data de recolhimento dos utensílios {svcParams?.requireScheduledPickup && <span style={{ color: "var(--color-danger)" }}>*</span>}
                   <input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} />
                 </label>
                 <label className="field-label">
-                  Horário de recolhimento
+                  Horário de recolhimento {svcParams?.requireScheduledPickup && <span style={{ color: "var(--color-danger)" }}>*</span>}
                   <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} />
                 </label>
               </div>
+              {pickupMissing && (
+                <div className="step-card-divider" style={{ color: "var(--color-danger)", fontSize: 12.5 }}>
+                  Data e horário de recolhimento são obrigatórios para Coffee Break (parâmetro configurado em Painel Administrativo &rsaquo; Parâmetros).
+                </div>
+              )}
 
               <label className="field-label step-card-divider">
                 Instruções para o café <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span>
@@ -535,7 +543,7 @@ export function CoffeeBreakOrder() {
               <button className="btn btn--outline" onClick={() => setStep(1)}>
                 Voltar
               </button>
-              <button className="btn btn--primary" onClick={continueToStep3}>
+              <button className="btn btn--primary" disabled={step2Invalid} onClick={continueToStep3}>
                 Continuar para revisão
               </button>
             </div>
