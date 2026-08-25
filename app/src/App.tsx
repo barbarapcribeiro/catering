@@ -6,6 +6,7 @@ import { AbastecimentoOrder } from "./pages/AbastecimentoOrder";
 import { EventoEspecialOrder } from "./pages/EventoEspecialOrder";
 import { AguaOrder } from "./pages/AguaOrder";
 import { Surpreenda } from "./pages/Surpreenda";
+import { LancheOrder } from "./pages/LancheOrder";
 import { ConsumoCatraca } from "./pages/ConsumoCatraca";
 import { SolicitarOrcamento } from "./pages/SolicitarOrcamento";
 import { GerenciarPedidos } from "./pages/GerenciarPedidos";
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="/pedido/agua" element={<AguaOrder />} />
           <Route path="/pedido/abastecimento-simples" element={<AbastecimentoOrder />} />
           <Route path="/surpreenda" element={<Surpreenda />} />
+          <Route path="/pedido/lanche" element={<LancheOrder />} />
           <Route path="/consumo-catraca" element={<ConsumoCatraca />} />
           <Route path="/solicitar-orcamento" element={<SolicitarOrcamento />} />
           <Route path="/pedidos" element={<GerenciarPedidos />} />

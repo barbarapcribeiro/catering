@@ -1,0 +1,35 @@
+.lanche-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.lanche-local-box {
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-input);
+  font-size: 13px;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+.lanche-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lanche-summary__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+  color: var(--color-text-secondary);
+}
+.lanche-summary__row--total {
+  font-size: 17px;
+  font-weight: 800;
+  border-top: 1px solid var(--color-border-soft);
+  padding-top: 10px;
+  margin-top: 4px;
+  color: var(--color-primary);
+}

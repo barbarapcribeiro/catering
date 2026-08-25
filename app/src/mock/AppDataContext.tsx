@@ -222,7 +222,7 @@ function fullAccessPerms(): Record<string, PagePermission> {
   return out;
 }
 
-const ORDER_PAGES = ["pedido-coffee", "pedido-evento", "pedido-agua", "pedido-abastecimento", "surpreenda"];
+const ORDER_PAGES = ["pedido-coffee", "pedido-evento", "pedido-agua", "pedido-abastecimento", "surpreenda", "pedido-lanche"];
 
 const initialProfiles: Profile[] = [
   {

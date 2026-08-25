@@ -46,10 +46,11 @@ export const SERVICES: Service[] = [
   {
     id: "la",
     name: "Lanche",
-    desc: "Solicite lanches individuais.",
+    desc: "Kits de lanche prontos para retirada, com pagamento na hora.",
     mono: "LA",
     iconPath:
       "M3 10h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3zM3 10a9 6 0 0118 0M7 15v2M12 15v2M17 15v2",
+    route: "/pedido/lanche",
   },
   {
     id: "re",
