@@ -4,6 +4,9 @@ import {
   EMPTY_PAGE_PERMISSION,
   type AppSurveyQuestion,
   type AppUser,
+  type Asset,
+  type AssetMovement,
+  type AssetType,
   type ChatMessage,
   type Contract,
   type CostCenter,
@@ -58,6 +61,9 @@ interface StoredState {
   operatingParameters: OperatingParameters;
   serviceParameters: ServiceParameters[];
   statusFlowVisibility: Record<OrderStatus, boolean>;
+  assetTypes: AssetType[];
+  assets: Asset[];
+  assetMovements: AssetMovement[];
 }
 
 const initialOrders: Order[] = [];
@@ -271,6 +277,9 @@ const initialProfiles: Profile[] = [
       "admin-contratos": { ver: true, criarEditar: true },
       "admin-ocorrencias": { ver: true, criarEditar: true },
       "admin-parametros": { ver: true, criarEditar: true },
+      "admin-ativos": { ver: true, criarEditar: true, excluir: true },
+      "admin-tipos-ativo": { ver: true, criarEditar: true, excluir: true },
+      "admin-ativos-checkin": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -369,6 +378,10 @@ const initialStatusFlowVisibility: Record<OrderStatus, boolean> = Object.fromEnt
   ORDER_STATUS_LIST.map((s) => [s, true]),
 ) as Record<OrderStatus, boolean>;
 
+const initialAssetTypes: AssetType[] = [];
+const initialAssets: Asset[] = [];
+const initialAssetMovements: AssetMovement[] = [];
+
 const defaultState: StoredState = {
   orders: initialOrders,
   notifications: initialNotifications,
@@ -395,6 +408,9 @@ const defaultState: StoredState = {
   operatingParameters: initialOperatingParameters,
   serviceParameters: initialServiceParameters,
   statusFlowVisibility: initialStatusFlowVisibility,
+  assetTypes: initialAssetTypes,
+  assets: initialAssets,
+  assetMovements: initialAssetMovements,
 };
 
 function loadState(): StoredState {
@@ -517,6 +533,19 @@ interface AppDataValue {
 
   statusFlowVisibility: Record<OrderStatus, boolean>;
   toggleStatusFlowVisibility: (status: OrderStatus) => void;
+
+  assetTypes: AssetType[];
+  addAssetType: (assetType: Omit<AssetType, "id">) => void;
+  updateAssetType: (id: string, patch: Partial<AssetType>) => void;
+  removeAssetType: (id: string) => void;
+
+  assets: Asset[];
+  addAsset: (asset: Omit<Asset, "id" | "createdAt">) => Asset;
+  updateAsset: (id: string, patch: Partial<Asset>) => void;
+  removeAsset: (id: string) => void;
+
+  assetMovements: AssetMovement[];
+  addAssetMovement: (movement: Omit<AssetMovement, "id" | "createdAt">) => void;
 
   toast: string | null;
   showToast: (msg: string) => void;
@@ -836,6 +865,46 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, occurrences: s.occurrences.filter((o) => o.id !== id) }));
   };
 
+  const addAssetType: AppDataValue["addAssetType"] = (assetType) => {
+    setState((s) => ({ ...s, assetTypes: [{ ...assetType, id: `atype${Date.now()}` }, ...s.assetTypes] }));
+  };
+  const updateAssetType: AppDataValue["updateAssetType"] = (id, patch) => {
+    setState((s) => ({ ...s, assetTypes: s.assetTypes.map((t) => (t.id === id ? { ...t, ...patch } : t)) }));
+  };
+  const removeAssetType = (id: string) => {
+    setState((s) => ({ ...s, assetTypes: s.assetTypes.filter((t) => t.id !== id) }));
+  };
+
+  const addAsset: AppDataValue["addAsset"] = (asset) => {
+    let created!: Asset;
+    setState((s) => {
+      created = { ...asset, id: `asset${Date.now()}`, createdAt: new Date().toISOString() };
+      return { ...s, assets: [created, ...s.assets] };
+    });
+    return created;
+  };
+  const updateAsset: AppDataValue["updateAsset"] = (id, patch) => {
+    setState((s) => ({ ...s, assets: s.assets.map((a) => (a.id === id ? { ...a, ...patch } : a)) }));
+  };
+  const removeAsset = (id: string) => {
+    setState((s) => ({ ...s, assets: s.assets.filter((a) => a.id !== id) }));
+  };
+
+  const addAssetMovement: AppDataValue["addAssetMovement"] = (movement) => {
+    setState((s) => {
+      const record: AssetMovement = { ...movement, id: `amove${Date.now()}`, createdAt: new Date().toISOString() };
+      return {
+        ...s,
+        assetMovements: [record, ...s.assetMovements],
+        assets: s.assets.map((a) =>
+          a.id === movement.assetId
+            ? { ...a, lastMovementKind: movement.kind, currentLocation: movement.location ?? a.currentLocation, costCenterCode: movement.costCenterCode ?? a.costCenterCode }
+            : a,
+        ),
+      };
+    });
+  };
+
   const updateOperatingParameters: AppDataValue["updateOperatingParameters"] = (patch) => {
     setState((s) => ({ ...s, operatingParameters: { ...s.operatingParameters, ...patch } }));
   };
@@ -938,6 +1007,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       updateServiceParameters,
       statusFlowVisibility: state.statusFlowVisibility,
       toggleStatusFlowVisibility,
+      assetTypes: state.assetTypes,
+      addAssetType,
+      updateAssetType,
+      removeAssetType,
+      assets: state.assets,
+      addAsset,
+      updateAsset,
+      removeAsset,
+      assetMovements: state.assetMovements,
+      addAssetMovement,
       toast,
       showToast,
     }),

@@ -25,6 +25,9 @@ import { Servicos } from "./pages/admin/Servicos";
 import { Decoracoes } from "./pages/admin/Decoracoes";
 import { Popups } from "./pages/admin/Popups";
 import { Parametros } from "./pages/admin/Parametros";
+import { Ativos } from "./pages/admin/Ativos";
+import { TiposAtivo } from "./pages/admin/TiposAtivo";
+import { AtivoCheckInOut } from "./pages/admin/AtivoCheckInOut";
 import { Usuarios } from "./pages/admin/Usuarios";
 import { Permissoes } from "./pages/admin/Permissoes";
 import { Ocorrencias } from "./pages/admin/Ocorrencias";
@@ -71,6 +74,9 @@ export default function App() {
             <Route path="centros-custo" element={<CentrosCusto />} />
             <Route path="contratos" element={<Contratos />} />
             <Route path="parametros" element={<Parametros />} />
+            <Route path="ativos" element={<Ativos />} />
+            <Route path="tipos-ativo" element={<TiposAtivo />} />
+            <Route path="ativos/checkin" element={<AtivoCheckInOut />} />
           </Route>
         </Routes>
       </BrowserRouter>

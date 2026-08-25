@@ -295,6 +295,9 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-ocorrencias", label: "Ocorrências", group: "Painel Administrativo" },
   { id: "admin-popups", label: "Pop-ups", group: "Painel Administrativo" },
   { id: "admin-parametros", label: "Parâmetros", group: "Painel Administrativo" },
+  { id: "admin-ativos", label: "Gestão de Ativos", group: "Painel Administrativo" },
+  { id: "admin-tipos-ativo", label: "Tipos de Ativo", group: "Painel Administrativo" },
+  { id: "admin-ativos-checkin", label: "Check-in / Check-out de Ativos", group: "Painel Administrativo" },
 ];
 
 /**
@@ -436,6 +439,55 @@ export interface PremiumEvent {
   guestCount?: number;
   items: PremiumEventItem[];
   status: PremiumEventStatus;
+  notes?: string;
+  createdAt: string;
+}
+
+export const ASSET_STATUSES = ["Ativo", "Inativo", "Em manutenção", "Extraviado"] as const;
+export type AssetStatus = (typeof ASSET_STATUSES)[number];
+
+export interface AssetUnitOfMeasure {
+  id: string;
+  qty: number;
+  unit: string;
+}
+
+/** Tipo de ativo (ex.: Garrafa térmica, Bombona) — define quais unidades de medida um ativo desse tipo pode usar. */
+export interface AssetType {
+  id: string;
+  name: string;
+  description?: string;
+  active: boolean;
+  unitsOfMeasure: AssetUnitOfMeasure[];
+}
+
+/** Ativo físico individual (patrimônio) rastreado por QR code — garrafas térmicas, bombonas etc. */
+export interface Asset {
+  id: string;
+  name: string;
+  description?: string;
+  status: AssetStatus;
+  assetTypeId: string;
+  unitOfMeasureId?: string;
+  /** Departamento do ativo — reaproveita o cadastro de Centros de Custo como unidade organizacional. */
+  costCenterCode?: string;
+  /** Última localização registrada por um check-in/check-out. */
+  currentLocation?: string;
+  lastMovementKind?: "checkin" | "checkout";
+  createdAt: string;
+}
+
+export const ASSET_MOVEMENT_KINDS = ["checkin", "checkout"] as const;
+export type AssetMovementKind = (typeof ASSET_MOVEMENT_KINDS)[number];
+
+/** Registro de check-in/check-out de um ativo, feito a partir da leitura do QR code colado nele. */
+export interface AssetMovement {
+  id: string;
+  assetId: string;
+  kind: AssetMovementKind;
+  costCenterCode?: string;
+  location?: string;
+  performedBy?: string;
   notes?: string;
   createdAt: string;
 }

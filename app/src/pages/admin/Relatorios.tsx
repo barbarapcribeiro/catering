@@ -5,12 +5,12 @@ import { useAppData } from "../../mock/AppDataContext";
 import { STATUS_STYLE } from "../../mock/services";
 import { money } from "../../mock/money";
 import { Modal } from "../../components/Modal";
-import { ORDER_CATEGORIES, type CostCenter, type Order } from "../../types";
+import { ASSET_STATUSES, ORDER_CATEGORIES, type AssetStatus, type CostCenter, type Order } from "../../types";
 import "./Relatorios.css";
 
 const PALETTE = ["var(--color-primary)", "#1e4fa3", "#1a7a4f", "#b5690f", "#5a4a8a", "#c99a1f", "#c0392b"];
 
-export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "lucro-produto" | "pesquisa-satisfacao" | "pesquisa-aplicacao";
+export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "lucro-produto" | "ativos" | "pesquisa-satisfacao" | "pesquisa-aplicacao";
 
 const DASH_TABS: { key: ReportDash; label: string }[] = [
   { key: "geral", label: "Visão Geral" },
@@ -18,6 +18,7 @@ const DASH_TABS: { key: ReportDash; label: string }[] = [
   { key: "pedidos", label: "Pedidos" },
   { key: "centros-custo", label: "Centros de Custo" },
   { key: "lucro-produto", label: "Lucro por Produto" },
+  { key: "ativos", label: "Ativos" },
   { key: "pesquisa-satisfacao", label: "Pesquisa de Satisfação" },
   { key: "pesquisa-aplicacao", label: "Pesquisa da Aplicação" },
 ];
@@ -93,7 +94,7 @@ function Sparkline({ seed, color }: { seed: number; color: string }) {
 }
 
 export function Relatorios() {
-  const { orders, costCenters, occurrences, showToast, surveyQuestions, appSurveyQuestions, surveyResponses, products } = useAppData();
+  const { orders, costCenters, occurrences, showToast, surveyQuestions, appSurveyQuestions, surveyResponses, products, assets, assetTypes, assetMovements } = useAppData();
   const navigate = useNavigate();
   const params = useParams<{ dash?: string }>();
   const dash: ReportDash = (DASH_TABS.some((t) => t.key === params.dash) ? params.dash : "geral") as ReportDash;
@@ -212,6 +213,21 @@ export function Relatorios() {
     { revenue: 0, profit: 0, unitsSold: 0 },
   );
   const topProfitProduct = productProfit.find((p) => p.hasSales);
+
+  const assetStatusCounts: Record<AssetStatus, number> = useMemo(() => {
+    const base = Object.fromEntries(ASSET_STATUSES.map((s) => [s, 0])) as Record<AssetStatus, number>;
+    assets.forEach((a) => { base[a.status] += 1; });
+    return base;
+  }, [assets]);
+  const assetsByType = useMemo(() => {
+    return assetTypes.map((t) => ({ id: t.id, name: t.name, count: assets.filter((a) => a.assetTypeId === t.id).length }));
+  }, [assetTypes, assets]);
+  const recentMovements = useMemo(
+    () => [...assetMovements].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 12),
+    [assetMovements],
+  );
+  const assetById = useMemo(() => Object.fromEntries(assets.map((a) => [a.id, a])), [assets]);
+  const ccByCodeForAssets = useMemo(() => Object.fromEntries(costCenters.map((c) => [c.code, c])), [costCenters]);
 
   const countStatus = (s: Order["status"]) => activeOrders.filter((o) => o.status === s).length;
   const openOccurrences = occurrences.filter((o) => o.status === "Aberta" || o.status === "Em análise").length;
@@ -743,6 +759,123 @@ export function Relatorios() {
               </div>
             ))}
             {productProfit.length === 0 && <div className="empty-state">Nenhum produto cadastrado.</div>}
+          </div>
+        </>
+      )}
+
+      {dash === "ativos" && (
+        <>
+          <div className="relatorios-kpis">
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Total de ativos</span>
+                <span>📦</span>
+              </div>
+              <div className="relatorios-kpi__value">{assets.length}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Ativos</span>
+                <span>✅</span>
+              </div>
+              <div className="relatorios-kpi__value">{assetStatusCounts["Ativo"]}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Em manutenção / extraviados</span>
+                <span>⚠</span>
+              </div>
+              <div className="relatorios-kpi__value">{assetStatusCounts["Em manutenção"] + assetStatusCounts["Extraviado"]}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Movimentações registradas</span>
+                <span>🔁</span>
+              </div>
+              <div className="relatorios-kpi__value">{assetMovements.length}</div>
+            </div>
+          </div>
+
+          <div className="relatorios-row-2">
+            <div className="card relatorios-panel">
+              <div className="relatorios-panel-head">
+                <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Ativos por tipo</div>
+                <Link to="/admin/tipos-ativo" className="link">
+                  Gerenciar tipos &rsaquo;
+                </Link>
+              </div>
+              <div className="relatorios-service-list">
+                {assetsByType.map((t) => {
+                  const pct = assets.length > 0 ? Math.round((t.count / assets.length) * 100) : 0;
+                  return (
+                    <div key={t.id}>
+                      <div className="relatorios-service-row">
+                        <span>{t.name}</span>
+                        <span>{t.count}</span>
+                      </div>
+                      <div className="relatorios-bar-track relatorios-bar-track--sm">
+                        <div className="relatorios-bar-fill" style={{ width: `${pct}%`, background: "var(--color-primary)" }} />
+                      </div>
+                    </div>
+                  );
+                })}
+                {assetsByType.length === 0 && <div className="empty-state">Nenhum tipo de ativo cadastrado.</div>}
+              </div>
+            </div>
+
+            <div className="card relatorios-panel">
+              <div className="relatorios-panel-head">
+                <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Ativos por status</div>
+                <Link to="/admin/ativos" className="link">
+                  Ver ativos &rsaquo;
+                </Link>
+              </div>
+              <div className="relatorios-service-list">
+                {ASSET_STATUSES.map((s) => {
+                  const count = assetStatusCounts[s];
+                  const pct = assets.length > 0 ? Math.round((count / assets.length) * 100) : 0;
+                  return (
+                    <div key={s}>
+                      <div className="relatorios-service-row">
+                        <span>{s}</span>
+                        <span>{count}</span>
+                      </div>
+                      <div className="relatorios-bar-track relatorios-bar-track--sm">
+                        <div className="relatorios-bar-fill" style={{ width: `${pct}%`, background: "var(--color-primary)" }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="card relatorios-panel">
+            <div className="relatorios-panel-head">
+              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Movimentações recentes (check-in / check-out)</div>
+              <Link to="/admin/ativos/checkin" className="link">
+                Registrar movimentação &rsaquo;
+              </Link>
+            </div>
+            <div className="relatorios-summary__head" style={{ gridTemplateColumns: "1.4fr 0.8fr 1.2fr 1.2fr 1fr" }}>
+              <div>Ativo</div>
+              <div>Movimento</div>
+              <div>Departamento</div>
+              <div>Localização</div>
+              <div>Data</div>
+            </div>
+            {recentMovements.map((m) => (
+              <div className="relatorios-summary__row" key={m.id} style={{ gridTemplateColumns: "1.4fr 0.8fr 1.2fr 1.2fr 1fr" }}>
+                <div className="relatorios-summary__type">{assetById[m.assetId]?.name ?? m.assetId}</div>
+                <div>
+                  <span className="pill-tag">{m.kind === "checkin" ? "Check-in" : "Check-out"}</span>
+                </div>
+                <div className="relatorios-muted">{m.costCenterCode ? ccByCodeForAssets[m.costCenterCode]?.name ?? m.costCenterCode : "—"}</div>
+                <div className="relatorios-muted">{m.location || "—"}</div>
+                <div className="relatorios-muted">{new Date(m.createdAt).toLocaleDateString("pt-BR")}</div>
+              </div>
+            ))}
+            {recentMovements.length === 0 && <div className="empty-state">Nenhuma movimentação registrada ainda.</div>}
           </div>
         </>
       )}
