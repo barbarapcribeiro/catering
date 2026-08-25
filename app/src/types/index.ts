@@ -15,7 +15,9 @@ export type OrderStatus =
   | "Entregue"
   | "Finalizado"
   | "Cancelado"
-  | "Recebido";
+  | "Recebido"
+  /** Orçamento montado pela GU, aguardando o cliente solicitante aprovar o valor antes de entrar em produção. */
+  | "Orçamento enviado";
 
 export interface CostCenterAllocation {
   code: string;
@@ -56,6 +58,8 @@ export interface Order {
   requiresApproval?: boolean;
   managerApproved?: boolean;
   guApproved?: boolean;
+  /** Preenchido quando esse pedido nasceu de uma solicitação de orçamento aprovada. */
+  quoteRequestId?: string;
   createdAt: string;
   history?: { label: string; time: string }[];
 }
@@ -81,6 +85,7 @@ export type OrderCategoryName = (typeof ORDER_CATEGORIES)[number];
 export const ORDER_STATUS_LIST: OrderStatus[] = [
   "Solicitado",
   "Aguardando aprovação",
+  "Orçamento enviado",
   "Em preparação",
   "Pronto para entrega",
   "Entregue",
@@ -88,6 +93,43 @@ export const ORDER_STATUS_LIST: OrderStatus[] = [
   "Cancelado",
   "Recebido",
 ];
+
+export const QUOTE_STATUSES = ["Solicitado", "Em elaboração", "Enviado para aprovação", "Aprovado", "Recusado"] as const;
+export type QuoteStatus = (typeof QUOTE_STATUSES)[number];
+
+export const QUOTE_EXPERIENCE_OPTIONS = ["Descontraída", "Corporativa", "Sofisticada", "Divertida", "Outro"] as const;
+export type QuoteExperience = (typeof QUOTE_EXPERIENCE_OPTIONS)[number];
+
+/** Item montado pela GU na resposta ao orçamento — vira Order.items quando o orçamento é enviado. */
+export interface QuoteItem {
+  name: string;
+  qty: number;
+  price: number;
+  productId?: string;
+}
+
+/** Solicitação de orçamento feita pelo cliente via chat guiado, respondida pela GU com um pedido montado. */
+export interface QuoteRequest {
+  id: string;
+  serviceType: OrderCategoryName;
+  expectedDate: string;
+  peopleCount: number;
+  experience: QuoteExperience;
+  wants: string;
+  specialDiet: boolean;
+  specialDietDetails?: string;
+  decorationNotes?: string;
+  costCenterCode?: string;
+  requestedBy?: string;
+  status: QuoteStatus;
+  items?: QuoteItem[];
+  serviceFeePercent?: number;
+  guNotes?: string;
+  createdAt: string;
+  sentAt?: string;
+  /** Preenchido quando a GU envia o orçamento — id do Order criado como fatura para aprovação do cliente. */
+  orderId?: string;
+}
 
 /** Parâmetros globais da unidade — telas de pedido e aprovação consultam esses valores em vez de terem regras fixas. */
 export interface OperatingParameters {
@@ -306,6 +348,8 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-ativos-checkin", label: "Check-in / Check-out de Ativos", group: "Painel Administrativo" },
   { id: "consumo-catraca", label: "Consumo Catraca", group: "Área do colaborador" },
   { id: "admin-catraca-checkin", label: "Check-in Consumo Catraca (operação)", group: "Painel Administrativo" },
+  { id: "solicitar-orcamento", label: "Solicitar Orçamento", group: "Área do colaborador" },
+  { id: "admin-orcamentos", label: "Orçamentos", group: "Painel Administrativo" },
 ];
 
 /**

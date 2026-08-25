@@ -21,6 +21,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Operação",
     items: [
       { label: "Gestão de pedidos", to: "/pedidos", glyph: "📋", pageId: "pedidos" },
+      { label: "Orçamentos", to: "/admin/orcamentos", glyph: "🧾", pageId: "admin-orcamentos" },
       { label: "Aprovações", to: "/aprovacoes", glyph: "✓", pageId: "aprovacoes" },
       { label: "Eventos Premium", to: "/eventos-premium", glyph: "🎉", pageId: "eventos-premium" },
       { label: "Ocorrências", to: "/admin/ocorrencias", glyph: "⚠", pageId: "admin-ocorrencias" },

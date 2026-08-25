@@ -25,6 +25,7 @@ import {
   type PremiumEvent,
   type Product,
   type Profile,
+  type QuoteRequest,
   type ServiceCatalogItem,
   type ServiceParameters,
   type Supplier,
@@ -67,6 +68,7 @@ interface StoredState {
   assets: Asset[];
   assetMovements: AssetMovement[];
   catracaRedemptions: CatracaRedemption[];
+  quoteRequests: QuoteRequest[];
 }
 
 const initialOrders: Order[] = [];
@@ -236,6 +238,7 @@ const initialProfiles: Profile[] = [
       "fique-por-dentro": { ver: true },
       "pesquisa-app": { ver: true, criarEditar: true },
       "consumo-catraca": { ver: true, criarEditar: true },
+      "solicitar-orcamento": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -285,6 +288,7 @@ const initialProfiles: Profile[] = [
       "admin-tipos-ativo": { ver: true, criarEditar: true, excluir: true },
       "admin-ativos-checkin": { ver: true, criarEditar: true },
       "admin-catraca-checkin": { ver: true, criarEditar: true },
+      "admin-orcamentos": { ver: true, criarEditar: true, aprovar: true },
     }),
   },
   {
@@ -388,6 +392,7 @@ const initialAssetTypes: AssetType[] = [];
 const initialAssets: Asset[] = [];
 const initialAssetMovements: AssetMovement[] = [];
 const initialCatracaRedemptions: CatracaRedemption[] = [];
+const initialQuoteRequests: QuoteRequest[] = [];
 
 const defaultState: StoredState = {
   orders: initialOrders,
@@ -419,6 +424,7 @@ const defaultState: StoredState = {
   assets: initialAssets,
   assetMovements: initialAssetMovements,
   catracaRedemptions: initialCatracaRedemptions,
+  quoteRequests: initialQuoteRequests,
 };
 
 function loadState(): StoredState {
@@ -448,6 +454,7 @@ interface AppDataValue {
 
   notifications: Notification[];
   markAllNotificationsRead: () => void;
+  addNotification: (title: string) => void;
 
   favorites: Set<string>;
   toggleFavorite: (id: string) => void;
@@ -560,6 +567,10 @@ interface AppDataValue {
   checkInCatraca: (id: string) => void;
   checkOutCatraca: (id: string) => void;
 
+  quoteRequests: QuoteRequest[];
+  addQuoteRequest: (quote: Omit<QuoteRequest, "id" | "createdAt" | "status">) => QuoteRequest;
+  updateQuoteRequest: (id: string, patch: Partial<QuoteRequest>) => void;
+
   toast: string | null;
   showToast: (msg: string) => void;
 }
@@ -644,6 +655,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       return { ...s, orders: [copy, ...s.orders], nextOrderNum: num };
     });
     showToast("Pedido duplicado.");
+  };
+
+  const addNotification: AppDataValue["addNotification"] = (title) => {
+    setState((s) => ({
+      ...s,
+      notifications: [{ id: `notif${Date.now()}`, title, time: new Date().toLocaleString("pt-BR"), read: false }, ...s.notifications],
+    }));
   };
 
   const markAllNotificationsRead = () => {
@@ -943,6 +961,18 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const addQuoteRequest: AppDataValue["addQuoteRequest"] = (quote) => {
+    let created!: QuoteRequest;
+    setState((s) => {
+      created = { ...quote, id: `quote${Date.now()}`, status: "Solicitado", createdAt: new Date().toISOString() };
+      return { ...s, quoteRequests: [created, ...s.quoteRequests] };
+    });
+    return created;
+  };
+  const updateQuoteRequest: AppDataValue["updateQuoteRequest"] = (id, patch) => {
+    setState((s) => ({ ...s, quoteRequests: s.quoteRequests.map((q) => (q.id === id ? { ...q, ...patch } : q)) }));
+  };
+
   const updateOperatingParameters: AppDataValue["updateOperatingParameters"] = (patch) => {
     setState((s) => ({ ...s, operatingParameters: { ...s.operatingParameters, ...patch } }));
   };
@@ -972,6 +1002,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       duplicateOrder,
       notifications: state.notifications,
       markAllNotificationsRead,
+      addNotification,
       favorites: new Set(state.favorites),
       toggleFavorite,
       chatMessages: state.chatMessages,
@@ -1059,6 +1090,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       addCatracaRedemption,
       checkInCatraca,
       checkOutCatraca,
+      quoteRequests: state.quoteRequests,
+      addQuoteRequest,
+      updateQuoteRequest,
       toast,
       showToast,
     }),

@@ -75,8 +75,21 @@ function getDisplayItems(o: Order): DisplayItem[] {
 }
 
 export function GerenciarPedidos() {
-  const { orders, cancelOrder, duplicateOrder, updateOrder, addOccurrence, currentUser, showToast, chatMessages, sendChatMessage, operatingParameters, serviceParameters } =
-    useAppData();
+  const {
+    orders,
+    cancelOrder,
+    duplicateOrder,
+    updateOrder,
+    addOccurrence,
+    currentUser,
+    showToast,
+    chatMessages,
+    sendChatMessage,
+    operatingParameters,
+    serviceParameters,
+    quoteRequests,
+    updateQuoteRequest,
+  } = useAppData();
   const navigate = useNavigate();
 
   const [listTab, setListTab] = useState<ListTab>("andamento");
@@ -157,6 +170,22 @@ export function GerenciarPedidos() {
     if (!selected) return;
     updateOrder(selected.id, { status: "Finalizado" });
     showToast(`Pedido ${selected.id} finalizado. Obrigado por confirmar!`);
+    setQuickActionsOpen(false);
+  };
+  const approveQuote = () => {
+    if (!selected) return;
+    updateOrder(selected.id, { status: "Solicitado" });
+    const q = quoteRequests.find((qr) => qr.orderId === selected.id);
+    if (q) updateQuoteRequest(q.id, { status: "Aprovado" });
+    showToast("Orçamento aprovado! Seu pedido entrou na fila de produção.");
+    setQuickActionsOpen(false);
+  };
+  const rejectQuote = () => {
+    if (!selected) return;
+    updateOrder(selected.id, { status: "Cancelado" });
+    const q = quoteRequests.find((qr) => qr.orderId === selected.id);
+    if (q) updateQuoteRequest(q.id, { status: "Recusado" });
+    showToast("Orçamento recusado.");
     setQuickActionsOpen(false);
   };
   const openReportModal = () => {
@@ -358,6 +387,14 @@ export function GerenciarPedidos() {
                     </button>
                     {quickActionsOpen && (
                       <div className="kebab-menu gp-quick-actions__menu">
+                        {selected.status === "Orçamento enviado" && (
+                          <>
+                            <button onClick={approveQuote}>Aprovar orçamento</button>
+                            <button className="kebab-menu__danger" onClick={rejectQuote}>
+                              Recusar orçamento
+                            </button>
+                          </>
+                        )}
                         {selected.status === "Entregue" && <button onClick={finalize}>Finalizar pedido</button>}
                         {(selected.status === "Entregue" || selected.status === "Finalizado") && (
                           <button onClick={openReportModal}>Reportar problema</button>
@@ -433,6 +470,11 @@ export function GerenciarPedidos() {
 
                 {detailTab === "resumo" && (
                   <>
+                    {selected.status === "Orçamento enviado" && (
+                      <div className="gp-quote-banner">
+                        🧾 Esse é o orçamento montado pela nossa equipe para sua solicitação — confira os itens e valores abaixo e aprove para entrar em produção.
+                      </div>
+                    )}
                     <div className="gp-resumo-items">
                       {items.map((it) => (
                         <div key={it.key} className="gp-resumo-item">
@@ -645,6 +687,16 @@ export function GerenciarPedidos() {
 
         {selected && (
           <div className="gp-action-bar">
+            {selected.status === "Orçamento enviado" && (
+              <>
+                <button className="btn btn--primary" onClick={approveQuote}>
+                  ✓ Aprovar orçamento
+                </button>
+                <button className="btn btn--outline gp-action-bar__danger-outline" onClick={rejectQuote}>
+                  ✕ Recusar orçamento
+                </button>
+              </>
+            )}
             <button className="btn btn--outline" onClick={() => setDetailTab("informacoes")}>
               👁 Ver detalhes
             </button>

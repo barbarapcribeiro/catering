@@ -27,6 +27,14 @@ export const SERVICES: Service[] = [
     route: "/consumo-catraca",
   },
   {
+    id: "or",
+    name: "Solicitar Orçamento",
+    desc: "Conte o que você precisa e receba um orçamento personalizado da nossa equipe.",
+    mono: "OR",
+    iconPath: "M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h11",
+    route: "/solicitar-orcamento",
+  },
+  {
     id: "ee",
     name: "Evento Especial",
     desc: "Solicite eventos especiais.",
@@ -115,6 +123,7 @@ export const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
   Finalizado: { bg: "#e6f5ec", color: "#1a7a4f" },
   Cancelado: { bg: "#fbe4e0", color: "#c0392b" },
   Recebido: { bg: "var(--color-primary-soft)", color: "var(--color-primary)" },
+  "Orçamento enviado": { bg: "#fdedd3", color: "#8a5a0f" },
 };
 
 /** Um pedido é considerado "em aberto" enquanto não chega a um estado final (entregue, finalizado ou cancelado). */

@@ -7,6 +7,7 @@ import { EventoEspecialOrder } from "./pages/EventoEspecialOrder";
 import { AguaOrder } from "./pages/AguaOrder";
 import { Surpreenda } from "./pages/Surpreenda";
 import { ConsumoCatraca } from "./pages/ConsumoCatraca";
+import { SolicitarOrcamento } from "./pages/SolicitarOrcamento";
 import { GerenciarPedidos } from "./pages/GerenciarPedidos";
 import { Producao } from "./pages/Producao";
 import { FiquePorDentro } from "./pages/FiquePorDentro";
@@ -30,6 +31,8 @@ import { Ativos } from "./pages/admin/Ativos";
 import { TiposAtivo } from "./pages/admin/TiposAtivo";
 import { AtivoCheckInOut } from "./pages/admin/AtivoCheckInOut";
 import { CatracaCheckIn } from "./pages/admin/CatracaCheckIn";
+import { Orcamentos } from "./pages/admin/Orcamentos";
+import { OrcamentoBuilder } from "./pages/admin/OrcamentoBuilder";
 import { Usuarios } from "./pages/admin/Usuarios";
 import { Permissoes } from "./pages/admin/Permissoes";
 import { Ocorrencias } from "./pages/admin/Ocorrencias";
@@ -49,6 +52,7 @@ export default function App() {
           <Route path="/pedido/abastecimento-simples" element={<AbastecimentoOrder />} />
           <Route path="/surpreenda" element={<Surpreenda />} />
           <Route path="/consumo-catraca" element={<ConsumoCatraca />} />
+          <Route path="/solicitar-orcamento" element={<SolicitarOrcamento />} />
           <Route path="/pedidos" element={<GerenciarPedidos />} />
           <Route path="/producao" element={<Producao />} />
           <Route path="/fique-por-dentro" element={<FiquePorDentro />} />
@@ -81,6 +85,8 @@ export default function App() {
             <Route path="tipos-ativo" element={<TiposAtivo />} />
             <Route path="ativos/checkin" element={<AtivoCheckInOut />} />
             <Route path="catraca-checkin" element={<CatracaCheckIn />} />
+            <Route path="orcamentos" element={<Orcamentos />} />
+            <Route path="orcamentos/:id/montar" element={<OrcamentoBuilder />} />
           </Route>
         </Routes>
       </BrowserRouter>
