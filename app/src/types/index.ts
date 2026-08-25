@@ -206,6 +206,10 @@ export interface KitServiceItem {
   qty: number;
 }
 
+/** As 5 refeições do serviço Consumo Catraca — um kit pode ser oferecido em uma ou mais delas. */
+export const MEAL_SERVICES = ["Café da manhã", "Almoço", "Lanche", "Janta", "Ceia"] as const;
+export type MealServiceName = (typeof MEAL_SERVICES)[number];
+
 export interface Kit {
   id: string;
   name: string;
@@ -217,6 +221,8 @@ export interface Kit {
   serviceFeePercent: number;
   /** Foto do kit (data URL ou link), exibida no catálogo e no pedido. */
   photoUrl?: string;
+  /** Em quais refeições do Consumo Catraca esse kit pode ser oferecido (opcional — só usado por esse serviço). */
+  mealServices?: MealServiceName[];
   active: boolean;
 }
 
@@ -298,6 +304,8 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-ativos", label: "Gestão de Ativos", group: "Painel Administrativo" },
   { id: "admin-tipos-ativo", label: "Tipos de Ativo", group: "Painel Administrativo" },
   { id: "admin-ativos-checkin", label: "Check-in / Check-out de Ativos", group: "Painel Administrativo" },
+  { id: "consumo-catraca", label: "Consumo Catraca", group: "Área do colaborador" },
+  { id: "admin-catraca-checkin", label: "Check-in Consumo Catraca (operação)", group: "Painel Administrativo" },
 ];
 
 /**
@@ -489,5 +497,28 @@ export interface AssetMovement {
   location?: string;
   performedBy?: string;
   notes?: string;
+  createdAt: string;
+}
+
+/**
+ * Status persistido de uma retirada do Consumo Catraca. "Perda" não é persistido —
+ * é derivado (ver `catracaEffectiveStatus`) sempre que houve check-in há mais de 1h sem check-out.
+ */
+export const CATRACA_STATUSES = ["Aguardando retirada", "Check-in realizado", "Check-out realizado"] as const;
+export type CatracaStatus = (typeof CATRACA_STATUSES)[number];
+export type CatracaEffectiveStatus = CatracaStatus | "Perda";
+
+/** Uma retirada de refeição pelo Consumo Catraca — nasce com QR code, fechada por check-in (operação) + check-out (cliente). */
+export interface CatracaRedemption {
+  id: string;
+  mealService: MealServiceName;
+  kitId: string;
+  pickupDate: string;
+  pickupTime: string;
+  costCenterCode?: string;
+  requestedBy?: string;
+  status: CatracaStatus;
+  checkInAt?: string;
+  checkOutAt?: string;
   createdAt: string;
 }

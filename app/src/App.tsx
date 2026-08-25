@@ -6,6 +6,7 @@ import { AbastecimentoOrder } from "./pages/AbastecimentoOrder";
 import { EventoEspecialOrder } from "./pages/EventoEspecialOrder";
 import { AguaOrder } from "./pages/AguaOrder";
 import { Surpreenda } from "./pages/Surpreenda";
+import { ConsumoCatraca } from "./pages/ConsumoCatraca";
 import { GerenciarPedidos } from "./pages/GerenciarPedidos";
 import { Producao } from "./pages/Producao";
 import { FiquePorDentro } from "./pages/FiquePorDentro";
@@ -28,6 +29,7 @@ import { Parametros } from "./pages/admin/Parametros";
 import { Ativos } from "./pages/admin/Ativos";
 import { TiposAtivo } from "./pages/admin/TiposAtivo";
 import { AtivoCheckInOut } from "./pages/admin/AtivoCheckInOut";
+import { CatracaCheckIn } from "./pages/admin/CatracaCheckIn";
 import { Usuarios } from "./pages/admin/Usuarios";
 import { Permissoes } from "./pages/admin/Permissoes";
 import { Ocorrencias } from "./pages/admin/Ocorrencias";
@@ -46,6 +48,7 @@ export default function App() {
           <Route path="/pedido/agua" element={<AguaOrder />} />
           <Route path="/pedido/abastecimento-simples" element={<AbastecimentoOrder />} />
           <Route path="/surpreenda" element={<Surpreenda />} />
+          <Route path="/consumo-catraca" element={<ConsumoCatraca />} />
           <Route path="/pedidos" element={<GerenciarPedidos />} />
           <Route path="/producao" element={<Producao />} />
           <Route path="/fique-por-dentro" element={<FiquePorDentro />} />
@@ -77,6 +80,7 @@ export default function App() {
             <Route path="ativos" element={<Ativos />} />
             <Route path="tipos-ativo" element={<TiposAtivo />} />
             <Route path="ativos/checkin" element={<AtivoCheckInOut />} />
+            <Route path="catraca-checkin" element={<CatracaCheckIn />} />
           </Route>
         </Routes>
       </BrowserRouter>

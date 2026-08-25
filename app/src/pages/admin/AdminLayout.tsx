@@ -24,6 +24,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Aprovações", to: "/aprovacoes", glyph: "✓", pageId: "aprovacoes" },
       { label: "Eventos Premium", to: "/eventos-premium", glyph: "🎉", pageId: "eventos-premium" },
       { label: "Ocorrências", to: "/admin/ocorrencias", glyph: "⚠", pageId: "admin-ocorrencias" },
+      { label: "Check-in Consumo Catraca", to: "/admin/catraca-checkin", glyph: "🍽", pageId: "admin-catraca-checkin" },
     ],
   },
   {
@@ -83,6 +84,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Centros de Custo", to: "/admin/relatorios/centros-custo", glyph: "🏷", pageId: "admin-relatorios" },
       { label: "Lucro por Produto", to: "/admin/relatorios/lucro-produto", glyph: "💰", pageId: "admin-relatorios" },
       { label: "Ativos", to: "/admin/relatorios/ativos", glyph: "🧴", pageId: "admin-relatorios" },
+      { label: "Consumo Catraca", to: "/admin/relatorios/catraca", glyph: "🍽", pageId: "admin-relatorios" },
       { label: "Pesquisa de Satisfação", to: "/admin/relatorios/pesquisa-satisfacao", glyph: "⭐", pageId: "admin-relatorios" },
       { label: "Pesquisa da Aplicação", to: "/admin/relatorios/pesquisa-aplicacao", glyph: "💬", pageId: "admin-relatorios" },
     ],

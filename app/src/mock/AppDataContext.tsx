@@ -7,6 +7,8 @@ import {
   type Asset,
   type AssetMovement,
   type AssetType,
+  type CatracaRedemption,
+  type CatracaStatus,
   type ChatMessage,
   type Contract,
   type CostCenter,
@@ -64,6 +66,7 @@ interface StoredState {
   assetTypes: AssetType[];
   assets: Asset[];
   assetMovements: AssetMovement[];
+  catracaRedemptions: CatracaRedemption[];
 }
 
 const initialOrders: Order[] = [];
@@ -232,6 +235,7 @@ const initialProfiles: Profile[] = [
       pedidos: { ver: true, criarEditar: true, excluir: true },
       "fique-por-dentro": { ver: true },
       "pesquisa-app": { ver: true, criarEditar: true },
+      "consumo-catraca": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -280,6 +284,7 @@ const initialProfiles: Profile[] = [
       "admin-ativos": { ver: true, criarEditar: true, excluir: true },
       "admin-tipos-ativo": { ver: true, criarEditar: true, excluir: true },
       "admin-ativos-checkin": { ver: true, criarEditar: true },
+      "admin-catraca-checkin": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -291,6 +296,7 @@ const initialProfiles: Profile[] = [
     permissions: perms({
       producao: { ver: true, criarEditar: true },
       "pesquisa-app": { ver: true, criarEditar: true },
+      "admin-catraca-checkin": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -381,6 +387,7 @@ const initialStatusFlowVisibility: Record<OrderStatus, boolean> = Object.fromEnt
 const initialAssetTypes: AssetType[] = [];
 const initialAssets: Asset[] = [];
 const initialAssetMovements: AssetMovement[] = [];
+const initialCatracaRedemptions: CatracaRedemption[] = [];
 
 const defaultState: StoredState = {
   orders: initialOrders,
@@ -411,6 +418,7 @@ const defaultState: StoredState = {
   assetTypes: initialAssetTypes,
   assets: initialAssets,
   assetMovements: initialAssetMovements,
+  catracaRedemptions: initialCatracaRedemptions,
 };
 
 function loadState(): StoredState {
@@ -546,6 +554,11 @@ interface AppDataValue {
 
   assetMovements: AssetMovement[];
   addAssetMovement: (movement: Omit<AssetMovement, "id" | "createdAt">) => void;
+
+  catracaRedemptions: CatracaRedemption[];
+  addCatracaRedemption: (redemption: Omit<CatracaRedemption, "id" | "createdAt" | "status" | "checkInAt" | "checkOutAt">) => CatracaRedemption;
+  checkInCatraca: (id: string) => void;
+  checkOutCatraca: (id: string) => void;
 
   toast: string | null;
   showToast: (msg: string) => void;
@@ -905,6 +918,31 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const addCatracaRedemption: AppDataValue["addCatracaRedemption"] = (redemption) => {
+    let created!: CatracaRedemption;
+    setState((s) => {
+      created = { ...redemption, id: `catraca${Date.now()}`, status: "Aguardando retirada", createdAt: new Date().toISOString() };
+      return { ...s, catracaRedemptions: [created, ...s.catracaRedemptions] };
+    });
+    return created;
+  };
+  const checkInCatraca = (id: string) => {
+    setState((s) => ({
+      ...s,
+      catracaRedemptions: s.catracaRedemptions.map((r) =>
+        r.id === id && r.status === "Aguardando retirada" ? { ...r, status: "Check-in realizado" as CatracaStatus, checkInAt: new Date().toISOString() } : r,
+      ),
+    }));
+  };
+  const checkOutCatraca = (id: string) => {
+    setState((s) => ({
+      ...s,
+      catracaRedemptions: s.catracaRedemptions.map((r) =>
+        r.id === id && r.status === "Check-in realizado" ? { ...r, status: "Check-out realizado" as CatracaStatus, checkOutAt: new Date().toISOString() } : r,
+      ),
+    }));
+  };
+
   const updateOperatingParameters: AppDataValue["updateOperatingParameters"] = (patch) => {
     setState((s) => ({ ...s, operatingParameters: { ...s.operatingParameters, ...patch } }));
   };
@@ -1017,6 +1055,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       removeAsset,
       assetMovements: state.assetMovements,
       addAssetMovement,
+      catracaRedemptions: state.catracaRedemptions,
+      addCatracaRedemption,
+      checkInCatraca,
+      checkOutCatraca,
       toast,
       showToast,
     }),

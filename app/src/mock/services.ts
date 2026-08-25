@@ -21,9 +21,10 @@ export const SERVICES: Service[] = [
   {
     id: "cc",
     name: "Consumo Catraca",
-    desc: "Registre consumos realizados na catraca.",
+    desc: "Escolha sua refeição e o horário de retirada no restaurante.",
     mono: "CC",
     iconPath: "M22 12h-4l-3 9L9 3l-3 9H2",
+    route: "/consumo-catraca",
   },
   {
     id: "ee",

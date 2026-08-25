@@ -1,0 +1,105 @@
+.catraca-kit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 26px;
+}
+.catraca-kit-card {
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+.catraca-kit-card.is-selected {
+  border-color: var(--color-primary);
+}
+
+.catraca-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.catraca-confirm-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  padding: 32px 24px;
+}
+.catraca-confirm-card__title {
+  font-size: 20px;
+  font-weight: 800;
+}
+.catraca-confirm-card__sub {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  max-width: 46ch;
+}
+.catraca-confirm-card__qr {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px;
+}
+.catraca-confirm-card__facts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  text-align: left;
+}
+.catraca-confirm-card__facts > div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+.catraca-confirm-card__facts span {
+  color: var(--color-text-muted);
+}
+.catraca-confirm-card__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.catraca-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.catraca-list-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.catraca-list-row__main {
+  flex: 1;
+  min-width: 200px;
+}
+.catraca-list-row__title {
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.catraca-list-row__meta {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  margin-top: 3px;
+}
+.catraca-list-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.catraca-list-row__qr {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border-soft);
+}

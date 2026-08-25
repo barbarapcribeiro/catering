@@ -5,12 +5,13 @@ import { useAppData } from "../../mock/AppDataContext";
 import { STATUS_STYLE } from "../../mock/services";
 import { money } from "../../mock/money";
 import { Modal } from "../../components/Modal";
-import { ASSET_STATUSES, ORDER_CATEGORIES, type AssetStatus, type CostCenter, type Order } from "../../types";
+import { ASSET_STATUSES, MEAL_SERVICES, ORDER_CATEGORIES, type AssetStatus, type CatracaEffectiveStatus, type CostCenter, type Order } from "../../types";
+import { catracaEffectiveStatus } from "../../mock/catraca";
 import "./Relatorios.css";
 
 const PALETTE = ["var(--color-primary)", "#1e4fa3", "#1a7a4f", "#b5690f", "#5a4a8a", "#c99a1f", "#c0392b"];
 
-export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "lucro-produto" | "ativos" | "pesquisa-satisfacao" | "pesquisa-aplicacao";
+export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "lucro-produto" | "ativos" | "catraca" | "pesquisa-satisfacao" | "pesquisa-aplicacao";
 
 const DASH_TABS: { key: ReportDash; label: string }[] = [
   { key: "geral", label: "Visão Geral" },
@@ -19,6 +20,7 @@ const DASH_TABS: { key: ReportDash; label: string }[] = [
   { key: "centros-custo", label: "Centros de Custo" },
   { key: "lucro-produto", label: "Lucro por Produto" },
   { key: "ativos", label: "Ativos" },
+  { key: "catraca", label: "Consumo Catraca" },
   { key: "pesquisa-satisfacao", label: "Pesquisa de Satisfação" },
   { key: "pesquisa-aplicacao", label: "Pesquisa da Aplicação" },
 ];
@@ -94,7 +96,7 @@ function Sparkline({ seed, color }: { seed: number; color: string }) {
 }
 
 export function Relatorios() {
-  const { orders, costCenters, occurrences, showToast, surveyQuestions, appSurveyQuestions, surveyResponses, products, assets, assetTypes, assetMovements } = useAppData();
+  const { orders, costCenters, occurrences, showToast, surveyQuestions, appSurveyQuestions, surveyResponses, products, assets, assetTypes, assetMovements, catracaRedemptions, kits } = useAppData();
   const navigate = useNavigate();
   const params = useParams<{ dash?: string }>();
   const dash: ReportDash = (DASH_TABS.some((t) => t.key === params.dash) ? params.dash : "geral") as ReportDash;
@@ -228,6 +230,22 @@ export function Relatorios() {
   );
   const assetById = useMemo(() => Object.fromEntries(assets.map((a) => [a.id, a])), [assets]);
   const ccByCodeForAssets = useMemo(() => Object.fromEntries(costCenters.map((c) => [c.code, c])), [costCenters]);
+
+  const catracaEffective = useMemo(() => catracaRedemptions.map((r) => ({ r, status: catracaEffectiveStatus(r) })), [catracaRedemptions]);
+  const catracaStatusCounts: Record<CatracaEffectiveStatus, number> = useMemo(() => {
+    const base: Record<CatracaEffectiveStatus, number> = { "Aguardando retirada": 0, "Check-in realizado": 0, "Check-out realizado": 0, Perda: 0 };
+    catracaEffective.forEach(({ status }) => { base[status] += 1; });
+    return base;
+  }, [catracaEffective]);
+  const catracaByMeal = useMemo(
+    () => MEAL_SERVICES.map((m) => ({ meal: m, count: catracaRedemptions.filter((r) => r.mealService === m).length })),
+    [catracaRedemptions],
+  );
+  const recentCatraca = useMemo(
+    () => [...catracaRedemptions].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 12),
+    [catracaRedemptions],
+  );
+  const kitById = useMemo(() => Object.fromEntries(kits.map((k) => [k.id, k])), [kits]);
 
   const countStatus = (s: Order["status"]) => activeOrders.filter((o) => o.status === s).length;
   const openOccurrences = occurrences.filter((o) => o.status === "Aberta" || o.status === "Em análise").length;
@@ -876,6 +894,98 @@ export function Relatorios() {
               </div>
             ))}
             {recentMovements.length === 0 && <div className="empty-state">Nenhuma movimentação registrada ainda.</div>}
+          </div>
+        </>
+      )}
+
+      {dash === "catraca" && (
+        <>
+          <div className="relatorios-kpis">
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Total de consumos</span>
+                <span>🍽</span>
+              </div>
+              <div className="relatorios-kpi__value">{catracaRedemptions.length}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Aguardando retirada</span>
+                <span>⏳</span>
+              </div>
+              <div className="relatorios-kpi__value">{catracaStatusCounts["Aguardando retirada"]}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Check-outs concluídos</span>
+                <span>✅</span>
+              </div>
+              <div className="relatorios-kpi__value">{catracaStatusCounts["Check-out realizado"]}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Perdas (sem check-out em 1h)</span>
+                <span>⚠</span>
+              </div>
+              <div className="relatorios-kpi__value" style={{ color: catracaStatusCounts.Perda > 0 ? "var(--color-danger)" : undefined }}>
+                {catracaStatusCounts.Perda}
+              </div>
+            </div>
+          </div>
+
+          <div className="card relatorios-panel">
+            <div className="relatorios-panel-head">
+              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Consumos por refeição</div>
+              <Link to="/admin/kits" className="link">
+                Gerenciar kits &rsaquo;
+              </Link>
+            </div>
+            <div className="relatorios-service-list">
+              {catracaByMeal.map((m) => {
+                const pct = catracaRedemptions.length > 0 ? Math.round((m.count / catracaRedemptions.length) * 100) : 0;
+                return (
+                  <div key={m.meal}>
+                    <div className="relatorios-service-row">
+                      <span>{m.meal}</span>
+                      <span>{m.count}</span>
+                    </div>
+                    <div className="relatorios-bar-track relatorios-bar-track--sm">
+                      <div className="relatorios-bar-fill" style={{ width: `${pct}%`, background: "var(--color-primary)" }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="card relatorios-panel">
+            <div className="relatorios-panel-head">
+              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Consumos recentes</div>
+              <Link to="/admin/catraca-checkin" className="link">
+                Check-in da operação &rsaquo;
+              </Link>
+            </div>
+            <div className="relatorios-summary__head" style={{ gridTemplateColumns: "1.3fr 1fr 1fr 1fr 1fr" }}>
+              <div>Kit</div>
+              <div>Refeição</div>
+              <div>Retirada</div>
+              <div>Solicitante</div>
+              <div>Status</div>
+            </div>
+            {recentCatraca.map((r) => (
+              <div className="relatorios-summary__row" key={r.id} style={{ gridTemplateColumns: "1.3fr 1fr 1fr 1fr 1fr" }}>
+                <div className="relatorios-summary__type">{kitById[r.kitId]?.name ?? "Kit removido"}</div>
+                <div className="relatorios-muted">{r.mealService}</div>
+                <div className="relatorios-muted">
+                  {r.pickupDate} {r.pickupTime}
+                </div>
+                <div className="relatorios-muted">{r.requestedBy ?? "—"}</div>
+                <div>
+                  <span className="pill-tag">{catracaEffectiveStatus(r)}</span>
+                </div>
+              </div>
+            ))}
+            {recentCatraca.length === 0 && <div className="empty-state">Nenhum consumo registrado ainda.</div>}
           </div>
         </>
       )}
