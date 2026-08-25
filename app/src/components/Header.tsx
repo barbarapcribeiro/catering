@@ -6,7 +6,7 @@ import { APP_PAGES } from "../types";
 import "./Header.css";
 
 export function Header() {
-  const { notifications, markAllNotificationsRead, currentUser, currentProfile, hasPageAccess } = useAppData();
+  const { notifications, markAllNotificationsRead, currentUser, currentProfile, hasPageAccess, operatingParameters } = useAppData();
   const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
   const unread = notifications.filter((n) => !n.read).length;
@@ -18,11 +18,14 @@ export function Header() {
     <header className="app-header">
       <div className="app-header__identity">
         <button className="app-header__avatar" onClick={() => navigate("/")} aria-label="Ir para a página inicial">
-          {displayName.charAt(0).toUpperCase()}
+          {operatingParameters.logoUrl ? <img src={operatingParameters.logoUrl} alt="Logo" className="app-header__avatar-logo" /> : displayName.charAt(0).toUpperCase()}
         </button>
         <div>
           <div className="app-header__name">Olá, {displayName}</div>
-          <div className="app-header__subtitle">Direct Eventos &bull; {currentProfile?.name ?? "Demonstração"}</div>
+          <div className="app-header__subtitle">
+            Direct Eventos &bull; {currentProfile?.name ?? "Demonstração"}
+            {operatingParameters.extensionNumber && ` · Ramal ${operatingParameters.extensionNumber}`}
+          </div>
         </div>
       </div>
       <nav className="app-header__nav">

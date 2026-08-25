@@ -75,7 +75,8 @@ function getDisplayItems(o: Order): DisplayItem[] {
 }
 
 export function GerenciarPedidos() {
-  const { orders, cancelOrder, duplicateOrder, updateOrder, addOccurrence, currentUser, showToast, chatMessages, sendChatMessage } = useAppData();
+  const { orders, cancelOrder, duplicateOrder, updateOrder, addOccurrence, currentUser, showToast, chatMessages, sendChatMessage, operatingParameters, serviceParameters } =
+    useAppData();
   const navigate = useNavigate();
 
   const [listTab, setListTab] = useState<ListTab>("andamento");
@@ -207,7 +208,8 @@ export function GerenciarPedidos() {
   if (selected) {
     items = getDisplayItems(selected);
     subtotal = items.reduce((sum, it) => sum + it.total, 0);
-    fee = subtotal * 0.1;
+    const feePercent = serviceParameters.find((sp) => sp.category === selected.category)?.adminFeePercent ?? 10;
+    fee = subtotal * (feePercent / 100);
     total = subtotal + fee;
     [selDate, selTime] = splitDateTime(selected.datetime);
 
@@ -385,16 +387,18 @@ export function GerenciarPedidos() {
                       {selTime}
                     </div>
                   </div>
-                  <div>
-                    <div className="gp-stats__label">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d8798" strokeWidth="2">
-                        <path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z" />
-                        <circle cx="12" cy="10" r="3" />
-                      </svg>
-                      Local
+                  {operatingParameters.showDeliveryLocationField && (
+                    <div>
+                      <div className="gp-stats__label">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d8798" strokeWidth="2">
+                          <path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        Local
+                      </div>
+                      <div className="gp-stats__value">{selected.location ?? "—"}</div>
                     </div>
-                    <div className="gp-stats__value">{selected.location ?? "—"}</div>
-                  </div>
+                  )}
                   <div>
                     <div className="gp-stats__label">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d8798" strokeWidth="2">
@@ -405,16 +409,18 @@ export function GerenciarPedidos() {
                     </div>
                     <div className="gp-stats__value">{selected.peopleCount ? `${selected.peopleCount} pessoas` : selected.qty}</div>
                   </div>
-                  <div>
-                    <div className="gp-stats__label">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d8798" strokeWidth="2">
-                        <circle cx="12" cy="12" r="9" />
-                        <path d="M12 7v10M9 9.5c0-1 1-2 3-2s3 1 3 2-1 1.5-3 2-3 1-3 2 1 2 3 2 3-1 3-2" />
-                      </svg>
-                      Valor total
+                  {operatingParameters.showTotalValueInOrder && (
+                    <div>
+                      <div className="gp-stats__label">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d8798" strokeWidth="2">
+                          <circle cx="12" cy="12" r="9" />
+                          <path d="M12 7v10M9 9.5c0-1 1-2 3-2s3 1 3 2-1 1.5-3 2-3 1-3 2 1 2 3 2 3-1 3-2" />
+                        </svg>
+                        Valor total
+                      </div>
+                      <div className="gp-stats__value gp-stats__value--primary">{money(total)}</div>
                     </div>
-                    <div className="gp-stats__value gp-stats__value--primary">{money(total)}</div>
-                  </div>
+                  )}
                 </div>
 
                 <div className="gp-detail-tabs">
@@ -438,14 +444,18 @@ export function GerenciarPedidos() {
                             <div className="gp-resumo-item__col-label">Qtd.</div>
                             <div className="gp-resumo-item__col-value">{it.qty}</div>
                           </div>
-                          <div>
-                            <div className="gp-resumo-item__col-label">Valor unit.</div>
-                            <div className="gp-resumo-item__col-value">{money(it.unit)}</div>
-                          </div>
-                          <div>
-                            <div className="gp-resumo-item__col-label">Subtotal</div>
-                            <div className="gp-resumo-item__col-value gp-resumo-item__col-value--bold">{money(it.total)}</div>
-                          </div>
+                          {operatingParameters.showUnitPriceInOrder && (
+                            <div>
+                              <div className="gp-resumo-item__col-label">Valor unit.</div>
+                              <div className="gp-resumo-item__col-value">{money(it.unit)}</div>
+                            </div>
+                          )}
+                          {operatingParameters.showTotalValueInOrder && (
+                            <div>
+                              <div className="gp-resumo-item__col-label">Subtotal</div>
+                              <div className="gp-resumo-item__col-value gp-resumo-item__col-value--bold">{money(it.total)}</div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -453,20 +463,22 @@ export function GerenciarPedidos() {
                       <button className="btn btn--outline" onClick={openEditModal}>
                         ✎ Editar pedido
                       </button>
-                      <div className="gp-resumo-totals">
-                        <div className="gp-resumo-totals__col">
-                          <div className="gp-resumo-totals__label">Subtotal</div>
-                          <div className="gp-resumo-totals__value">{money(subtotal)}</div>
+                      {operatingParameters.showTotalValueInOrder && (
+                        <div className="gp-resumo-totals">
+                          <div className="gp-resumo-totals__col">
+                            <div className="gp-resumo-totals__label">Subtotal</div>
+                            <div className="gp-resumo-totals__value">{money(subtotal)}</div>
+                          </div>
+                          <div className="gp-resumo-totals__col">
+                            <div className="gp-resumo-totals__label">Taxa ({(serviceParameters.find((sp) => sp.category === selected.category)?.adminFeePercent ?? 10)}%)</div>
+                            <div className="gp-resumo-totals__value">{money(fee)}</div>
+                          </div>
+                          <div className="gp-resumo-totals__col">
+                            <div className="gp-resumo-totals__label">Total</div>
+                            <div className="gp-resumo-totals__value gp-resumo-totals__value--total">{money(total)}</div>
+                          </div>
                         </div>
-                        <div className="gp-resumo-totals__col">
-                          <div className="gp-resumo-totals__label">Taxa (10%)</div>
-                          <div className="gp-resumo-totals__value">{money(fee)}</div>
-                        </div>
-                        <div className="gp-resumo-totals__col">
-                          <div className="gp-resumo-totals__label">Total</div>
-                          <div className="gp-resumo-totals__value gp-resumo-totals__value--total">{money(total)}</div>
-                        </div>
-                      </div>
+                      )}
                     </div>
                     <div className="gp-resumo-note">
                       Pedido criado em {selected.createdAt ? new Date(selected.createdAt).toLocaleString("pt-BR") : "—"} por você.
@@ -481,10 +493,11 @@ export function GerenciarPedidos() {
                         <div>
                           <div className="gp-itens-row__name">{it.name}</div>
                           <div className="gp-itens-row__sub">
-                            {it.sub} &bull; {money(it.unit)}/un.
+                            {it.sub}
+                            {operatingParameters.showUnitPriceInOrder && ` • ${money(it.unit)}/un.`}
                           </div>
                         </div>
-                        <div className="gp-itens-row__total">{money(it.total)}</div>
+                        {operatingParameters.showTotalValueInOrder && <div className="gp-itens-row__total">{money(it.total)}</div>}
                       </div>
                     ))}
                   </div>
@@ -498,10 +511,12 @@ export function GerenciarPedidos() {
                         {selDate} &bull; {selTime}
                       </div>
                     </div>
-                    <div>
-                      <div className="gp-info-grid__label">Local de entrega</div>
-                      <div className="gp-info-grid__value">{selected.location ?? "—"}</div>
-                    </div>
+                    {operatingParameters.showDeliveryLocationField && (
+                      <div>
+                        <div className="gp-info-grid__label">Local de entrega</div>
+                        <div className="gp-info-grid__value">{selected.location ?? "—"}</div>
+                      </div>
+                    )}
                     <div>
                       <div className="gp-info-grid__label">Nº de pessoas</div>
                       <div className="gp-info-grid__value">{selected.peopleCount ?? selected.qty}</div>
@@ -514,10 +529,12 @@ export function GerenciarPedidos() {
                           : "—"}
                       </div>
                     </div>
-                    <div className="gp-info-grid__full">
-                      <div className="gp-info-grid__label">Observações</div>
-                      <div className="gp-info-grid__value">{selected.notes ?? "Sem observações adicionais."}</div>
-                    </div>
+                    {operatingParameters.showInstructionsField && (
+                      <div className="gp-info-grid__full">
+                        <div className="gp-info-grid__label">Observações</div>
+                        <div className="gp-info-grid__value">{selected.notes ?? "Sem observações adicionais."}</div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -678,20 +695,24 @@ export function GerenciarPedidos() {
                 <input value={editForm.time} onChange={(e) => setEditForm({ ...editForm, time: e.target.value })} placeholder="Ex.: 14:00" />
               </label>
             </div>
-            <label className="field-label">
-              Local
-              <input value={editForm.location} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} placeholder="Sala, andar ou endereço" />
-            </label>
+            {operatingParameters.showDeliveryLocationField && (
+              <label className="field-label">
+                Local
+                <input value={editForm.location} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} placeholder="Sala, andar ou endereço" />
+              </label>
+            )}
             {selected.peopleCount !== undefined && (
               <label className="field-label">
                 Nº de pessoas
                 <input type="number" min={1} value={editForm.peopleCount} onChange={(e) => setEditForm({ ...editForm, peopleCount: e.target.value })} />
               </label>
             )}
-            <label className="field-label">
-              Observações
-              <textarea rows={3} value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} placeholder="Instruções, restrições, observações..." />
-            </label>
+            {operatingParameters.showInstructionsField && (
+              <label className="field-label">
+                Observações
+                <textarea rows={3} value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} placeholder="Instruções, restrições, observações..." />
+              </label>
+            )}
           </div>
           <div className="modal-actions">
             <button className="btn btn--outline" onClick={() => setEditModalOpen(false)}>

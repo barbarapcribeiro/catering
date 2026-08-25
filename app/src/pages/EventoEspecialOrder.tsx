@@ -56,7 +56,8 @@ const STEP_DEFS = [
 ];
 
 export function EventoEspecialOrder() {
-  const { addOrder, showToast } = useAppData();
+  const { addOrder, showToast, serviceParameters } = useAppData();
+  const svcParams = serviceParameters.find((s) => s.category === "Evento Especial");
   const navigate = useNavigate();
 
   const [orderId] = useState(() => `#EE-${Math.floor(15200 + Math.random() * 800)}`);
@@ -166,6 +167,8 @@ export function EventoEspecialOrder() {
   const pctTotalInvalid = multiSel && pctTotal !== 100;
   const noCostCenter = selCodes.length === 0;
   const step3Invalid = noCostCenter || pctTotalInvalid;
+  const pickupMissing = !!svcParams?.requireScheduledPickup && (!pickupDate || !pickupTime);
+  const step2Invalid = pickupMissing;
 
   const todayLabel = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 
@@ -557,14 +560,19 @@ export function EventoEspecialOrder() {
 
               <div className="step-card-divider step-card-grid2">
                 <label className="field-label">
-                  Data de recolhimento dos utensílios
+                  Data de recolhimento dos utensílios {svcParams?.requireScheduledPickup && <span style={{ color: "var(--color-danger)" }}>*</span>}
                   <input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} />
                 </label>
                 <label className="field-label">
-                  Horário de recolhimento
+                  Horário de recolhimento {svcParams?.requireScheduledPickup && <span style={{ color: "var(--color-danger)" }}>*</span>}
                   <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} />
                 </label>
               </div>
+              {pickupMissing && (
+                <div className="step-card-divider" style={{ color: "var(--color-danger)", fontSize: 12.5 }}>
+                  Data e horário de recolhimento são obrigatórios para Evento Especial (parâmetro configurado em Painel Administrativo &rsaquo; Parâmetros).
+                </div>
+              )}
 
               <label className="field-label step-card-divider">
                 Instruções para o café <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span>
@@ -593,7 +601,7 @@ export function EventoEspecialOrder() {
               <button className="btn btn--outline" onClick={() => setStep(1)}>
                 Voltar
               </button>
-              <button className="btn btn--primary" onClick={continueToStep3}>
+              <button className="btn btn--primary" disabled={step2Invalid} onClick={continueToStep3}>
                 Continuar para revisão
               </button>
             </div>

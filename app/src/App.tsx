@@ -24,6 +24,7 @@ import { Kits } from "./pages/admin/Kits";
 import { Servicos } from "./pages/admin/Servicos";
 import { Decoracoes } from "./pages/admin/Decoracoes";
 import { Popups } from "./pages/admin/Popups";
+import { Parametros } from "./pages/admin/Parametros";
 import { Usuarios } from "./pages/admin/Usuarios";
 import { Permissoes } from "./pages/admin/Permissoes";
 import { Ocorrencias } from "./pages/admin/Ocorrencias";
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="faturamento" element={<Faturamento />} />
             <Route path="centros-custo" element={<CentrosCusto />} />
             <Route path="contratos" element={<Contratos />} />
+            <Route path="parametros" element={<Parametros />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -15,12 +15,14 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; accent: string }
 
 const CAPACITY = 180;
 
+const KITCHEN_STATUSES = new Set(["Solicitado", "Em preparação", "Pronto para entrega"]);
+
 export function Producao() {
-  const { orders, updateOrder, costCenters, showToast } = useAppData();
+  const { orders, updateOrder, costCenters, showToast, statusFlowVisibility, serviceParameters } = useAppData();
 
   const kitchenOrders = useMemo(
-    () => orders.filter((o) => o.status === "Solicitado" || o.status === "Em preparação" || o.status === "Pronto para entrega"),
-    [orders],
+    () => orders.filter((o) => KITCHEN_STATUSES.has(o.status) && statusFlowVisibility[o.status]),
+    [orders, statusFlowVisibility],
   );
 
   const [startedIds, setStartedIds] = useState<Set<string>>(new Set());
@@ -301,6 +303,24 @@ export function Producao() {
                       <div className="prod-detail-fact__value">{selected.location || "—"}</div>
                     </div>
                   </div>
+                  {(() => {
+                    const sp = serviceParameters.find((s) => s.category === selected.category);
+                    if (!sp) return null;
+                    const elapsedMin = (Date.now() - new Date(selected.createdAt).getTime()) / 60000;
+                    const late = elapsedMin > sp.slaPrepMinutes && bucketOf(selected) !== "pronto";
+                    return (
+                      <div className="prod-detail-fact">
+                        <span>⏱</span>
+                        <div>
+                          <div className="prod-detail-fact__label">SLA de preparação</div>
+                          <div className="prod-detail-fact__value">
+                            {Math.floor(sp.slaPrepMinutes / 60)}h{String(sp.slaPrepMinutes % 60).padStart(2, "0")}
+                            {late && <span className="prod-sla-late-badge">Atrasado</span>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   {selected.notes && (
                     <div className="prod-detail-fact">
                       <span>📝</span>

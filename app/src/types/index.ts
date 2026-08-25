@@ -78,6 +78,39 @@ export interface Notification {
 export const ORDER_CATEGORIES = ["Coffee Break", "Evento Especial", "Solicitação de Água", "Abastecimento Simples", "Surpreenda"] as const;
 export type OrderCategoryName = (typeof ORDER_CATEGORIES)[number];
 
+export const ORDER_STATUS_LIST: OrderStatus[] = [
+  "Solicitado",
+  "Aguardando aprovação",
+  "Em preparação",
+  "Pronto para entrega",
+  "Entregue",
+  "Finalizado",
+  "Cancelado",
+  "Recebido",
+];
+
+/** Parâmetros globais da unidade — telas de pedido e aprovação consultam esses valores em vez de terem regras fixas. */
+export interface OperatingParameters {
+  logoUrl?: string;
+  showLogoOnPrint: boolean;
+  showAgreementMessage: boolean;
+  agreementMessage: string;
+  extensionNumber?: string;
+  showUnitPriceInOrder: boolean;
+  showTotalValueInOrder: boolean;
+  showDeliveryLocationField: boolean;
+  showInstructionsField: boolean;
+}
+
+/** Parâmetros por tipo de pedido (serviço) — SLA, retirada agendada, taxa e centro de custo padrão. */
+export interface ServiceParameters {
+  category: OrderCategoryName;
+  slaPrepMinutes: number;
+  requireScheduledPickup: boolean;
+  adminFeePercent: number;
+  linkedCostCenterCode?: string;
+}
+
 export interface SurveyQuestion {
   id: string;
   text: string;
@@ -261,6 +294,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-contratos", label: "Financeiro · Contratos", group: "Painel Administrativo" },
   { id: "admin-ocorrencias", label: "Ocorrências", group: "Painel Administrativo" },
   { id: "admin-popups", label: "Pop-ups", group: "Painel Administrativo" },
+  { id: "admin-parametros", label: "Parâmetros", group: "Painel Administrativo" },
 ];
 
 /**

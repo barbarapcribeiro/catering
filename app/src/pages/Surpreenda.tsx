@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Stepper } from "../components/Stepper";
@@ -31,9 +31,10 @@ const STEP_DEFS = [
 ];
 
 export function Surpreenda() {
-  const { addOrder, showToast, costCenters } = useAppData();
+  const { addOrder, showToast, costCenters, serviceParameters } = useAppData();
   const navigate = useNavigate();
   const activeCostCenters = costCenters.filter((c) => c.active);
+  const linkedCostCenterCode = serviceParameters.find((s) => s.category === "Surpreenda")?.linkedCostCenterCode;
 
   const [orderId] = useState(() => `#SP-${Math.floor(15200 + Math.random() * 800)}`);
   const [step, setStep] = useState(1);
@@ -51,6 +52,11 @@ export function Surpreenda() {
   const [payment, setPayment] = useState<string | null>(null);
   const [feeInput, setFeeInput] = useState("");
   const [costCenter, setCostCenter] = useState("");
+
+  useEffect(() => {
+    if (!costCenter && linkedCostCenterCode) setCostCenter(linkedCostCenterCode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkedCostCenterCode]);
   const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
 
   const setQty = (id: string, v: number) => setQtys((s) => ({ ...s, [id]: Math.max(0, v) }));

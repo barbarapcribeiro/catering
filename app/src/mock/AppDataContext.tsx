@@ -12,15 +12,21 @@ import {
   type Notification,
   type Occurrence,
   type Order,
+  type OrderCategoryName,
+  type OrderStatus,
+  type OperatingParameters,
   type PagePermission,
   type Popup,
   type PremiumEvent,
   type Product,
   type Profile,
   type ServiceCatalogItem,
+  type ServiceParameters,
   type Supplier,
   type SurveyQuestion,
   type SurveyResponse,
+  ORDER_CATEGORIES,
+  ORDER_STATUS_LIST,
 } from "../types";
 import { computeProductPrice } from "./pricing";
 
@@ -49,6 +55,9 @@ interface StoredState {
   dismissedPopupIds: string[];
   currentProfileId: string;
   nextOrderNum: number;
+  operatingParameters: OperatingParameters;
+  serviceParameters: ServiceParameters[];
+  statusFlowVisibility: Record<OrderStatus, boolean>;
 }
 
 const initialOrders: Order[] = [];
@@ -261,6 +270,7 @@ const initialProfiles: Profile[] = [
       "admin-centros-custo": { ver: true },
       "admin-contratos": { ver: true, criarEditar: true },
       "admin-ocorrencias": { ver: true, criarEditar: true },
+      "admin-parametros": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -327,6 +337,38 @@ const initialOccurrences: Occurrence[] = [];
 
 const initialPopups: Popup[] = [];
 
+const initialOperatingParameters: OperatingParameters = {
+  logoUrl: undefined,
+  showLogoOnPrint: true,
+  showAgreementMessage: true,
+  agreementMessage: 'Pedido(s) com "De Acordo" pendente(s).',
+  extensionNumber: "9090",
+  showUnitPriceInOrder: true,
+  showTotalValueInOrder: true,
+  showDeliveryLocationField: true,
+  showInstructionsField: true,
+};
+
+const SLA_DEFAULTS: Record<OrderCategoryName, number> = {
+  "Coffee Break": 120,
+  "Evento Especial": 180,
+  "Solicitação de Água": 30,
+  "Abastecimento Simples": 60,
+  Surpreenda: 90,
+};
+
+const initialServiceParameters: ServiceParameters[] = ORDER_CATEGORIES.map((category) => ({
+  category,
+  slaPrepMinutes: SLA_DEFAULTS[category],
+  requireScheduledPickup: category === "Coffee Break" || category === "Evento Especial",
+  adminFeePercent: 10,
+  linkedCostCenterCode: undefined,
+}));
+
+const initialStatusFlowVisibility: Record<OrderStatus, boolean> = Object.fromEntries(
+  ORDER_STATUS_LIST.map((s) => [s, true]),
+) as Record<OrderStatus, boolean>;
+
 const defaultState: StoredState = {
   orders: initialOrders,
   notifications: initialNotifications,
@@ -350,6 +392,9 @@ const defaultState: StoredState = {
   dismissedPopupIds: [],
   currentProfileId: "prof-cliente",
   nextOrderNum: 0,
+  operatingParameters: initialOperatingParameters,
+  serviceParameters: initialServiceParameters,
+  statusFlowVisibility: initialStatusFlowVisibility,
 };
 
 function loadState(): StoredState {
@@ -463,6 +508,15 @@ interface AppDataValue {
   addOccurrence: (occurrence: Omit<Occurrence, "id" | "createdAt">) => void;
   updateOccurrence: (id: string, patch: Partial<Occurrence>) => void;
   removeOccurrence: (id: string) => void;
+
+  operatingParameters: OperatingParameters;
+  updateOperatingParameters: (patch: Partial<OperatingParameters>) => void;
+
+  serviceParameters: ServiceParameters[];
+  updateServiceParameters: (category: OrderCategoryName, patch: Partial<ServiceParameters>) => void;
+
+  statusFlowVisibility: Record<OrderStatus, boolean>;
+  toggleStatusFlowVisibility: (status: OrderStatus) => void;
 
   toast: string | null;
   showToast: (msg: string) => void;
@@ -782,6 +836,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, occurrences: s.occurrences.filter((o) => o.id !== id) }));
   };
 
+  const updateOperatingParameters: AppDataValue["updateOperatingParameters"] = (patch) => {
+    setState((s) => ({ ...s, operatingParameters: { ...s.operatingParameters, ...patch } }));
+  };
+
+  const updateServiceParameters: AppDataValue["updateServiceParameters"] = (category, patch) => {
+    setState((s) => ({
+      ...s,
+      serviceParameters: s.serviceParameters.map((sp) => (sp.category === category ? { ...sp, ...patch } : sp)),
+    }));
+  };
+
+  const toggleStatusFlowVisibility: AppDataValue["toggleStatusFlowVisibility"] = (status) => {
+    setState((s) => ({ ...s, statusFlowVisibility: { ...s.statusFlowVisibility, [status]: !s.statusFlowVisibility[status] } }));
+  };
+
   const value = useMemo<AppDataValue>(
     () => ({
       currentProfileId: state.currentProfileId,
@@ -863,6 +932,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       addOccurrence,
       updateOccurrence,
       removeOccurrence,
+      operatingParameters: state.operatingParameters,
+      updateOperatingParameters,
+      serviceParameters: state.serviceParameters,
+      updateServiceParameters,
+      statusFlowVisibility: state.statusFlowVisibility,
+      toggleStatusFlowVisibility,
       toast,
       showToast,
     }),

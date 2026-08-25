@@ -33,7 +33,7 @@ function eventDateOf(order: Order) {
 
 export function Aprovacoes() {
   const navigate = useNavigate();
-  const { orders, updateOrder, showToast } = useAppData();
+  const { orders, updateOrder, showToast, operatingParameters } = useAppData();
 
   // "Pendente" here means the order still needs approval — once the GU step is
   // granted the status moves away from "Aguardando aprovação" and the order
@@ -72,6 +72,10 @@ export function Aprovacoes() {
         </button>
 
         <h1 className="apr-title">Aprovações Pendentes</h1>
+
+        {operatingParameters.showAgreementMessage && totalPending > 0 && (
+          <div className="apr-agreement-banner">⚠ {operatingParameters.agreementMessage}</div>
+        )}
 
         <div className="apr-grid">
           <div className="apr-list">
