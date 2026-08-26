@@ -255,6 +255,8 @@ export interface Product {
   photoUrl?: string;
   /** Em quais páginas/serviços de pedido esse produto pode aparecer. */
   pages?: CatalogPageName[];
+  /** Centros de custo autorizados a usar este produto (vazio/ausente = todos). */
+  allowedCostCenterCodes?: string[];
   active: boolean;
 }
 
@@ -287,6 +289,8 @@ export interface Kit {
   mealServices?: MealServiceName[];
   /** Em quais páginas/serviços de pedido esse kit pode aparecer. */
   pages?: CatalogPageName[];
+  /** Centros de custo autorizados a usar este kit (vazio/ausente = todos). */
+  allowedCostCenterCodes?: string[];
   active: boolean;
 }
 
@@ -300,6 +304,8 @@ export interface ServiceCatalogItem {
   category: ServiceCatalogCategory;
   /** Preço do serviço, usado quando incluído em kits e eventos premium. */
   price: number;
+  /** Centros de custo autorizados a usar este serviço (vazio/ausente = todos). */
+  allowedCostCenterCodes?: string[];
   active: boolean;
 }
 
@@ -313,6 +319,8 @@ export interface Decoration {
   category: DecorationCategory;
   price: number;
   photoUrl?: string;
+  /** Centros de custo autorizados a usar esta decoração (vazio/ausente = todos). */
+  allowedCostCenterCodes?: string[];
   active: boolean;
 }
 

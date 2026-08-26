@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useAppData } from "../../mock/AppDataContext";
 import { Modal } from "../../components/Modal";
 import { PhotoUpload } from "../../components/PhotoUpload";
+import { CostCenterChipSelect } from "../../components/CostCenterChipSelect";
 import { money } from "../../mock/money";
 import { computeKitPrice } from "../../mock/pricing";
 import { CATALOG_PAGES, MEAL_SERVICES, type CatalogPageName, type Kit, type KitItem, type KitServiceItem, type MealServiceName } from "../../types";
@@ -16,6 +17,7 @@ interface FormState {
   photoUrl?: string;
   mealServices: MealServiceName[];
   pages: CatalogPageName[];
+  allowedCostCenterCodes: string[];
   active: boolean;
 }
 
@@ -28,11 +30,12 @@ const EMPTY_FORM: FormState = {
   photoUrl: undefined,
   mealServices: [],
   pages: [],
+  allowedCostCenterCodes: [],
   active: true,
 };
 
 export function Kits() {
-  const { kits, products, serviceCatalog, addKit, updateKit, removeKit, showToast } = useAppData();
+  const { kits, products, serviceCatalog, costCenters, addKit, updateKit, removeKit, showToast } = useAppData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -72,6 +75,7 @@ export function Kits() {
       photoUrl: k.photoUrl,
       mealServices: k.mealServices ?? [],
       pages: k.pages ?? [],
+      allowedCostCenterCodes: k.allowedCostCenterCodes ?? [],
       active: k.active,
     });
     setModalOpen(true);
@@ -86,6 +90,10 @@ export function Kits() {
 
   const togglePage = (page: CatalogPageName) => {
     setForm((f) => ({ ...f, pages: f.pages.includes(page) ? f.pages.filter((x) => x !== page) : [...f.pages, page] }));
+  };
+
+  const toggleCostCenter = (code: string) => {
+    setForm((f) => ({ ...f, allowedCostCenterCodes: f.allowedCostCenterCodes.includes(code) ? f.allowedCostCenterCodes.filter((c) => c !== code) : [...f.allowedCostCenterCodes, code] }));
   };
 
   const setQty = (productId: string, qty: number) => {
@@ -129,6 +137,7 @@ export function Kits() {
       photoUrl: form.photoUrl,
       mealServices: form.mealServices.length > 0 ? form.mealServices : undefined,
       pages: form.pages.length > 0 ? form.pages : undefined,
+      allowedCostCenterCodes: form.allowedCostCenterCodes.length > 0 ? form.allowedCostCenterCodes : undefined,
       active: form.active,
     };
     if (editingId) {
@@ -183,7 +192,7 @@ export function Kits() {
                 {k.active ? "Ativo" : "Inativo"}
               </span>
             </div>
-            {((k.pages && k.pages.length > 0) || (k.mealServices && k.mealServices.length > 0)) && (
+            {((k.pages && k.pages.length > 0) || (k.mealServices && k.mealServices.length > 0) || (k.allowedCostCenterCodes && k.allowedCostCenterCodes.length > 0)) && (
               <div className="kits-card__meal-tags">
                 {k.pages?.map((page) => (
                   <span key={page} className="pill-tag">
@@ -195,6 +204,9 @@ export function Kits() {
                     {m}
                   </span>
                 ))}
+                {k.allowedCostCenterCodes && k.allowedCostCenterCodes.length > 0 && (
+                  <span className="pill-tag kits-card__cc-restrict">Restrito: {k.allowedCostCenterCodes.join(", ")}</span>
+                )}
               </div>
             )}
             <div className="kits-card__items">
@@ -324,6 +336,10 @@ export function Kits() {
                 </div>
               </>
             )}
+            <div className="field-label">
+              Centros de custo autorizados <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional — vazio libera para todos)</span>
+            </div>
+            <CostCenterChipSelect costCenters={costCenters.filter((c) => c.active)} selectedCodes={form.allowedCostCenterCodes} onToggle={toggleCostCenter} />
             <PhotoUpload value={form.photoUrl} onChange={(v) => setForm({ ...form, photoUrl: v })} label="Foto do kit" />
             <label className="kits-active-check">
               <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAppData } from "../../mock/AppDataContext";
 import { Modal } from "../../components/Modal";
 import { PhotoUpload } from "../../components/PhotoUpload";
+import { CostCenterChipSelect } from "../../components/CostCenterChipSelect";
 import { money } from "../../mock/money";
 import { DECORATION_CATEGORIES, type Decoration, type DecorationCategory } from "../../types";
 import "./Servicos.css";
@@ -12,11 +13,12 @@ const EMPTY_FORM = {
   description: "",
   price: "",
   photoUrl: undefined as string | undefined,
+  allowedCostCenterCodes: [] as string[],
   active: true,
 };
 
 export function Decoracoes() {
-  const { decorations, addDecoration, updateDecoration, removeDecoration, showToast } = useAppData();
+  const { decorations, costCenters, addDecoration, updateDecoration, removeDecoration, showToast } = useAppData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -30,15 +32,27 @@ export function Decoracoes() {
 
   const openEdit = (d: Decoration) => {
     setEditingId(d.id);
-    setForm({ name: d.name, category: d.category, description: d.description ?? "", price: String(d.price), photoUrl: d.photoUrl, active: d.active });
+    setForm({ name: d.name, category: d.category, description: d.description ?? "", price: String(d.price), photoUrl: d.photoUrl, allowedCostCenterCodes: d.allowedCostCenterCodes ?? [], active: d.active });
     setModalOpen(true);
+  };
+
+  const toggleCostCenter = (code: string) => {
+    setForm((f) => ({ ...f, allowedCostCenterCodes: f.allowedCostCenterCodes.includes(code) ? f.allowedCostCenterCodes.filter((c) => c !== code) : [...f.allowedCostCenterCodes, code] }));
   };
 
   const parsedPrice = parseFloat(form.price.replace(",", ".")) || 0;
 
   const save = () => {
     if (!form.name.trim()) return;
-    const payload = { name: form.name, category: form.category, description: form.description || undefined, price: parsedPrice, photoUrl: form.photoUrl, active: form.active };
+    const payload = {
+      name: form.name,
+      category: form.category,
+      description: form.description || undefined,
+      price: parsedPrice,
+      photoUrl: form.photoUrl,
+      allowedCostCenterCodes: form.allowedCostCenterCodes.length > 0 ? form.allowedCostCenterCodes : undefined,
+      active: form.active,
+    };
     if (editingId) {
       updateDecoration(editingId, payload);
       showToast("Decoração atualizada.");
@@ -104,6 +118,9 @@ export function Decoracoes() {
                 <div>
                   <div className="servicos-table__name">{d.name}</div>
                   {d.description && <div className="servicos-table__desc">{d.description}</div>}
+                  {d.allowedCostCenterCodes && d.allowedCostCenterCodes.length > 0 && (
+                    <div className="servicos-table__cc-restrict">Restrito: {d.allowedCostCenterCodes.join(", ")}</div>
+                  )}
                 </div>
               </div>
               <div>
@@ -161,6 +178,10 @@ export function Decoracoes() {
               <textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </label>
             <PhotoUpload value={form.photoUrl} onChange={(v) => setForm({ ...form, photoUrl: v })} label="Foto da decoração" />
+            <div className="field-label">
+              Centros de custo autorizados <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional — vazio libera para todos)</span>
+            </div>
+            <CostCenterChipSelect costCenters={costCenters.filter((c) => c.active)} selectedCodes={form.allowedCostCenterCodes} onToggle={toggleCostCenter} />
             <label className="servicos-active-check">
               <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />
               Decoração ativa

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAppData } from "../../mock/AppDataContext";
 import { Modal } from "../../components/Modal";
 import { PhotoUpload } from "../../components/PhotoUpload";
+import { CostCenterChipSelect } from "../../components/CostCenterChipSelect";
 import { money } from "../../mock/money";
 import { computeProductPrice } from "../../mock/pricing";
 import { CATALOG_PAGES, PRODUCT_TYPES, PRODUCT_UNITS, type CatalogPageName, type Product, type ProductType, type ProductUnit } from "../../types";
@@ -17,11 +18,12 @@ const EMPTY_FORM = {
   supplierId: "",
   photoUrl: undefined as string | undefined,
   pages: [] as CatalogPageName[],
+  allowedCostCenterCodes: [] as string[],
   active: true,
 };
 
 export function Produtos() {
-  const { products, suppliers, addProduct, updateProduct, removeProduct, showToast } = useAppData();
+  const { products, suppliers, costCenters, addProduct, updateProduct, removeProduct, showToast } = useAppData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -47,6 +49,7 @@ export function Produtos() {
       supplierId: p.supplierId ?? "",
       photoUrl: p.photoUrl,
       pages: p.pages ?? [],
+      allowedCostCenterCodes: p.allowedCostCenterCodes ?? [],
       active: p.active,
     });
     setModalOpen(true);
@@ -54,6 +57,10 @@ export function Produtos() {
 
   const togglePage = (page: CatalogPageName) => {
     setForm((f) => ({ ...f, pages: f.pages.includes(page) ? f.pages.filter((x) => x !== page) : [...f.pages, page] }));
+  };
+
+  const toggleCostCenter = (code: string) => {
+    setForm((f) => ({ ...f, allowedCostCenterCodes: f.allowedCostCenterCodes.includes(code) ? f.allowedCostCenterCodes.filter((c) => c !== code) : [...f.allowedCostCenterCodes, code] }));
   };
 
   const parsedCostPrice = parseFloat(form.costPrice.replace(",", ".")) || 0;
@@ -72,6 +79,7 @@ export function Produtos() {
       supplierId: form.supplierId || undefined,
       photoUrl: form.photoUrl,
       pages: form.pages.length > 0 ? form.pages : undefined,
+      allowedCostCenterCodes: form.allowedCostCenterCodes.length > 0 ? form.allowedCostCenterCodes : undefined,
       active: form.active,
     };
     if (editingId) {
@@ -148,6 +156,11 @@ export function Produtos() {
                           {page}
                         </span>
                       ))}
+                    </div>
+                  )}
+                  {p.allowedCostCenterCodes && p.allowedCostCenterCodes.length > 0 && (
+                    <div className="produtos-table__pages">
+                      <span className="pill-tag produtos-table__cc-restrict">Restrito: {p.allowedCostCenterCodes.join(", ")}</span>
                     </div>
                   )}
                 </div>
@@ -241,6 +254,10 @@ export function Produtos() {
                 </button>
               ))}
             </div>
+            <div className="field-label">
+              Centros de custo autorizados <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional — vazio libera para todos)</span>
+            </div>
+            <CostCenterChipSelect costCenters={costCenters.filter((c) => c.active)} selectedCodes={form.allowedCostCenterCodes} onToggle={toggleCostCenter} />
             <label className="field-label">
               Fornecedor <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span>
               <select value={form.supplierId} onChange={(e) => setForm({ ...form, supplierId: e.target.value })}>
