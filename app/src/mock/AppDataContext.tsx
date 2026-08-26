@@ -10,7 +10,10 @@ import {
   type CatracaRedemption,
   type CatracaStatus,
   type ChatMessage,
+  type Company,
+  type Branch,
   type Contract,
+  type Copa,
   type CostCenter,
   type Decoration,
   type Kit,
@@ -33,6 +36,7 @@ import {
   type SurveyResponse,
   ORDER_CATEGORIES,
   ORDER_STATUS_LIST,
+  WEEKDAYS,
 } from "../types";
 import { computeProductPrice } from "./pricing";
 
@@ -55,7 +59,10 @@ interface StoredState {
   premiumEvents: PremiumEvent[];
   profiles: Profile[];
   users: AppUser[];
+  companies: Company[];
+  branches: Branch[];
   costCenters: CostCenter[];
+  copas: Copa[];
   occurrences: Occurrence[];
   popups: Popup[];
   dismissedPopupIds: string[];
@@ -280,7 +287,10 @@ const initialProfiles: Profile[] = [
       "admin-usuarios": { ver: true },
       "admin-permissoes": { ver: true },
       "admin-faturamento": { ver: true, criarEditar: true, aprovar: true },
+      "admin-empresas": { ver: true },
+      "admin-filiais": { ver: true },
       "admin-centros-custo": { ver: true },
+      "admin-copas": { ver: true, criarEditar: true },
       "admin-contratos": { ver: true, criarEditar: true },
       "admin-ocorrencias": { ver: true, criarEditar: true },
       "admin-parametros": { ver: true, criarEditar: true },
@@ -346,10 +356,36 @@ const initialUsers: AppUser[] = [
   { id: "user8", name: "Administrador do Sistema", email: "admin@sparkxp.com", profileId: "prof-admin", active: true, createdAt: "2026-01-01T09:00:00Z" },
 ];
 
+const initialCompanies: Company[] = [
+  { id: "comp1", type: "Jurídica", name: "Cliente Empresa Ltda.", tradeName: "Cliente Empresa", cnpj: "12.345.678/0001-90", accountManagerIds: ["user3", "user4"], active: true },
+];
+
+const initialBranches: Branch[] = [
+  { id: "branch1", companyId: "comp1", name: "Matriz São Paulo", cep: "01310-100", plantName: "Planta SP-1", managerIds: ["user3"], active: true },
+  { id: "branch2", companyId: "comp1", name: "Filial Campinas", cep: "13015-904", plantName: "Planta CPS-1", managerIds: ["user4"], active: true },
+];
+
 const initialCostCenters: CostCenter[] = [
-  { id: "cc1", code: "CC001", name: "Administrativo", manager: "Carlos Santos", active: true },
-  { id: "cc2", code: "CC002", name: "Comercial", manager: "Paula Costa", active: true },
-  { id: "cc3", code: "CC003", name: "Operações", manager: "Marina Silva", active: true },
+  { id: "cc1", code: "CC001", name: "Administrativo", companyId: "comp1", branchId: "branch1", areaName: "Administração", managerUserId: "user3", physicalLocation: "Torre A, 5º andar", active: true },
+  { id: "cc2", code: "CC002", name: "Comercial", companyId: "comp1", branchId: "branch1", areaName: "Comercial", managerUserId: "user4", physicalLocation: "Torre A, 3º andar", active: true },
+  { id: "cc3", code: "CC003", name: "Operações", companyId: "comp1", branchId: "branch2", areaName: "Operações", physicalLocation: "Galpão 2", active: true },
+];
+
+const initialCopas: Copa[] = [
+  {
+    id: "copa1",
+    name: "Copa Matriz SP",
+    companyId: "comp1",
+    branchId: "branch1",
+    physicalLocation: "Térreo, ala leste",
+    costCenterCodes: ["CC001", "CC002"],
+    responsibleUserIds: ["user1", "user2"],
+    slaHours: 2,
+    operatingHours: WEEKDAYS.map((weekday) => ({ weekday, enabled: !["Sábado", "Domingo"].includes(weekday), start: "07:00", end: "19:00" })),
+    nonBusinessDays: [],
+    capacityPer30min: 20,
+    active: true,
+  },
 ];
 
 const initialOccurrences: Occurrence[] = [];
@@ -411,7 +447,10 @@ const defaultState: StoredState = {
   premiumEvents: initialPremiumEvents,
   profiles: initialProfiles,
   users: initialUsers,
+  companies: initialCompanies,
+  branches: initialBranches,
   costCenters: initialCostCenters,
+  copas: initialCopas,
   occurrences: initialOccurrences,
   popups: initialPopups,
   dismissedPopupIds: [],
@@ -530,10 +569,25 @@ interface AppDataValue {
   removeUser: (id: string) => void;
   resetUserPassword: (id: string) => void;
 
+  companies: Company[];
+  addCompany: (company: Omit<Company, "id">) => void;
+  updateCompany: (id: string, patch: Partial<Company>) => void;
+  removeCompany: (id: string) => void;
+
+  branches: Branch[];
+  addBranch: (branch: Omit<Branch, "id">) => void;
+  updateBranch: (id: string, patch: Partial<Branch>) => void;
+  removeBranch: (id: string) => void;
+
   costCenters: CostCenter[];
   addCostCenter: (costCenter: Omit<CostCenter, "id">) => void;
   updateCostCenter: (id: string, patch: Partial<CostCenter>) => void;
   removeCostCenter: (id: string) => void;
+
+  copas: Copa[];
+  addCopa: (copa: Omit<Copa, "id">) => void;
+  updateCopa: (id: string, patch: Partial<Copa>) => void;
+  removeCopa: (id: string) => void;
 
   occurrences: Occurrence[];
   addOccurrence: (occurrence: Omit<Occurrence, "id" | "createdAt">) => void;
@@ -873,6 +927,26 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     showToast("Senha redefinida. Um e-mail com instruções foi enviado ao usuário.");
   };
 
+  const addCompany: AppDataValue["addCompany"] = (company) => {
+    setState((s) => ({ ...s, companies: [{ ...company, id: `comp${Date.now()}` }, ...s.companies] }));
+  };
+  const updateCompany: AppDataValue["updateCompany"] = (id, patch) => {
+    setState((s) => ({ ...s, companies: s.companies.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
+  };
+  const removeCompany = (id: string) => {
+    setState((s) => ({ ...s, companies: s.companies.filter((c) => c.id !== id) }));
+  };
+
+  const addBranch: AppDataValue["addBranch"] = (branch) => {
+    setState((s) => ({ ...s, branches: [{ ...branch, id: `branch${Date.now()}` }, ...s.branches] }));
+  };
+  const updateBranch: AppDataValue["updateBranch"] = (id, patch) => {
+    setState((s) => ({ ...s, branches: s.branches.map((b) => (b.id === id ? { ...b, ...patch } : b)) }));
+  };
+  const removeBranch = (id: string) => {
+    setState((s) => ({ ...s, branches: s.branches.filter((b) => b.id !== id) }));
+  };
+
   const addCostCenter: AppDataValue["addCostCenter"] = (costCenter) => {
     setState((s) => ({ ...s, costCenters: [{ ...costCenter, id: `cc${Date.now()}` }, ...s.costCenters] }));
   };
@@ -881,6 +955,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   };
   const removeCostCenter = (id: string) => {
     setState((s) => ({ ...s, costCenters: s.costCenters.filter((c) => c.id !== id) }));
+  };
+
+  const addCopa: AppDataValue["addCopa"] = (copa) => {
+    setState((s) => ({ ...s, copas: [{ ...copa, id: `copa${Date.now()}` }, ...s.copas] }));
+  };
+  const updateCopa: AppDataValue["updateCopa"] = (id, patch) => {
+    setState((s) => ({ ...s, copas: s.copas.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
+  };
+  const removeCopa = (id: string) => {
+    setState((s) => ({ ...s, copas: s.copas.filter((c) => c.id !== id) }));
   };
 
   const addOccurrence: AppDataValue["addOccurrence"] = (occurrence) => {
@@ -1062,10 +1146,22 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       updateUser,
       removeUser,
       resetUserPassword,
+      companies: state.companies,
+      addCompany,
+      updateCompany,
+      removeCompany,
+      branches: state.branches,
+      addBranch,
+      updateBranch,
+      removeBranch,
       costCenters: state.costCenters,
       addCostCenter,
       updateCostCenter,
       removeCostCenter,
+      copas: state.copas,
+      addCopa,
+      updateCopa,
+      removeCopa,
       occurrences: state.occurrences,
       addOccurrence,
       updateOccurrence,

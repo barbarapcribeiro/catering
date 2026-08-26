@@ -40,6 +40,9 @@ import { Ocorrencias } from "./pages/admin/Ocorrencias";
 import { Faturamento } from "./pages/admin/Faturamento";
 import { CentrosCusto } from "./pages/admin/CentrosCusto";
 import { Contratos } from "./pages/admin/Contratos";
+import { Empresas } from "./pages/admin/Empresas";
+import { Filiais } from "./pages/admin/Filiais";
+import { Copas } from "./pages/admin/Copas";
 
 export default function App() {
   return (
@@ -81,6 +84,9 @@ export default function App() {
             <Route path="permissoes" element={<Permissoes />} />
             <Route path="faturamento" element={<Faturamento />} />
             <Route path="centros-custo" element={<CentrosCusto />} />
+            <Route path="empresas" element={<Empresas />} />
+            <Route path="filiais" element={<Filiais />} />
+            <Route path="copas" element={<Copas />} />
             <Route path="contratos" element={<Contratos />} />
             <Route path="parametros" element={<Parametros />} />
             <Route path="ativos" element={<Ativos />} />

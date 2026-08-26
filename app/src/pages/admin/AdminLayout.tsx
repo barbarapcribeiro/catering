@@ -53,6 +53,15 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: "Cadastros",
+    items: [
+      { label: "Empresas", to: "/admin/empresas", glyph: "🏢", pageId: "admin-empresas" },
+      { label: "Filiais", to: "/admin/filiais", glyph: "🏬", pageId: "admin-filiais" },
+      { label: "Centros de custo", to: "/admin/centros-custo", glyph: "🏷", pageId: "admin-centros-custo" },
+      { label: "Copas", to: "/admin/copas", glyph: "🍽", pageId: "admin-copas" },
+    ],
+  },
+  {
     label: "Conteúdo",
     items: [{ label: "Pop-ups", to: "/admin/popups", glyph: "📢", pageId: "admin-popups" }],
   },
@@ -60,7 +69,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Financeiro",
     items: [
       { label: "Faturamento", to: "/admin/faturamento", glyph: "💳", pageId: "admin-faturamento" },
-      { label: "Centros de custo", to: "/admin/centros-custo", glyph: "🏷", pageId: "admin-centros-custo" },
       { label: "Contratos", to: "/admin/contratos", glyph: "📄", pageId: "admin-contratos" },
     ],
   },

@@ -361,8 +361,11 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-usuarios", label: "Pessoas · Usuários", group: "Painel Administrativo" },
   { id: "admin-permissoes", label: "Pessoas · Perfis e Permissões", group: "Painel Administrativo" },
   { id: "admin-faturamento", label: "Financeiro · Faturamento", group: "Painel Administrativo" },
-  { id: "admin-centros-custo", label: "Financeiro · Centros de Custo", group: "Painel Administrativo" },
+  { id: "admin-centros-custo", label: "Cadastros · Centros de Custo", group: "Painel Administrativo" },
   { id: "admin-contratos", label: "Financeiro · Contratos", group: "Painel Administrativo" },
+  { id: "admin-empresas", label: "Cadastros · Empresas", group: "Painel Administrativo" },
+  { id: "admin-filiais", label: "Cadastros · Filiais", group: "Painel Administrativo" },
+  { id: "admin-copas", label: "Cadastros · Copas", group: "Painel Administrativo" },
   { id: "admin-ocorrencias", label: "Ocorrências", group: "Painel Administrativo" },
   { id: "admin-popups", label: "Pop-ups", group: "Painel Administrativo" },
   { id: "admin-parametros", label: "Parâmetros", group: "Painel Administrativo" },
@@ -415,11 +418,71 @@ export interface AppUser {
 /** Perfis cujo usuário fica associado a um centro de custo específico. */
 export const COST_CENTER_LINKED_PROFILE_IDS = ["prof-cliente", "prof-gestor", "prof-consumidor"] as const;
 
+export const COMPANY_TYPES = ["Jurídica", "Física"] as const;
+export type CompanyType = (typeof COMPANY_TYPES)[number];
+
+export interface Company {
+  id: string;
+  type: CompanyType;
+  name: string;
+  tradeName?: string;
+  cnpj: string;
+  /** Usuários responsáveis pela conta — precisam estar cadastrados em Usuários. */
+  accountManagerIds: string[];
+  active: boolean;
+}
+
+export interface Branch {
+  id: string;
+  companyId: string;
+  name: string;
+  cep: string;
+  plantName: string;
+  /** Usuários responsáveis pela filial — precisam estar cadastrados em Usuários. */
+  managerIds: string[];
+  active: boolean;
+}
+
 export interface CostCenter {
   id: string;
   code: string;
   name: string;
-  manager?: string;
+  companyId?: string;
+  branchId?: string;
+  areaName?: string;
+  /** Usuário responsável — precisa ter perfil de Gestor aprovador. */
+  managerUserId?: string;
+  physicalLocation?: string;
+  active: boolean;
+}
+
+export const WEEKDAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"] as const;
+export type Weekday = (typeof WEEKDAYS)[number];
+
+export interface CopaOperatingHours {
+  weekday: Weekday;
+  enabled: boolean;
+  start: string;
+  end: string;
+}
+
+export interface Copa {
+  id: string;
+  name: string;
+  companyId: string;
+  branchId: string;
+  physicalLocation: string;
+  /** Códigos dos centros de custo atendidos por esta copa. */
+  costCenterCodes: string[];
+  /** Usuários Sodexo responsáveis — precisam estar cadastrados em Usuários. */
+  responsibleUserIds: string[];
+  /** SLA: quantidade mínima de horas de antecedência para realizar o pedido. */
+  slaHours: number;
+  operatingHours: CopaOperatingHours[];
+  /** Datas (ISO) não úteis e feriados. */
+  nonBusinessDays: string[];
+  /** Capacidade produtiva: quantos pedidos por cada 30 minutos do período de funcionamento. */
+  capacityPer30min: number;
   active: boolean;
 }
 
