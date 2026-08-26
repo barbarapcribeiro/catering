@@ -8,7 +8,9 @@ const EMPTY_FORM = {
   name: "",
   email: "",
   profileId: "",
-  costCenterCode: "",
+  companyId: "",
+  branchIds: [] as string[],
+  costCenterCodes: [] as string[],
   active: true,
 };
 
@@ -20,18 +22,23 @@ function formatDateTime(iso: string) {
 }
 
 export function Usuarios() {
-  const { users, profiles, costCenters, addUser, updateUser, removeUser, resetUserPassword, showToast } = useAppData();
+  const { users, profiles, companies, branches, costCenters, addUser, updateUser, removeUser, resetUserPassword, showToast } = useAppData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [profileFilter, setProfileFilter] = useState<string>("todos");
 
   const profileName = (id?: string) => profiles.find((p) => p.id === id)?.name;
-  const costCenterLabel = (code?: string) => {
+  const companyName = (id?: string) => companies.find((c) => c.id === id)?.name;
+  const costCenterLabel = (code: string) => {
     const cc = costCenters.find((c) => c.code === code);
-    return cc ? `${cc.code} · ${cc.name}` : undefined;
+    return cc ? `${cc.code} · ${cc.name}` : code;
   };
   const needsCostCenter = COST_CENTER_LINKED_PROFILE_IDS.includes(form.profileId as (typeof COST_CENTER_LINKED_PROFILE_IDS)[number]);
+
+  const activeCompanies = companies.filter((c) => c.active);
+  const branchesForCompany = branches.filter((b) => b.active && b.companyId === form.companyId);
+  const costCentersForBranches = costCenters.filter((cc) => cc.active && cc.branchId && form.branchIds.includes(cc.branchId));
 
   const openNew = () => {
     setEditingId(null);
@@ -41,8 +48,32 @@ export function Usuarios() {
 
   const openEdit = (u: AppUser) => {
     setEditingId(u.id);
-    setForm({ name: u.name, email: u.email, profileId: u.profileId ?? "", costCenterCode: u.costCenterCode ?? "", active: u.active });
+    setForm({
+      name: u.name,
+      email: u.email,
+      profileId: u.profileId ?? "",
+      companyId: u.companyId ?? "",
+      branchIds: u.branchIds ?? [],
+      costCenterCodes: u.costCenterCodes ?? [],
+      active: u.active,
+    });
     setModalOpen(true);
+  };
+
+  const setCompany = (companyId: string) => {
+    setForm((f) => ({ ...f, companyId, branchIds: [], costCenterCodes: [] }));
+  };
+
+  const toggleBranch = (branchId: string) => {
+    setForm((f) => {
+      const branchIds = f.branchIds.includes(branchId) ? f.branchIds.filter((id) => id !== branchId) : [...f.branchIds, branchId];
+      const validCodes = costCenters.filter((cc) => cc.branchId && branchIds.includes(cc.branchId)).map((cc) => cc.code);
+      return { ...f, branchIds, costCenterCodes: f.costCenterCodes.filter((code) => validCodes.includes(code)) };
+    });
+  };
+
+  const toggleCostCenter = (code: string) => {
+    setForm((f) => ({ ...f, costCenterCodes: f.costCenterCodes.includes(code) ? f.costCenterCodes.filter((c) => c !== code) : [...f.costCenterCodes, code] }));
   };
 
   const save = () => {
@@ -51,7 +82,9 @@ export function Usuarios() {
       name: form.name,
       email: form.email,
       profileId: form.profileId || undefined,
-      costCenterCode: needsCostCenter ? form.costCenterCode || undefined : undefined,
+      companyId: needsCostCenter ? form.companyId || undefined : undefined,
+      branchIds: needsCostCenter && form.branchIds.length > 0 ? form.branchIds : undefined,
+      costCenterCodes: needsCostCenter && form.costCenterCodes.length > 0 ? form.costCenterCodes : undefined,
       active: form.active,
     };
     if (editingId) {
@@ -104,6 +137,7 @@ export function Usuarios() {
           <div className="usuarios-table__head">
             <div>Nome</div>
             <div>Perfil</div>
+            <div>Empresa / Filiais / CC</div>
             <div>Criado em</div>
             <div>Status</div>
             <div>Ações</div>
@@ -115,9 +149,16 @@ export function Usuarios() {
                 <div className="usuarios-table__email">{u.email}</div>
                 {u.lastPasswordResetAt && <div className="usuarios-table__reset-hint">Senha redefinida em {formatDateTime(u.lastPasswordResetAt)}</div>}
               </div>
-              <div>
-                {profileName(u.profileId) ? <span className="pill-tag">{profileName(u.profileId)}</span> : <span className="usuarios-table__muted">Sem perfil</span>}
-                {costCenterLabel(u.costCenterCode) && <div className="usuarios-table__cc">{costCenterLabel(u.costCenterCode)}</div>}
+              <div>{profileName(u.profileId) ? <span className="pill-tag">{profileName(u.profileId)}</span> : <span className="usuarios-table__muted">Sem perfil</span>}</div>
+              <div className="usuarios-table__muted">
+                {companyName(u.companyId) ? (
+                  <>
+                    <div>{companyName(u.companyId)}</div>
+                    {(u.costCenterCodes?.length ?? 0) > 0 && <div className="usuarios-table__cc">{u.costCenterCodes!.map(costCenterLabel).join(", ")}</div>}
+                  </>
+                ) : (
+                  "—"
+                )}
               </div>
               <div className="usuarios-table__muted">{formatDate(u.createdAt)}</div>
               <div>
@@ -151,7 +192,7 @@ export function Usuarios() {
       </div>
 
       {modalOpen && (
-        <Modal onClose={() => setModalOpen(false)} width={480}>
+        <Modal onClose={() => setModalOpen(false)} width={520}>
           <div className="modal-title" style={{ marginBottom: 18 }}>
             {editingId ? "Editar usuário" : "Novo usuário"}
           </div>
@@ -175,19 +216,61 @@ export function Usuarios() {
                 ))}
               </select>
             </label>
+
             {needsCostCenter && (
-              <label className="field-label">
-                Centro de custo <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span>
-                <select value={form.costCenterCode} onChange={(e) => setForm({ ...form, costCenterCode: e.target.value })}>
-                  <option value="">Nenhum selecionado</option>
-                  {costCenters.map((c) => (
-                    <option key={c.id} value={c.code}>
-                      {c.code} · {c.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <>
+                <label className="field-label">
+                  Empresa
+                  <select value={form.companyId} onChange={(e) => setCompany(e.target.value)}>
+                    <option value="">Nenhuma selecionada</option>
+                    {activeCompanies.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="field-label">
+                  Filiais <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(uma ou mais)</span>
+                  {form.companyId ? (
+                    branchesForCompany.length > 0 ? (
+                      <div className="usuarios-chip-row">
+                        {branchesForCompany.map((b) => (
+                          <button key={b.id} type="button" className={form.branchIds.includes(b.id) ? "is-active" : ""} onClick={() => toggleBranch(b.id)}>
+                            {b.name}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="field-hint">Nenhuma filial ativa cadastrada para esta empresa.</span>
+                    )
+                  ) : (
+                    <span className="field-hint">Selecione a empresa para listar as filiais.</span>
+                  )}
+                </label>
+
+                <label className="field-label">
+                  Centros de custo <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(um ou mais)</span>
+                  {form.branchIds.length > 0 ? (
+                    costCentersForBranches.length > 0 ? (
+                      <div className="usuarios-chip-row">
+                        {costCentersForBranches.map((cc) => (
+                          <button key={cc.id} type="button" className={form.costCenterCodes.includes(cc.code) ? "is-active" : ""} onClick={() => toggleCostCenter(cc.code)}>
+                            {cc.code} · {cc.name}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="field-hint">Nenhum centro de custo ativo nas filiais selecionadas.</span>
+                    )
+                  ) : (
+                    <span className="field-hint">Selecione ao menos uma filial para listar os centros de custo.</span>
+                  )}
+                </label>
+              </>
             )}
+
             <label className="usuarios-active-check">
               <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />
               Usuário ativo

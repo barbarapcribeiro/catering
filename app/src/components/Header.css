@@ -73,6 +73,11 @@
   background: var(--color-border);
 }
 
+.app-header__signup-link {
+  font-weight: 600 !important;
+  color: var(--color-primary) !important;
+}
+
 .app-header__admin-btn {
   padding: 9px 16px;
   border-radius: var(--radius-md);

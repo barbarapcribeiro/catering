@@ -38,14 +38,15 @@ export function HomeGestor() {
   const pendingGestor = orders.filter((o) => o.requiresApproval && o.status === "Aguardando aprovação" && !o.managerApproved);
   const totalPendingValue = pendingGestor.reduce((sum, o) => sum + (o.valueNumber ?? 0), 0);
 
-  const costCenterCode = currentUser?.costCenterCode;
-  const costCenter = costCenters.find((c) => c.code === costCenterCode);
-  const ccOrders = costCenterCode
-    ? orders.filter((o) => o.status !== "Cancelado" && o.costCenters?.some((a) => a.code === costCenterCode))
-    : [];
+  const costCenterCodes = currentUser?.costCenterCodes ?? [];
+  const userCostCenters = costCenters.filter((c) => costCenterCodes.includes(c.code));
+  const ccOrders =
+    costCenterCodes.length > 0
+      ? orders.filter((o) => o.status !== "Cancelado" && o.costCenters?.some((a) => costCenterCodes.includes(a.code)))
+      : [];
   const ccRevenue = ccOrders.reduce((sum, o) => {
-    const alloc = o.costCenters?.find((a) => a.code === costCenterCode);
-    return sum + (o.valueNumber ?? 0) * ((alloc?.percent ?? 0) / 100);
+    const matchedPercent = (o.costCenters ?? []).filter((a) => costCenterCodes.includes(a.code)).reduce((p, a) => p + (a.percent ?? 0), 0);
+    return sum + (o.valueNumber ?? 0) * (matchedPercent / 100);
   }, 0);
   const ccAvgTicket = ccOrders.length > 0 ? ccRevenue / ccOrders.length : 0;
   const ccPeople = ccOrders.reduce((sum, o) => sum + (o.peopleCount ?? 0), 0);
@@ -84,14 +85,16 @@ export function HomeGestor() {
         <div className="persona-home__panel">
           <div className="persona-home__panel-header">
             <div className="persona-home__panel-title">Resumo do centro de custo</div>
-            {costCenter && <div className="persona-home__panel-caption">{costCenter.code} · {costCenter.name}</div>}
+            {userCostCenters.length > 0 && (
+              <div className="persona-home__panel-caption">{userCostCenters.map((c) => `${c.code} · ${c.name}`).join(" · ")}</div>
+            )}
           </div>
 
-          {!costCenterCode && (
+          {costCenterCodes.length === 0 && (
             <div className="empty-state">Nenhum centro de custo associado ao seu usuário. Peça para o administrador configurar em Usuários.</div>
           )}
 
-          {costCenterCode && (
+          {costCenterCodes.length > 0 && (
             <div className="persona-home__cc-kpis">
               {ccKpis.map((k) => (
                 <div className="card persona-home__cc-kpi" key={k.label}>

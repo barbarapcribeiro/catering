@@ -36,6 +36,9 @@ export function Header() {
         {hasPageAccess("eventos-premium") && <Link to="/eventos-premium">Eventos Premium</Link>}
         {hasPageAccess("pesquisa-app") && <Link to="/pesquisa-app">Pesquisa da Aplicação</Link>}
         <div className="app-header__divider" />
+        <Link to="/autocadastro" className="app-header__signup-link">
+          Cadastre-se
+        </Link>
         <ProfileSwitcher />
         {hasAnyAdminAccess && (
           <Link to="/admin" className="app-header__admin-btn">

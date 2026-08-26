@@ -348,9 +348,9 @@ const initialProfiles: Profile[] = [
 const initialUsers: AppUser[] = [
   { id: "user1", name: "Bárbara C. Ribeiro", email: "barbara.ribeiro@sparkxp.com", profileId: "prof-gu", active: true, createdAt: "2026-01-12T09:00:00Z" },
   { id: "user2", name: "Marina Silva", email: "marina.silva@sparkxp.com", profileId: "prof-gu", active: true, createdAt: "2026-02-03T09:00:00Z" },
-  { id: "user3", name: "Carlos Santos", email: "carlos.santos@clienteempresa.com", profileId: "prof-gestor", costCenterCode: "CC001", active: true, createdAt: "2026-02-10T09:00:00Z" },
-  { id: "user4", name: "Paula Costa", email: "paula.costa@clienteempresa.com", profileId: "prof-gestor", costCenterCode: "CC002", active: true, createdAt: "2026-02-10T09:00:00Z" },
-  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", profileId: "prof-cliente", costCenterCode: "CC001", active: true, createdAt: "2026-03-01T09:00:00Z" },
+  { id: "user3", name: "Carlos Santos", email: "carlos.santos@clienteempresa.com", profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC001"], active: true, createdAt: "2026-02-10T09:00:00Z" },
+  { id: "user4", name: "Paula Costa", email: "paula.costa@clienteempresa.com", profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC002"], active: true, createdAt: "2026-02-10T09:00:00Z" },
+  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", profileId: "prof-cliente", companyId: "comp1", branchIds: ["branch1", "branch2"], costCenterCodes: ["CC001", "CC003"], active: true, createdAt: "2026-03-01T09:00:00Z" },
   { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sparkxp.com", profileId: "prof-producao", active: true, createdAt: "2026-03-05T09:00:00Z" },
   { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sparkxp.com", profileId: "prof-faturamento", active: true, createdAt: "2026-03-08T09:00:00Z" },
   { id: "user8", name: "Administrador do Sistema", email: "admin@sparkxp.com", profileId: "prof-admin", active: true, createdAt: "2026-01-01T09:00:00Z" },

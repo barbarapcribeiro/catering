@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AppDataProvider } from "./mock/AppDataContext";
 import { Home } from "./pages/Home";
+import { Autocadastro } from "./pages/Autocadastro";
 import { CoffeeBreakOrder } from "./pages/CoffeeBreakOrder";
 import { AbastecimentoOrder } from "./pages/AbastecimentoOrder";
 import { EventoEspecialOrder } from "./pages/EventoEspecialOrder";
@@ -50,6 +51,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/autocadastro" element={<Autocadastro />} />
           <Route path="/pedido/coffee-break" element={<CoffeeBreakOrder />} />
           <Route path="/pedido/evento-especial" element={<EventoEspecialOrder />} />
           <Route path="/pedido/agua" element={<AguaOrder />} />

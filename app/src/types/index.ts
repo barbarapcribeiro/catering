@@ -408,8 +408,12 @@ export interface AppUser {
   name: string;
   email: string;
   profileId?: string;
-  /** Código do centro de custo associado (perfis Cliente solicitante, Gestor aprovador e Consumidor final). */
-  costCenterCode?: string;
+  /** Empresa associada (perfis Cliente solicitante, Gestor aprovador e Consumidor final). */
+  companyId?: string;
+  /** Filiais associadas — filtradas pela empresa. */
+  branchIds?: string[];
+  /** Centros de custo associados — filtrados pelas filiais selecionadas. */
+  costCenterCodes?: string[];
   active: boolean;
   createdAt: string;
   lastPasswordResetAt?: string;
