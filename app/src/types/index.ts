@@ -351,6 +351,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "pedido-abastecimento", label: "Novo Pedido · Abastecimento Simples", group: "Área do colaborador" },
   { id: "surpreenda", label: "Surpreenda", group: "Área do colaborador" },
   { id: "pedido-lanche", label: "Novo Pedido · Lanche", group: "Área do colaborador" },
+  { id: "pedido-servicos-diversos", label: "Novo Pedido · Serviços Diversos", group: "Área do colaborador" },
   { id: "pedidos", label: "Gerenciar Pedidos", group: "Área do colaborador" },
   { id: "producao", label: "Produção", group: "Área do colaborador" },
   { id: "fique-por-dentro", label: "Fique por Dentro", group: "Área do colaborador" },
