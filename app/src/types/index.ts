@@ -416,6 +416,12 @@ export interface AppUser {
   id: string;
   name: string;
   email: string;
+  cpf?: string;
+  /** Matrícula interna (opcional). */
+  matricula?: string;
+  phone?: string;
+  /** Senha (mock — sem hashing, app não tem autenticação real). */
+  password?: string;
   profileId?: string;
   /** Empresa associada (perfis Cliente solicitante, Gestor aprovador e Consumidor final). */
   companyId?: string;

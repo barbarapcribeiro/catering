@@ -97,6 +97,17 @@
   text-decoration: underline;
 }
 
+.usuarios-fields-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 560px) {
+  .usuarios-fields-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .usuarios-active-check {
   display: flex;
   align-items: center;

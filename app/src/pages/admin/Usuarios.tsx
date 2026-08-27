@@ -7,6 +7,10 @@ import "./Usuarios.css";
 const EMPTY_FORM = {
   name: "",
   email: "",
+  cpf: "",
+  matricula: "",
+  phone: "",
+  password: "",
   profileId: "",
   companyId: "",
   branchIds: [] as string[],
@@ -51,6 +55,10 @@ export function Usuarios() {
     setForm({
       name: u.name,
       email: u.email,
+      cpf: u.cpf ?? "",
+      matricula: u.matricula ?? "",
+      phone: u.phone ?? "",
+      password: "",
       profileId: u.profileId ?? "",
       companyId: u.companyId ?? "",
       branchIds: u.branchIds ?? [],
@@ -76,11 +84,17 @@ export function Usuarios() {
     setForm((f) => ({ ...f, costCenterCodes: f.costCenterCodes.includes(code) ? f.costCenterCodes.filter((c) => c !== code) : [...f.costCenterCodes, code] }));
   };
 
+  const canSave = form.name.trim() && form.email.trim() && form.cpf.trim() && form.phone.trim() && (editingId || form.password.trim());
+
   const save = () => {
-    if (!form.name.trim() || !form.email.trim()) return;
+    if (!canSave) return;
     const payload = {
       name: form.name,
       email: form.email,
+      cpf: form.cpf,
+      matricula: form.matricula || undefined,
+      phone: form.phone,
+      ...(form.password.trim() ? { password: form.password } : {}),
       profileId: form.profileId || undefined,
       companyId: needsCostCenter ? form.companyId || undefined : undefined,
       branchIds: needsCostCenter && form.branchIds.length > 0 ? form.branchIds : undefined,
@@ -146,7 +160,7 @@ export function Usuarios() {
             <div key={u.id} className="usuarios-table__row">
               <div>
                 <div className="usuarios-table__name">{u.name}</div>
-                <div className="usuarios-table__email">{u.email}</div>
+                <div className="usuarios-table__email">{u.email}{u.phone && ` · ${u.phone}`}</div>
                 {u.lastPasswordResetAt && <div className="usuarios-table__reset-hint">Senha redefinida em {formatDateTime(u.lastPasswordResetAt)}</div>}
               </div>
               <div>{profileName(u.profileId) ? <span className="pill-tag">{profileName(u.profileId)}</span> : <span className="usuarios-table__muted">Sem perfil</span>}</div>
@@ -205,6 +219,26 @@ export function Usuarios() {
               E-mail
               <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="nome@empresa.com" />
             </label>
+            <div className="usuarios-fields-grid">
+              <label className="field-label">
+                CPF
+                <input value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} placeholder="000.000.000-00" />
+              </label>
+              <label className="field-label">
+                Matrícula <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span>
+                <input value={form.matricula} onChange={(e) => setForm({ ...form, matricula: e.target.value })} placeholder="Ex.: 20345" />
+              </label>
+            </div>
+            <div className="usuarios-fields-grid">
+              <label className="field-label">
+                Celular
+                <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(00) 00000-0000" />
+              </label>
+              <label className="field-label">
+                Senha {editingId && <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(deixe em branco para manter a atual)</span>}
+                <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={editingId ? "••••••••" : "Defina uma senha"} />
+              </label>
+            </div>
             <label className="field-label">
               Perfil <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(define as páginas que o usuário acessa)</span>
               <select value={form.profileId} onChange={(e) => setForm({ ...form, profileId: e.target.value })}>
@@ -280,7 +314,7 @@ export function Usuarios() {
             <button className="btn btn--outline" onClick={() => setModalOpen(false)}>
               Cancelar
             </button>
-            <button className="btn btn--primary" disabled={!form.name.trim() || !form.email.trim()} onClick={save}>
+            <button className="btn btn--primary" disabled={!canSave} onClick={save}>
               {editingId ? "Salvar alterações" : "Cadastrar usuário"}
             </button>
           </div>

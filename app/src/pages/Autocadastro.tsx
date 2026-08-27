@@ -58,6 +58,7 @@ export function Autocadastro() {
             <div className="autocadastro-confirm-card__title">Cadastro concluído!</div>
             <div className="autocadastro-confirm-card__sub">
               Sua conta foi criada com o perfil <strong>Cliente solicitante</strong>. Você já pode começar a fazer pedidos.
+              Sua senha será enviada no e-mail informado.
             </div>
             <button className="btn btn--primary" onClick={() => navigate("/")}>
               Ir para o início
