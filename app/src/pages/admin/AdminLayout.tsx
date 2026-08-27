@@ -50,6 +50,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Usuários", to: "/admin/usuarios", glyph: "👤", pageId: "admin-usuarios" },
       { label: "Perfis e permissões", to: "/admin/permissoes", glyph: "🔒", pageId: "admin-permissoes" },
+      { label: "Autocadastro (link público)", to: "/autocadastro", glyph: "🆕", pageId: "admin-autocadastro" },
     ],
   },
   {

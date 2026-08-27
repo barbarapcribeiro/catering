@@ -368,6 +368,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-pesquisa-app", label: "Pesquisa da Aplicação (CX/UX/NPS)", group: "Painel Administrativo" },
   { id: "admin-usuarios", label: "Pessoas · Usuários", group: "Painel Administrativo" },
   { id: "admin-permissoes", label: "Pessoas · Perfis e Permissões", group: "Painel Administrativo" },
+  { id: "admin-autocadastro", label: "Pessoas · Autocadastro (atalho)", group: "Painel Administrativo" },
   { id: "admin-faturamento", label: "Financeiro · Faturamento", group: "Painel Administrativo" },
   { id: "admin-centros-custo", label: "Cadastros · Centros de Custo", group: "Painel Administrativo" },
   { id: "admin-contratos", label: "Financeiro · Contratos", group: "Painel Administrativo" },
