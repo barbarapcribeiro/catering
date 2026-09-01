@@ -637,15 +637,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<StoredState>(loadState);
   const [toast, setToast] = useState<string | null>(null);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
-
   const showToast = (msg: string) => {
     setToast(msg);
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => setToast(null), 2600);
   };
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (err) {
+      console.error("Falha ao salvar o estado no localStorage", err);
+      showToast("Não foi possível salvar: armazenamento local cheio. Tente remover uma foto grande.");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   const currentProfile = state.profiles.find((p) => p.id === state.currentProfileId) ?? null;
   const currentUser = state.users.find((u) => u.profileId === state.currentProfileId && u.active) ?? null;
