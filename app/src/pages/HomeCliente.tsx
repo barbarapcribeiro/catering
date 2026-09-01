@@ -123,21 +123,22 @@ export function HomeCliente() {
         <div className="home-grid-2x2">
           {visibleServices.some((sv) => sv.id === "cb") && (
             <div className="home-hero">
-              <div className="home-hero__blob home-hero__blob--1" />
-              <div className="home-hero__blob home-hero__blob--2" />
-              <span className="home-hero__badge">Mais solicitado</span>
-              <div className="home-hero__content">
-                <div className="home-hero__icon">
-                  <PathIcon path="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8zM6 2v4M10 2v4M14 2v4" color="#fff" size={26} strokeWidth={2} />
+              <img className="home-hero__photo" src="/coffee-break-hero.png" alt="" />
+              <div className="home-hero__photo-overlay" />
+              <button className="home-hero__arrow-btn" onClick={() => navigate("/pedido/coffee-break")} aria-label="Novo pedido de Coffee Break">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </button>
+              <div className="home-hero__row">
+                <div className="home-hero__icon-badge">
+                  <PathIcon path="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8zM6 2v4M10 2v4M14 2v4" color="#fff" size={20} strokeWidth={2} />
                 </div>
                 <div>
                   <div className="home-hero__title">Coffee Break</div>
                   <div className="home-hero__desc">Solicite coffee break para reuniões, treinamentos e eventos.</div>
                 </div>
               </div>
-              <button className="btn btn--primary" onClick={() => navigate("/pedido/coffee-break")}>
-                Novo pedido
-              </button>
             </div>
           )}
 
