@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { formatSize } from "../components/AttachmentsField";
+import { WhatsAppButton } from "../components/WhatsAppButton";
 import { useAppData } from "../mock/AppDataContext";
 import { STATUS_STYLE } from "../mock/services";
 import type { Order } from "../types";
@@ -151,6 +152,12 @@ export function Aprovacoes() {
                         <div className="apr-approval-row__name">{gestorNameFor(o)}</div>
                       </div>
                       <div className="apr-approval-row__actions">
+                        {!o.managerApproved && (
+                          <WhatsAppButton
+                            message={`Oi ${gestorNameFor(o)}, o pedido ${orderCode(o)} (${o.category}, ${o.value}) está aguardando sua aprovação.`}
+                            label="Cutucar"
+                          />
+                        )}
                         <button
                           className={`apr-approve-btn ${o.managerApproved ? "is-approved" : ""}`}
                           onClick={() => approveGestor(o)}
@@ -170,6 +177,12 @@ export function Aprovacoes() {
                           <div className="apr-approval-row__name">{GU_NAME}</div>
                         </div>
                         <div className="apr-approval-row__actions">
+                          {!o.guApproved && (
+                            <WhatsAppButton
+                              message={`Oi ${GU_NAME}, o pedido ${orderCode(o)} (${o.category}, ${o.value}) está aguardando sua aprovação da GU.`}
+                              label="Cutucar"
+                            />
+                          )}
                           <button
                             className={`apr-approve-btn ${o.guApproved ? "is-approved" : ""}`}
                             onClick={() => approveGU(o)}

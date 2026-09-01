@@ -4,8 +4,10 @@ import { Layout } from "../components/Layout";
 import { Modal } from "../components/Modal";
 import { PathIcon } from "../components/Icon";
 import { AttachmentsField } from "../components/AttachmentsField";
+import { WhatsAppButton } from "../components/WhatsAppButton";
 import { useAppData } from "../mock/AppDataContext";
 import { isOpenOrder, SERVICES, STATUS_STYLE } from "../mock/services";
+import { orderCreatedMessage } from "../mock/whatsapp";
 import { PROMOS } from "../mock/promos";
 import type { Order, OrderAttachment } from "../types";
 import "./Home.css";
@@ -478,6 +480,9 @@ export function HomeCliente() {
               <span>Valor</span>
               <span className="fw-700">{modal.order.value}</span>
             </div>
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <WhatsAppButton message={orderCreatedMessage(modal.order)} label="Avisar por WhatsApp" />
           </div>
           <button className="btn btn--primary btn--full" onClick={() => setModal(null)}>
             Fechar
