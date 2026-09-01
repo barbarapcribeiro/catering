@@ -324,6 +324,18 @@ const initialProfiles: Profile[] = [
     }),
   },
   {
+    id: "prof-copeira",
+    name: "Copeira",
+    whoIs: "Responsável pela copa da unidade.",
+    responsibilities: "Entrega os pedidos prontos e recolhe os utensílios após o consumo.",
+    active: true,
+    permissions: perms({
+      home: { ver: true },
+      producao: { ver: true, criarEditar: true },
+      "pesquisa-app": { ver: true, criarEditar: true },
+    }),
+  },
+  {
     id: "prof-faturamento",
     name: "Faturamento / Backoffice",
     whoIs: "Apoio Administrativo; Ponto Focal Direct Eventos; GU; outros.",
@@ -364,6 +376,7 @@ const initialUsers: AppUser[] = [
   { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sparkxp.com", profileId: "prof-producao", companyId: "comp1", branchIds: ["branch2"], active: true, createdAt: "2026-03-05T09:00:00Z" },
   { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sparkxp.com", profileId: "prof-faturamento", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-08T09:00:00Z" },
   { id: "user8", name: "Administrador do Sistema", email: "admin@sparkxp.com", profileId: "prof-admin", companyId: "comp1", branchIds: ["branch1", "branch2"], active: true, createdAt: "2026-01-01T09:00:00Z" },
+  { id: "user9", name: "Rosana Alves", email: "rosana.alves@sparkxp.com", profileId: "prof-copeira", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-10T09:00:00Z" },
 ];
 
 const initialSegments: Segment[] = [
@@ -407,7 +420,7 @@ const initialCopas: Copa[] = [
     branchId: "branch1",
     physicalLocation: "Térreo, ala leste",
     costCenterCodes: ["CC001", "CC002"],
-    responsibleUserIds: ["user1", "user2"],
+    responsibleUserIds: ["user1", "user2", "user9"],
     slaHours: 2,
     operatingHours: WEEKDAYS.map((weekday) => ({ weekday, enabled: !["Sábado", "Domingo"].includes(weekday), start: "07:00", end: "19:00" })),
     nonBusinessDays: [],

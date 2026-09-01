@@ -57,6 +57,8 @@ export interface Order {
   eventTime?: string;
   pickupDate?: string;
   pickupTime?: string;
+  /** Marca quando a copeira já recolheu os utensílios após a entrega (data de recolhimento acima). */
+  utensilsRetrieved?: boolean;
   coffeeInstructions?: string;
   dietaryRestrictions?: string;
   notes?: string;
