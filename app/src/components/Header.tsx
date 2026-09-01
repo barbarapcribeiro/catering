@@ -111,12 +111,8 @@ export function Header() {
       )}
 
       <nav className="app-header__nav">
-        <Link to="/" className="app-header__home-link">Home</Link>
+        {hasPageAccess("home") && <Link to="/" className="app-header__home-link">Home</Link>}
         {hasPageAccess("pedidos") && <Link to="/pedidos">Pedidos</Link>}
-        {hasPageAccess("fique-por-dentro") && <Link to="/fique-por-dentro">Fique por dentro</Link>}
-        {hasPageAccess("producao") && <Link to="/producao">Produção</Link>}
-        {hasPageAccess("eventos-premium") && <Link to="/eventos-premium">Eventos Premium</Link>}
-        {hasPageAccess("pesquisa-app") && <Link to="/pesquisa-app">Pesquisa da Aplicação</Link>}
         <div className="app-header__divider" />
         <Link to="/autocadastro" className="app-header__signup-link">
           Cadastre-se
