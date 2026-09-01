@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { AttachmentsField } from "../components/AttachmentsField";
@@ -11,8 +11,10 @@ import "../pages/OrderFlow.css";
 import "./AguaOrder.css";
 
 export function AguaOrder() {
-  const { addOrder, showToast, costCenters, products, serviceParameters } = useAppData();
+  const { addOrder, showToast, costCenters, products, serviceParameters, orders } = useAppData();
   const navigate = useNavigate();
+  const routerLocation = useLocation();
+  const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
   const activeCostCenters = costCenters.filter((c) => c.active);
   const items = products.filter((p) => p.active && (p.pages ?? []).includes("Solicitação de Água"));
   const linkedCostCenterCode = serviceParameters.find((s) => s.category === "Solicitação de Água")?.linkedCostCenterCode;
@@ -39,6 +41,21 @@ export function AguaOrder() {
   const change = (id: string, delta: number) => {
     setQty((s) => ({ ...s, [id]: Math.max(0, (s[id] ?? 0) + delta) }));
   };
+
+  useEffect(() => {
+    if (!repeatOrderId) return;
+    const source = orders.find((o) => o.id === repeatOrderId);
+    if (!source) return;
+    const nextQty: Record<string, number> = {};
+    (source.items ?? []).forEach((it) => {
+      if (it.productId) nextQty[it.productId] = it.qty;
+    });
+    setQty(nextQty);
+    if (source.location) setLocal(source.location);
+    if (source.costCenters && source.costCenters.length > 0) setCostCenter(source.costCenters[0].code);
+    showToast("Carrinho preenchido com os itens do pedido anterior. Revise e confirme.");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repeatOrderId]);
 
   const totalUnits = Object.values(qty).reduce((sum, v) => sum + v, 0);
   const total = items.reduce((sum, p) => sum + (qty[p.id] ?? 0) * p.price, 0);

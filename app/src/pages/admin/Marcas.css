@@ -1,41 +1,41 @@
-.empresas-page {
-  max-width: 1080px;
+.marcas-page {
+  max-width: 860px;
 }
 
-.empresas-header {
+.marcas-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
+  align-items: center;
+  margin-bottom: 18px;
   gap: 16px;
   flex-wrap: wrap;
 }
-.empresas-title {
+.marcas-title {
   font-size: 22px;
   font-weight: 800;
-  margin: 0 0 4px;
+  margin: 0;
   letter-spacing: -0.3px;
 }
-.empresas-subtitle {
+.marcas-subtitle {
   font-size: 13px;
   color: var(--color-text-muted);
+  margin-top: 4px;
 }
 
-.empresas-table-card {
+.marcas-table-card {
   padding: 0;
   overflow-x: auto;
 }
-
-.empresas-table__head,
-.empresas-table__row {
+.marcas-table__head,
+.marcas-table__row {
   display: grid;
-  grid-template-columns: 0.6fr 1.6fr 1.1fr 1.3fr 1.4fr 0.6fr 0.9fr 1.4fr;
+  grid-template-columns: 1.6fr 0.8fr 0.9fr 1.2fr;
   gap: 10px;
   align-items: center;
   padding: 14px 20px;
-  min-width: 1080px;
+  min-width: 620px;
 }
-.empresas-table__head {
+.marcas-table__head {
   font-size: 11px;
   font-weight: 700;
   color: var(--color-text-muted);
@@ -43,34 +43,34 @@
   letter-spacing: 0.03em;
   border-bottom: 1px solid var(--color-border);
 }
-.empresas-table__row {
+.marcas-table__row {
   border-bottom: 1px solid var(--color-border-soft);
   font-size: 13px;
 }
-.empresas-table__row:last-child {
+.marcas-table__row:last-child {
   border-bottom: none;
 }
-.empresas-table__name {
+.marcas-table__name {
   font-weight: 700;
 }
-.empresas-table__muted {
+.marcas-table__muted {
   color: var(--color-text-secondary);
   font-size: 12.5px;
 }
-.empresas-table__actions {
+.marcas-table__actions {
   display: flex;
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
 }
-.empresas-table__actions button.link {
+.marcas-table__actions button.link {
   border: none;
   background: none;
   padding: 0;
   font: inherit;
   cursor: pointer;
 }
-.empresas-remove-btn {
+.marcas-remove-btn {
   border: none;
   background: none;
   color: var(--color-danger);
@@ -79,22 +79,6 @@
   cursor: pointer;
   padding: 0;
 }
-.empresas-remove-btn:hover {
+.marcas-remove-btn:hover {
   text-decoration: underline;
-}
-
-.empresas-active-check {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-}
-.empresas-active-check input {
-  width: 17px;
-  height: 17px;
-  accent-color: var(--color-primary);
-  cursor: pointer;
 }

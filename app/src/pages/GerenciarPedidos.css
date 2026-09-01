@@ -347,6 +347,11 @@
   flex-wrap: wrap;
   gap: 12px;
 }
+.gp-resumo-footer__buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 .gp-resumo-totals {
   display: flex;
   gap: 22px;
@@ -699,4 +704,107 @@
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 16px;
+}
+
+/* Printable receipt — off-screen by default, shown full-screen only for window.print(). */
+.gp-print-area {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 380px;
+}
+.gp-print-header {
+  text-align: center;
+  border-bottom: 1px dashed var(--color-border);
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+}
+.gp-print-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+.gp-print-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+.gp-print-meta {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+.gp-print-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 11.5px;
+  margin-bottom: 14px;
+}
+.gp-print-summary-grid span {
+  display: block;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+.gp-print-summary-grid strong {
+  font-size: 12.5px;
+}
+.gp-print-table-head,
+.gp-print-row {
+  display: grid;
+  grid-template-columns: 1fr 0.4fr 0.6fr;
+  gap: 8px;
+  font-size: 12px;
+  padding: 5px 0;
+}
+.gp-print-table-head {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+.gp-print-row {
+  border-bottom: 1px dashed var(--color-border-soft);
+}
+.gp-print-totals {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--color-border);
+  font-size: 12px;
+}
+.gp-print-totals > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+}
+.gp-print-totals__final {
+  font-weight: 800;
+  font-size: 14px;
+  margin-top: 4px;
+}
+.gp-print-disclaimer {
+  margin-top: 16px;
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .gp-print-area,
+  .gp-print-area * {
+    visibility: visible;
+  }
+  .gp-print-area {
+    position: fixed;
+    left: 50%;
+    top: 24px;
+    transform: translateX(-50%);
+  }
 }

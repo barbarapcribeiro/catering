@@ -12,8 +12,11 @@ import {
   type ChatMessage,
   type Company,
   type Branch,
+  type Brand,
+  type BusinessUnit,
   type Contract,
   type Copa,
+  type Segment,
   type CostCenter,
   type Decoration,
   type Kit,
@@ -59,6 +62,9 @@ interface StoredState {
   premiumEvents: PremiumEvent[];
   profiles: Profile[];
   users: AppUser[];
+  segments: Segment[];
+  businessUnits: BusinessUnit[];
+  brands: Brand[];
   companies: Company[];
   branches: Branch[];
   costCenters: CostCenter[];
@@ -287,6 +293,9 @@ const initialProfiles: Profile[] = [
       "admin-usuarios": { ver: true },
       "admin-permissoes": { ver: true },
       "admin-faturamento": { ver: true, criarEditar: true, aprovar: true },
+      "admin-segmentos": { ver: true },
+      "admin-unidades": { ver: true },
+      "admin-marcas": { ver: true },
       "admin-empresas": { ver: true },
       "admin-filiais": { ver: true },
       "admin-centros-custo": { ver: true },
@@ -312,6 +321,18 @@ const initialProfiles: Profile[] = [
       producao: { ver: true, criarEditar: true },
       "pesquisa-app": { ver: true, criarEditar: true },
       "admin-catraca-checkin": { ver: true, criarEditar: true },
+    }),
+  },
+  {
+    id: "prof-copeira",
+    name: "Copeira",
+    whoIs: "Responsável pela copa da unidade.",
+    responsibilities: "Entrega os pedidos prontos e recolhe os utensílios após o consumo.",
+    active: true,
+    permissions: perms({
+      home: { ver: true },
+      producao: { ver: true, criarEditar: true },
+      "pesquisa-app": { ver: true, criarEditar: true },
     }),
   },
   {
@@ -355,15 +376,34 @@ const initialUsers: AppUser[] = [
   { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sparkxp.com", profileId: "prof-producao", companyId: "comp1", branchIds: ["branch2"], active: true, createdAt: "2026-03-05T09:00:00Z" },
   { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sparkxp.com", profileId: "prof-faturamento", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-08T09:00:00Z" },
   { id: "user8", name: "Administrador do Sistema", email: "admin@sparkxp.com", profileId: "prof-admin", companyId: "comp1", branchIds: ["branch1", "branch2"], active: true, createdAt: "2026-01-01T09:00:00Z" },
+  { id: "user9", name: "Rosana Alves", email: "rosana.alves@sparkxp.com", profileId: "prof-copeira", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-10T09:00:00Z" },
+];
+
+const initialSegments: Segment[] = [
+  { id: "seg1", name: "Corporativo", active: true },
+  { id: "seg2", name: "Educação", active: true },
+  { id: "seg3", name: "Energia e Recursos", active: true },
+  { id: "seg4", name: "Saúde", active: true },
+];
+
+const initialBusinessUnits: BusinessUnit[] = [
+  { id: "unit1", segmentId: "seg1", name: "Unidade SP Corporativo", contract: "CT-2026-001", active: true },
+];
+
+const initialBrands: Brand[] = [
+  { id: "brand1", name: "Sabor Brasil", active: true },
+  { id: "brand2", name: "Sabor Brasil Premium", active: true },
+  { id: "brand3", name: "Modern Receipt", active: true },
+  { id: "brand4", name: "No Ponto", active: true },
 ];
 
 const initialCompanies: Company[] = [
-  { id: "comp1", type: "Jurídica", name: "Cliente Empresa Ltda.", tradeName: "Cliente Empresa", cnpj: "12.345.678/0001-90", accountManagerIds: ["user3", "user4"], active: true },
+  { id: "comp1", type: "Jurídica", name: "Cliente Empresa Ltda.", tradeName: "Cliente Empresa", cnpj: "12.345.678/0001-90", unitId: "unit1", accountManagerIds: ["user3", "user4"], active: true },
 ];
 
 const initialBranches: Branch[] = [
-  { id: "branch1", companyId: "comp1", name: "Matriz São Paulo", cep: "01310-100", plantName: "Planta SP-1", managerIds: ["user3"], active: true },
-  { id: "branch2", companyId: "comp1", name: "Filial Campinas", cep: "13015-904", plantName: "Planta CPS-1", managerIds: ["user4"], active: true },
+  { id: "branch1", companyId: "comp1", name: "Matriz São Paulo", cep: "01310-100", plantName: "Planta SP-1", brandId: "brand1", managerIds: ["user3"], active: true },
+  { id: "branch2", companyId: "comp1", name: "Filial Campinas", cep: "13015-904", plantName: "Planta CPS-1", brandId: "brand1", managerIds: ["user4"], active: true },
 ];
 
 const initialCostCenters: CostCenter[] = [
@@ -380,7 +420,7 @@ const initialCopas: Copa[] = [
     branchId: "branch1",
     physicalLocation: "Térreo, ala leste",
     costCenterCodes: ["CC001", "CC002"],
-    responsibleUserIds: ["user1", "user2"],
+    responsibleUserIds: ["user1", "user2", "user9"],
     slaHours: 2,
     operatingHours: WEEKDAYS.map((weekday) => ({ weekday, enabled: !["Sábado", "Domingo"].includes(weekday), start: "07:00", end: "19:00" })),
     nonBusinessDays: [],
@@ -448,6 +488,9 @@ const defaultState: StoredState = {
   premiumEvents: initialPremiumEvents,
   profiles: initialProfiles,
   users: initialUsers,
+  segments: initialSegments,
+  businessUnits: initialBusinessUnits,
+  brands: initialBrands,
   companies: initialCompanies,
   branches: initialBranches,
   costCenters: initialCostCenters,
@@ -570,6 +613,21 @@ interface AppDataValue {
   removeUser: (id: string) => void;
   resetUserPassword: (id: string) => void;
 
+  segments: Segment[];
+  addSegment: (segment: Omit<Segment, "id">) => void;
+  updateSegment: (id: string, patch: Partial<Segment>) => void;
+  removeSegment: (id: string) => void;
+
+  businessUnits: BusinessUnit[];
+  addBusinessUnit: (unit: Omit<BusinessUnit, "id">) => void;
+  updateBusinessUnit: (id: string, patch: Partial<BusinessUnit>) => void;
+  removeBusinessUnit: (id: string) => void;
+
+  brands: Brand[];
+  addBrand: (brand: Omit<Brand, "id">) => void;
+  updateBrand: (id: string, patch: Partial<Brand>) => void;
+  removeBrand: (id: string) => void;
+
   companies: Company[];
   addCompany: (company: Omit<Company, "id">) => void;
   updateCompany: (id: string, patch: Partial<Company>) => void;
@@ -689,14 +747,25 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const updateOrder: AppDataValue["updateOrder"] = (id, patch) => {
     setState((s) => ({
       ...s,
-      orders: s.orders.map((o) => (o.id === id ? { ...o, ...patch } : o)),
+      orders: s.orders.map((o) => {
+        if (o.id !== id) return o;
+        const next = { ...o, ...patch };
+        if (patch.status && patch.status !== o.status) {
+          next.history = [...(o.history ?? []), { label: `Status alterado para "${patch.status}"`, time: new Date().toLocaleString("pt-BR") }];
+        }
+        return next;
+      }),
     }));
   };
 
   const cancelOrder = (id: string) => {
     setState((s) => ({
       ...s,
-      orders: s.orders.map((o) => (o.id === id ? { ...o, status: "Cancelado" as const } : o)),
+      orders: s.orders.map((o) =>
+        o.id === id
+          ? { ...o, status: "Cancelado" as const, history: [...(o.history ?? []), { label: "Pedido cancelado", time: new Date().toLocaleString("pt-BR") }] }
+          : o,
+      ),
     }));
     showToast("Pedido cancelado.");
   };
@@ -934,6 +1003,36 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     showToast("Senha redefinida. Um e-mail com instruções foi enviado ao usuário.");
   };
 
+  const addSegment: AppDataValue["addSegment"] = (segment) => {
+    setState((s) => ({ ...s, segments: [{ ...segment, id: `seg${Date.now()}` }, ...s.segments] }));
+  };
+  const updateSegment: AppDataValue["updateSegment"] = (id, patch) => {
+    setState((s) => ({ ...s, segments: s.segments.map((seg) => (seg.id === id ? { ...seg, ...patch } : seg)) }));
+  };
+  const removeSegment = (id: string) => {
+    setState((s) => ({ ...s, segments: s.segments.filter((seg) => seg.id !== id) }));
+  };
+
+  const addBusinessUnit: AppDataValue["addBusinessUnit"] = (unit) => {
+    setState((s) => ({ ...s, businessUnits: [{ ...unit, id: `unit${Date.now()}` }, ...s.businessUnits] }));
+  };
+  const updateBusinessUnit: AppDataValue["updateBusinessUnit"] = (id, patch) => {
+    setState((s) => ({ ...s, businessUnits: s.businessUnits.map((u) => (u.id === id ? { ...u, ...patch } : u)) }));
+  };
+  const removeBusinessUnit = (id: string) => {
+    setState((s) => ({ ...s, businessUnits: s.businessUnits.filter((u) => u.id !== id) }));
+  };
+
+  const addBrand: AppDataValue["addBrand"] = (brand) => {
+    setState((s) => ({ ...s, brands: [{ ...brand, id: `brand${Date.now()}` }, ...s.brands] }));
+  };
+  const updateBrand: AppDataValue["updateBrand"] = (id, patch) => {
+    setState((s) => ({ ...s, brands: s.brands.map((b) => (b.id === id ? { ...b, ...patch } : b)) }));
+  };
+  const removeBrand = (id: string) => {
+    setState((s) => ({ ...s, brands: s.brands.filter((b) => b.id !== id) }));
+  };
+
   const addCompany: AppDataValue["addCompany"] = (company) => {
     setState((s) => ({ ...s, companies: [{ ...company, id: `comp${Date.now()}` }, ...s.companies] }));
   };
@@ -1153,6 +1252,18 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       updateUser,
       removeUser,
       resetUserPassword,
+      segments: state.segments,
+      addSegment,
+      updateSegment,
+      removeSegment,
+      businessUnits: state.businessUnits,
+      addBusinessUnit,
+      updateBusinessUnit,
+      removeBusinessUnit,
+      brands: state.brands,
+      addBrand,
+      updateBrand,
+      removeBrand,
       companies: state.companies,
       addCompany,
       updateCompany,

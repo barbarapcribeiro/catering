@@ -57,6 +57,8 @@ export interface Order {
   eventTime?: string;
   pickupDate?: string;
   pickupTime?: string;
+  /** Marca quando a copeira já recolheu os utensílios após a entrega (data de recolhimento acima). */
+  utensilsRetrieved?: boolean;
   coffeeInstructions?: string;
   dietaryRestrictions?: string;
   notes?: string;
@@ -382,6 +384,9 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-faturamento", label: "Financeiro · Faturamento", group: "Painel Administrativo" },
   { id: "admin-centros-custo", label: "Cadastros · Centros de Custo", group: "Painel Administrativo" },
   { id: "admin-contratos", label: "Financeiro · Contratos", group: "Painel Administrativo" },
+  { id: "admin-segmentos", label: "Cadastros · Segmentos", group: "Painel Administrativo" },
+  { id: "admin-unidades", label: "Cadastros · Unidades", group: "Painel Administrativo" },
+  { id: "admin-marcas", label: "Cadastros · Marcas", group: "Painel Administrativo" },
   { id: "admin-empresas", label: "Cadastros · Empresas", group: "Painel Administrativo" },
   { id: "admin-filiais", label: "Cadastros · Filiais", group: "Painel Administrativo" },
   { id: "admin-copas", label: "Cadastros · Copas", group: "Painel Administrativo" },
@@ -475,6 +480,31 @@ export interface AppUser {
 /** Perfis cujo usuário fica associado a um centro de custo específico. */
 export const COST_CENTER_LINKED_PROFILE_IDS = ["prof-cliente", "prof-gestor", "prof-consumidor"] as const;
 
+/** Segmento de mercado atendido (ex.: Corporativo, Educação) — usado no cadastro de Unidade. */
+export interface Segment {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
+/** Marca operada pela filial (ex.: Sabor Brasil, Modern Receipt) — usada no cadastro de Filial. */
+export interface Brand {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
+/** Unidade operacional da Direct Eventos, vinculada a um Segmento e a um contrato. */
+export interface BusinessUnit {
+  id: string;
+  segmentId: string;
+  /** Nome da unidade Direct Eventos. */
+  name: string;
+  contract: string;
+  attachments?: OrderAttachment[];
+  active: boolean;
+}
+
 export const COMPANY_TYPES = ["Jurídica", "Física"] as const;
 export type CompanyType = (typeof COMPANY_TYPES)[number];
 
@@ -484,6 +514,8 @@ export interface Company {
   name: string;
   tradeName?: string;
   cnpj: string;
+  /** Unidade Direct Eventos responsável pelo atendimento desta empresa. */
+  unitId: string;
   /** Usuários responsáveis pela conta — precisam estar cadastrados em Usuários. */
   accountManagerIds: string[];
   active: boolean;
@@ -495,6 +527,8 @@ export interface Branch {
   name: string;
   cep: string;
   plantName: string;
+  /** Marca operada por esta filial — precisa estar cadastrada em Marcas. */
+  brandId: string;
   /** Usuários responsáveis pela filial — precisam estar cadastrados em Usuários. */
   managerIds: string[];
   /** IDs dos serviços (tela Home) habilitados para o Cliente solicitante desta filial — ausente = todos habilitados. */

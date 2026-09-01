@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Stepper } from "../components/Stepper";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
@@ -58,9 +58,11 @@ const STEP_DEFS = [
 ];
 
 export function EventoEspecialOrder() {
-  const { addOrder, showToast, serviceParameters } = useAppData();
+  const { addOrder, showToast, serviceParameters, orders } = useAppData();
   const svcParams = serviceParameters.find((s) => s.category === "Evento Especial");
   const navigate = useNavigate();
+  const routerLocation = useLocation();
+  const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
 
   const [orderId] = useState(() => `#EE-${Math.floor(15200 + Math.random() * 800)}`);
   const [step, setStep] = useState(1);
@@ -128,6 +130,40 @@ export function EventoEspecialOrder() {
     setQtys({});
     showToast("Carrinho limpo.");
   };
+
+  useEffect(() => {
+    if (!repeatOrderId) return;
+    const source = orders.find((o) => o.id === repeatOrderId);
+    if (!source) return;
+    const nextQtys: Record<string, number> = {};
+    let matchedKit: string | null = null;
+    (source.items ?? []).forEach((it) => {
+      const kit = KITS.find((k) => k.name === it.name);
+      if (kit) {
+        matchedKit = kit.id;
+        return;
+      }
+      const avulso = AVULSOS.find((a) => a.name === it.name);
+      if (avulso) nextQtys[avulso.id] = it.qty;
+    });
+    setQtys(nextQtys);
+    setSelectedKit(matchedKit);
+    if (source.eventName) setEventName(source.eventName);
+    if (source.location) setEventLocal(source.location);
+    if (source.peopleCount) setPeople(source.peopleCount);
+    if (source.costCenters && source.costCenters.length > 0) {
+      const sel: Record<string, boolean> = {};
+      const pct: Record<string, number> = {};
+      source.costCenters.forEach((cc) => {
+        sel[cc.code] = true;
+        pct[cc.code] = cc.percent;
+      });
+      setCostCenterSel(sel);
+      setCostCenterPct((p) => ({ ...p, ...pct }));
+    }
+    showToast("Carrinho preenchido com os itens do pedido anterior. Revise e confirme.");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repeatOrderId]);
 
   let avulsosList = AVULSOS;
   if (activeCategory !== "kits") avulsosList = avulsosList.filter((a) => a.category === activeCategory);
