@@ -75,7 +75,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Configurações",
-    items: [{ label: "Parâmetros", to: "/admin/parametros", glyph: "⚙", pageId: "admin-parametros" }],
+    items: [
+      { label: "Parâmetros", to: "/admin/parametros", glyph: "⚙", pageId: "admin-parametros" },
+      { label: "Serviços por Filial", to: "/admin/servicos-filial", glyph: "🧭", pageId: "admin-servicos-filial" },
+    ],
   },
   {
     label: "Gestão de Ativos",

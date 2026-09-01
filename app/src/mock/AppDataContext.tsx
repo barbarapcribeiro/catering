@@ -294,6 +294,7 @@ const initialProfiles: Profile[] = [
       "admin-contratos": { ver: true, criarEditar: true },
       "admin-ocorrencias": { ver: true, criarEditar: true },
       "admin-parametros": { ver: true, criarEditar: true },
+      "admin-servicos-filial": { ver: true, criarEditar: true },
       "admin-ativos": { ver: true, criarEditar: true, excluir: true },
       "admin-tipos-ativo": { ver: true, criarEditar: true, excluir: true },
       "admin-ativos-checkin": { ver: true, criarEditar: true },

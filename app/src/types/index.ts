@@ -379,6 +379,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-ocorrencias", label: "Ocorrências", group: "Painel Administrativo" },
   { id: "admin-popups", label: "Pop-ups", group: "Painel Administrativo" },
   { id: "admin-parametros", label: "Parâmetros", group: "Painel Administrativo" },
+  { id: "admin-servicos-filial", label: "Configurações · Serviços por Filial", group: "Painel Administrativo" },
   { id: "admin-ativos", label: "Gestão de Ativos", group: "Painel Administrativo" },
   { id: "admin-tipos-ativo", label: "Tipos de Ativo", group: "Painel Administrativo" },
   { id: "admin-ativos-checkin", label: "Check-in / Check-out de Ativos", group: "Painel Administrativo" },
@@ -487,6 +488,8 @@ export interface Branch {
   plantName: string;
   /** Usuários responsáveis pela filial — precisam estar cadastrados em Usuários. */
   managerIds: string[];
+  /** IDs dos serviços (tela Home) habilitados para o Cliente solicitante desta filial — ausente = todos habilitados. */
+  enabledServiceIds?: string[];
   active: boolean;
 }
 

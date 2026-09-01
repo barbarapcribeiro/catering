@@ -30,6 +30,7 @@ import { Servicos } from "./pages/admin/Servicos";
 import { Decoracoes } from "./pages/admin/Decoracoes";
 import { Popups } from "./pages/admin/Popups";
 import { Parametros } from "./pages/admin/Parametros";
+import { ServicosPorFilial } from "./pages/admin/ServicosPorFilial";
 import { Ativos } from "./pages/admin/Ativos";
 import { TiposAtivo } from "./pages/admin/TiposAtivo";
 import { AtivoCheckInOut } from "./pages/admin/AtivoCheckInOut";
@@ -93,6 +94,7 @@ export default function App() {
             <Route path="copas" element={<Copas />} />
             <Route path="contratos" element={<Contratos />} />
             <Route path="parametros" element={<Parametros />} />
+            <Route path="servicos-filial" element={<ServicosPorFilial />} />
             <Route path="ativos" element={<Ativos />} />
             <Route path="tipos-ativo" element={<TiposAtivo />} />
             <Route path="ativos/checkin" element={<AtivoCheckInOut />} />
