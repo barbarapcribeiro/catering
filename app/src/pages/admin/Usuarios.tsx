@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { useAppData } from "../../mock/AppDataContext";
 import { Modal } from "../../components/Modal";
-import { COST_CENTER_LINKED_PROFILE_IDS, type AppUser } from "../../types";
+import { PhoneNumberField } from "../../components/PhoneNumberField";
+import { COST_CENTER_LINKED_PROFILE_IDS, formatPhoneNumber, type AppUser, type PhoneNumber } from "../../types";
 import "./Usuarios.css";
+
+const EMPTY_PHONE: PhoneNumber = { country: "+55", ddd: "", number: "" };
 
 const EMPTY_FORM = {
   name: "",
   email: "",
   cpf: "",
   matricula: "",
-  phone: "",
+  cargo: "",
+  phone: EMPTY_PHONE,
   password: "",
   profileId: "",
   companyId: "",
@@ -57,7 +61,8 @@ export function Usuarios() {
       email: u.email,
       cpf: u.cpf ?? "",
       matricula: u.matricula ?? "",
-      phone: u.phone ?? "",
+      cargo: u.cargo ?? "",
+      phone: u.phone ?? EMPTY_PHONE,
       password: "",
       profileId: u.profileId ?? "",
       companyId: u.companyId ?? "",
@@ -88,7 +93,9 @@ export function Usuarios() {
     form.name.trim() &&
     form.email.trim() &&
     form.cpf.trim() &&
-    form.phone.trim() &&
+    form.phone.ddd.trim() &&
+    form.phone.number.trim() &&
+    form.cargo.trim() &&
     form.companyId &&
     form.branchIds.length > 0 &&
     (editingId || form.password.trim());
@@ -100,6 +107,7 @@ export function Usuarios() {
       email: form.email,
       cpf: form.cpf,
       matricula: form.matricula || undefined,
+      cargo: form.cargo,
       phone: form.phone,
       ...(form.password.trim() ? { password: form.password } : {}),
       profileId: form.profileId || undefined,
@@ -167,7 +175,11 @@ export function Usuarios() {
             <div key={u.id} className="usuarios-table__row">
               <div>
                 <div className="usuarios-table__name">{u.name}</div>
-                <div className="usuarios-table__email">{u.email}{u.phone && ` · ${u.phone}`}</div>
+                <div className="usuarios-table__email">
+                  {u.email}
+                  {formatPhoneNumber(u.phone) && ` · ${formatPhoneNumber(u.phone)}`}
+                  {u.cargo && ` · ${u.cargo}`}
+                </div>
                 {u.lastPasswordResetAt && <div className="usuarios-table__reset-hint">Senha redefinida em {formatDateTime(u.lastPasswordResetAt)}</div>}
               </div>
               <div>{profileName(u.profileId) ? <span className="pill-tag">{profileName(u.profileId)}</span> : <span className="usuarios-table__muted">Sem perfil</span>}</div>
@@ -238,14 +250,15 @@ export function Usuarios() {
             </div>
             <div className="usuarios-fields-grid">
               <label className="field-label">
-                Celular
-                <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(00) 00000-0000" />
+                Cargo
+                <input value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} placeholder="Ex.: Analista de Compras" />
               </label>
               <label className="field-label">
                 Senha {editingId && <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(deixe em branco para manter a atual)</span>}
                 <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={editingId ? "••••••••" : "Defina uma senha"} />
               </label>
             </div>
+            <PhoneNumberField value={form.phone} onChange={(phone) => setForm({ ...form, phone })} />
             <label className="field-label">
               Perfil <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(define as páginas que o usuário acessa)</span>
               <select value={form.profileId} onChange={(e) => setForm({ ...form, profileId: e.target.value })}>

@@ -1,0 +1,11 @@
+.phone-number-field {
+  display: grid;
+  grid-template-columns: 1.6fr 0.7fr 1.3fr;
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .phone-number-field {
+    grid-template-columns: 1fr;
+  }
+}

@@ -413,6 +413,30 @@ export interface Profile {
   active: boolean;
 }
 
+export const PHONE_COUNTRIES = [
+  { code: "+55", label: "Brasil" },
+  { code: "+1", label: "Estados Unidos/Canadá" },
+  { code: "+351", label: "Portugal" },
+  { code: "+54", label: "Argentina" },
+  { code: "+595", label: "Paraguai" },
+  { code: "+598", label: "Uruguai" },
+  { code: "+34", label: "Espanha" },
+] as const;
+
+export interface PhoneNumber {
+  /** Código do país, ex.: "+55". */
+  country: string;
+  /** DDD, ex.: "11". */
+  ddd: string;
+  /** Número, ex.: "91234-5678". */
+  number: string;
+}
+
+export function formatPhoneNumber(phone?: PhoneNumber): string | undefined {
+  if (!phone || !phone.ddd.trim() || !phone.number.trim()) return undefined;
+  return `${phone.country} (${phone.ddd}) ${phone.number}`;
+}
+
 export interface AppUser {
   id: string;
   name: string;
@@ -420,7 +444,10 @@ export interface AppUser {
   cpf?: string;
   /** Matrícula interna (opcional). */
   matricula?: string;
-  phone?: string;
+  /** Celular/WhatsApp, com país e DDD. */
+  phone?: PhoneNumber;
+  /** Cargo do usuário na empresa. */
+  cargo?: string;
   /** Senha (mock — sem hashing, app não tem autenticação real). */
   password?: string;
   profileId?: string;

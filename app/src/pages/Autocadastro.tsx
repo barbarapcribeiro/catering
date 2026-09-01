@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
+import { PhoneNumberField } from "../components/PhoneNumberField";
 import { useAppData } from "../mock/AppDataContext";
+import type { PhoneNumber } from "../types";
 import "./OrderFlow.css";
 import "./Autocadastro.css";
 
-const EMPTY_FORM = { name: "", email: "", companyId: "", branchIds: [] as string[], costCenterCodes: [] as string[] };
+const EMPTY_PHONE: PhoneNumber = { country: "+55", ddd: "", number: "" };
+
+const EMPTY_FORM = { name: "", email: "", cargo: "", phone: EMPTY_PHONE, companyId: "", branchIds: [] as string[], costCenterCodes: [] as string[] };
 
 export function Autocadastro() {
   const navigate = useNavigate();
@@ -33,13 +37,23 @@ export function Autocadastro() {
     setForm((f) => ({ ...f, costCenterCodes: f.costCenterCodes.includes(code) ? f.costCenterCodes.filter((c) => c !== code) : [...f.costCenterCodes, code] }));
   };
 
-  const canSubmit = form.name.trim() && form.email.trim() && form.companyId && form.branchIds.length > 0 && form.costCenterCodes.length > 0;
+  const canSubmit =
+    form.name.trim() &&
+    form.email.trim() &&
+    form.cargo.trim() &&
+    form.phone.ddd.trim() &&
+    form.phone.number.trim() &&
+    form.companyId &&
+    form.branchIds.length > 0 &&
+    form.costCenterCodes.length > 0;
 
   const submit = () => {
     if (!canSubmit) return;
     addUser({
       name: form.name,
       email: form.email,
+      cargo: form.cargo,
+      phone: form.phone,
       profileId: "prof-cliente",
       companyId: form.companyId,
       branchIds: form.branchIds,
@@ -104,7 +118,12 @@ export function Autocadastro() {
                   E-mail corporativo
                   <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="nome@empresa.com" />
                 </label>
+                <label className="field-label">
+                  Cargo
+                  <input value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} placeholder="Ex.: Analista de Compras" />
+                </label>
               </div>
+              <PhoneNumberField value={form.phone} onChange={(phone) => setForm({ ...form, phone })} />
             </div>
 
             <div className="step-card">
