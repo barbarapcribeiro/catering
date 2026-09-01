@@ -219,3 +219,7 @@
   background: var(--color-menu-accent-soft);
   color: var(--color-menu-accent);
 }
+.kits-card__cc-restrict {
+  background: var(--color-accent-soft, #fbe9d6);
+  color: var(--color-accent, #b5690f);
+}

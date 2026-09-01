@@ -1,0 +1,238 @@
+.copas-page {
+  max-width: 900px;
+}
+
+.copas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.copas-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
+}
+.copas-subtitle {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  max-width: 62ch;
+}
+
+.copas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.copas-card {
+  padding: 18px 20px;
+}
+.copas-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.copas-card__name {
+  font-size: 15.5px;
+  font-weight: 700;
+}
+.copas-card__muted {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.copas-card__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-border-soft);
+  border-bottom: 1px solid var(--color-border-soft);
+  margin-bottom: 12px;
+}
+.copas-card__facts > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.copas-card__facts span {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.copas-card__facts strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.copas-card__actions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.copas-card__actions button.link {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.copas-remove-btn {
+  border: none;
+  background: none;
+  color: var(--color-danger);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+.copas-remove-btn:hover {
+  text-decoration: underline;
+}
+
+.copas-fields-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.copas-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.copas-chip-row button {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+.copas-chip-row button.is-active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.copas-hours-table {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+.copas-hours-row {
+  display: grid;
+  grid-template-columns: 1.4fr auto auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--color-surface-soft, #f7f8fb);
+}
+.copas-hours-row.is-disabled {
+  opacity: 0.55;
+}
+.copas-hours-day {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.copas-hours-day input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+.copas-hours-row input[type="time"] {
+  font-size: 12.5px;
+  padding: 4px 6px;
+}
+.copas-hours-sep {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}
+
+.copas-holiday-add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.copas-holiday-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.copas-holiday-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 10px;
+  border-radius: 999px;
+  background: var(--color-border-soft);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.copas-holiday-chip button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  padding: 0 2px;
+}
+.copas-holiday-chip button:hover {
+  color: var(--color-danger);
+}
+
+.copas-active-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.copas-active-check input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.field-hint {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+@media (max-width: 560px) {
+  .copas-fields-grid {
+    grid-template-columns: 1fr;
+  }
+  .copas-hours-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}

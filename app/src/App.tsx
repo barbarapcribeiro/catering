@@ -1,12 +1,14 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AppDataProvider } from "./mock/AppDataContext";
 import { Home } from "./pages/Home";
+import { Autocadastro } from "./pages/Autocadastro";
 import { CoffeeBreakOrder } from "./pages/CoffeeBreakOrder";
 import { AbastecimentoOrder } from "./pages/AbastecimentoOrder";
 import { EventoEspecialOrder } from "./pages/EventoEspecialOrder";
 import { AguaOrder } from "./pages/AguaOrder";
 import { Surpreenda } from "./pages/Surpreenda";
 import { LancheOrder } from "./pages/LancheOrder";
+import { ServicosDiversosOrder } from "./pages/ServicosDiversosOrder";
 import { ConsumoCatraca } from "./pages/ConsumoCatraca";
 import { SolicitarOrcamento } from "./pages/SolicitarOrcamento";
 import { GerenciarPedidos } from "./pages/GerenciarPedidos";
@@ -28,6 +30,7 @@ import { Servicos } from "./pages/admin/Servicos";
 import { Decoracoes } from "./pages/admin/Decoracoes";
 import { Popups } from "./pages/admin/Popups";
 import { Parametros } from "./pages/admin/Parametros";
+import { ServicosPorFilial } from "./pages/admin/ServicosPorFilial";
 import { Ativos } from "./pages/admin/Ativos";
 import { TiposAtivo } from "./pages/admin/TiposAtivo";
 import { AtivoCheckInOut } from "./pages/admin/AtivoCheckInOut";
@@ -40,6 +43,9 @@ import { Ocorrencias } from "./pages/admin/Ocorrencias";
 import { Faturamento } from "./pages/admin/Faturamento";
 import { CentrosCusto } from "./pages/admin/CentrosCusto";
 import { Contratos } from "./pages/admin/Contratos";
+import { Empresas } from "./pages/admin/Empresas";
+import { Filiais } from "./pages/admin/Filiais";
+import { Copas } from "./pages/admin/Copas";
 
 export default function App() {
   return (
@@ -47,12 +53,14 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/autocadastro" element={<Autocadastro />} />
           <Route path="/pedido/coffee-break" element={<CoffeeBreakOrder />} />
           <Route path="/pedido/evento-especial" element={<EventoEspecialOrder />} />
           <Route path="/pedido/agua" element={<AguaOrder />} />
           <Route path="/pedido/abastecimento-simples" element={<AbastecimentoOrder />} />
           <Route path="/surpreenda" element={<Surpreenda />} />
           <Route path="/pedido/lanche" element={<LancheOrder />} />
+          <Route path="/pedido/servicos-diversos" element={<ServicosDiversosOrder />} />
           <Route path="/consumo-catraca" element={<ConsumoCatraca />} />
           <Route path="/solicitar-orcamento" element={<SolicitarOrcamento />} />
           <Route path="/pedidos" element={<GerenciarPedidos />} />
@@ -81,8 +89,12 @@ export default function App() {
             <Route path="permissoes" element={<Permissoes />} />
             <Route path="faturamento" element={<Faturamento />} />
             <Route path="centros-custo" element={<CentrosCusto />} />
+            <Route path="empresas" element={<Empresas />} />
+            <Route path="filiais" element={<Filiais />} />
+            <Route path="copas" element={<Copas />} />
             <Route path="contratos" element={<Contratos />} />
             <Route path="parametros" element={<Parametros />} />
+            <Route path="servicos-filial" element={<ServicosPorFilial />} />
             <Route path="ativos" element={<Ativos />} />
             <Route path="tipos-ativo" element={<TiposAtivo />} />
             <Route path="ativos/checkin" element={<AtivoCheckInOut />} />

@@ -15,6 +15,99 @@
   gap: 12px;
 }
 
+.app-header__menu-toggle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.app-header__menu-toggle:hover {
+  background: var(--color-bg-hover);
+}
+
+.app-header__drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 19, 0.35);
+  z-index: 60;
+  display: flex;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.app-header__drawer {
+  width: 280px;
+  max-width: 84vw;
+  height: 100%;
+  background: #fff;
+  box-shadow: var(--shadow-dropdown);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 18px 14px;
+  overflow-y: auto;
+}
+
+.app-header__drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px 12px;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+.app-header__drawer-title {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.app-header__drawer-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.app-header__drawer-close:hover {
+  background: var(--color-bg-hover);
+}
+
+.app-header__drawer-group-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #a6afc0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 8px 6px;
+}
+.app-header__drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 8px;
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.app-header__drawer-item:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-menu-accent);
+}
+.app-header__drawer-glyph {
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
 .app-header__avatar-logo {
   width: 100%;
   height: 100%;
@@ -71,6 +164,11 @@
   width: 1px;
   height: 22px;
   background: var(--color-border);
+}
+
+.app-header__signup-link {
+  font-weight: 600 !important;
+  color: var(--color-primary) !important;
 }
 
 .app-header__admin-btn {

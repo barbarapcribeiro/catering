@@ -1,0 +1,55 @@
+.attachments-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 4px;
+}
+.attachments-field__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.attachments-field__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-alt);
+  font-size: 12.5px;
+}
+.attachments-field__icon {
+  flex: none;
+}
+.attachments-field__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.attachments-field__size {
+  flex: none;
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+.attachments-field__remove {
+  flex: none;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.attachments-field__remove:hover {
+  color: var(--color-danger, #c0392b);
+}

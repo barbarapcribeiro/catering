@@ -29,11 +29,11 @@
 .centroscusto-table__head,
 .centroscusto-table__row {
   display: grid;
-  grid-template-columns: 0.8fr 1.4fr 1.2fr 0.7fr 0.9fr 1.4fr;
+  grid-template-columns: 0.7fr 1.2fr 1.2fr 1.1fr 0.6fr 0.8fr 1.4fr;
   gap: 10px;
   align-items: center;
   padding: 14px 20px;
-  min-width: 780px;
+  min-width: 920px;
 }
 .centroscusto-table__head {
   font-size: 11px;
@@ -98,4 +98,12 @@
   height: 17px;
   accent-color: var(--color-primary);
   cursor: pointer;
+}
+
+.field-hint {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-top: 4px;
 }

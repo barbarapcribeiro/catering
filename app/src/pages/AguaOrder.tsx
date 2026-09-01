@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
+import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
+import type { OrderAttachment } from "../types";
 import "../pages/OrderFlow.css";
 import "./AguaOrder.css";
 
@@ -30,6 +32,7 @@ export function AguaOrder() {
   }, [linkedCostCenterCode]);
   const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
   const [observations, setObservations] = useState("");
+  const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [hasError, setHasError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -73,6 +76,7 @@ export function AguaOrder() {
       location: local,
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Entregar para: ${deliverTo}${observations ? " • " + observations : ""}`,
+      attachments: attachments.length ? attachments : undefined,
     });
     showToast("Pedido de água solicitado com sucesso!");
     navigate("/");
@@ -185,6 +189,9 @@ export function AguaOrder() {
             Observações
             <textarea rows={3} placeholder="Alguma informação adicional sobre a entrega..." value={observations} onChange={(e) => setObservations(e.target.value)} style={{ resize: "vertical" }} />
           </label>
+          <div style={{ marginTop: 18 }}>
+            <AttachmentsField value={attachments} onChange={setAttachments} />
+          </div>
         </div>
 
         {hasError && <div className="agua-error">{errorMsg}</div>}

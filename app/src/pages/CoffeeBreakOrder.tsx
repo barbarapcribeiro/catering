@@ -5,10 +5,11 @@ import { Stepper } from "../components/Stepper";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { QrPlaceholder } from "../components/QrPlaceholder";
 import { PathIcon } from "../components/Icon";
+import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
-import type { ProductType } from "../types";
+import type { OrderAttachment, ProductType } from "../types";
 import "./OrderFlow.css";
 
 const CATEGORIES = [
@@ -32,6 +33,12 @@ const TYPE_TO_CATEGORY: Record<ProductType, string> = {
   Outro: "outros",
 };
 
+const KITS = [
+  { id: "exec", name: "Coffee Executivo", serves: "Serve até 20 pessoas", desc: "Seleção clássica com bebidas quentes, frias e acompanhamentos.", price: 240, badge: "MAIS VENDIDO", badgeBg: "#1a7a4f" },
+  { id: "premium", name: "Coffee Premium", serves: "Serve até 20 pessoas", desc: "Opção sofisticada com mais variedades e itens especiais.", price: 320, badge: "RECOMENDADO", badgeBg: "var(--color-primary)" },
+  { id: "economico", name: "Coffee Econômico", serves: "Serve até 20 pessoas", desc: "Ideal para eventos rápidos com ótimo custo-benefício.", price: 180, badge: "MELHOR CUSTO", badgeBg: "#b5690f" },
+];
+
 const CC_NAMES: Record<string, string> = { CC001: "Administrativo", CC002: "Comercial", CC003: "Operações" };
 
 const STEP_DEFS = [
@@ -42,17 +49,16 @@ const STEP_DEFS = [
 ];
 
 export function CoffeeBreakOrder() {
-  const { addOrder, showToast, products, kits, serviceParameters } = useAppData();
+  const { addOrder, showToast, products, serviceParameters } = useAppData();
   const svcParams = serviceParameters.find((s) => s.category === "Coffee Break");
   const navigate = useNavigate();
-  const coffeeKits = kits.filter((k) => k.active && (k.pages ?? []).includes("Coffee Break"));
   const avulsoProducts = products.filter((p) => p.active && (p.pages ?? []).includes("Coffee Break"));
 
   const [orderId] = useState(() => `#CB-${Math.floor(15200 + Math.random() * 800)}`);
   const [step, setStep] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("kits");
-  const [selectedKit, setSelectedKit] = useState<string | null>(coffeeKits[0]?.id ?? null);
+  const [selectedKit, setSelectedKit] = useState<string | null>("exec");
   const [qtys, setQtys] = useState<Record<string, number>>({});
   const [people, setPeople] = useState(15);
   const [eventName, setEventName] = useState("");
@@ -66,6 +72,7 @@ export function CoffeeBreakOrder() {
   const [coffeeInstructions, setCoffeeInstructions] = useState("");
   const [hasDietary, setHasDietary] = useState(false);
   const [dietaryDetails, setDietaryDetails] = useState("");
+  const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [costCenterSel, setCostCenterSel] = useState<Record<string, boolean>>({});
   const [costCenterPct, setCostCenterPct] = useState<Record<string, number>>({ CC001: 100, CC002: 100, CC003: 100 });
 
@@ -107,11 +114,8 @@ export function CoffeeBreakOrder() {
   const cartItems = useMemo(() => {
     const items: { id: string; name: string; sub: string; qty: number; unitPrice: number; total: number; productId?: string; dec: () => void; inc: () => void; remove: () => void }[] = [];
     if (selectedKit) {
-      const k = coffeeKits.find((x) => x.id === selectedKit);
-      if (k) {
-        const kitTotal = k.items.reduce((sum, item) => sum + (products.find((p) => p.id === item.productId)?.price ?? 0) * item.qty, 0);
-        items.push({ id: "kit-" + k.id, name: k.name, sub: k.description ?? "Kit de Coffee Break", qty: 1, unitPrice: kitTotal, total: kitTotal, dec: () => toggleKit(k.id), inc: () => {}, remove: () => toggleKit(k.id) });
-      }
+      const k = KITS.find((x) => x.id === selectedKit)!;
+      items.push({ id: "kit-" + k.id, name: k.name, sub: k.serves, qty: 1, unitPrice: k.price, total: k.price, dec: () => toggleKit(k.id), inc: () => {}, remove: () => toggleKit(k.id) });
     }
     avulsoProducts.forEach((p) => {
       const qty = qtys[p.id] || 0;
@@ -131,7 +135,7 @@ export function CoffeeBreakOrder() {
     });
     return items;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedKit, qtys, avulsoProducts, coffeeKits, products]);
+  }, [selectedKit, qtys, avulsoProducts]);
 
   const subtotal = cartItems.reduce((sum, ci) => sum + ci.total, 0);
   const fee = subtotal * ((svcParams?.adminFeePercent ?? 10) / 100);
@@ -179,6 +183,7 @@ export function CoffeeBreakOrder() {
       dietaryRestrictions: hasDietary ? dietaryDetails || "Sim, sem detalhes" : "Nenhuma",
       costCenters: selCodes.map((code) => ({ code, percent: multiSel ? costCenterPct[code] : 100 })),
       requiresApproval: needsApproval,
+      attachments: attachments.length ? attachments : undefined,
     });
     setStep(4);
     showToast("Faturamento confirmado!");
@@ -239,15 +244,14 @@ export function CoffeeBreakOrder() {
                     <span className="pill-tag">Kits prontos para facilitar sua escolha</span>
                   </div>
                   <div className="kits-grid">
-                    {coffeeKits.map((k, index) => {
-                      const kitTotal = k.items.reduce((sum, item) => sum + (products.find((p) => p.id === item.productId)?.price ?? 0) * item.qty, 0);
+                    {KITS.map((k) => {
                       const selected = selectedKit === k.id;
                       return (
                         <div key={k.id} className="kit-card">
                           <div className="kit-card__image-wrap">
                             <ImagePlaceholder label="Imagem do kit" style={{ width: "100%", height: 120, borderRadius: 0 }} />
-                            <span className="kit-card__badge" style={{ background: index === 0 ? "#1a7a4f" : "var(--color-primary)" }}>
-                              {index === 0 ? "MAIS VENDIDO" : "RECOMENDADO"}
+                            <span className="kit-card__badge" style={{ background: k.badgeBg }}>
+                              {k.badge}
                             </span>
                           </div>
                           <div className="kit-card__body">
@@ -259,10 +263,10 @@ export function CoffeeBreakOrder() {
                                 <path d="M23 21v-2a4 4 0 00-3-3.87" />
                                 <path d="M16 3.13a4 4 0 010 7.75" />
                               </svg>
-                              {k.description ?? "Kit de Coffee Break"}
+                              {k.serves}
                             </div>
-                            <div className="kit-card__desc">Itens selecionados no catálogo</div>
-                            <div className="kit-card__price">{money(kitTotal)}</div>
+                            <div className="kit-card__desc">{k.desc}</div>
+                            <div className="kit-card__price">{money(k.price)}</div>
                             <button
                               className="kit-card__btn"
                               style={{ background: selected ? "var(--color-primary)" : "#fff", color: selected ? "#fff" : "var(--color-primary)" }}
@@ -536,6 +540,10 @@ export function CoffeeBreakOrder() {
                 {hasDietary && (
                   <textarea rows={2} placeholder="Descreva as restrições (ex: vegetariano, sem lactose, alergia a nozes...)" value={dietaryDetails} onChange={(e) => setDietaryDetails(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--color-border-input)", fontSize: 13, boxSizing: "border-box", fontFamily: "inherit", resize: "none" }} />
                 )}
+              </div>
+
+              <div className="step-card-divider">
+                <AttachmentsField value={attachments} onChange={setAttachments} />
               </div>
             </div>
 

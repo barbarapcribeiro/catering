@@ -32,6 +32,14 @@ export interface OrderItem {
   productId?: string;
 }
 
+export interface OrderAttachment {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  dataUrl: string;
+}
+
 export interface Order {
   id: string;
   category: string;
@@ -53,6 +61,7 @@ export interface Order {
   dietaryRestrictions?: string;
   notes?: string;
   costCenters?: CostCenterAllocation[];
+  attachments?: OrderAttachment[];
   /** Status do fechamento financeiro do pedido — controlado na tela de Faturamento. */
   billingStatus?: "Pendente" | "Fechado" | "Enviado ao ERP";
   requiresApproval?: boolean;
@@ -255,6 +264,8 @@ export interface Product {
   photoUrl?: string;
   /** Em quais páginas/serviços de pedido esse produto pode aparecer. */
   pages?: CatalogPageName[];
+  /** Centros de custo autorizados a usar este produto (vazio/ausente = todos). */
+  allowedCostCenterCodes?: string[];
   active: boolean;
 }
 
@@ -287,6 +298,8 @@ export interface Kit {
   mealServices?: MealServiceName[];
   /** Em quais páginas/serviços de pedido esse kit pode aparecer. */
   pages?: CatalogPageName[];
+  /** Centros de custo autorizados a usar este kit (vazio/ausente = todos). */
+  allowedCostCenterCodes?: string[];
   active: boolean;
 }
 
@@ -300,6 +313,8 @@ export interface ServiceCatalogItem {
   category: ServiceCatalogCategory;
   /** Preço do serviço, usado quando incluído em kits e eventos premium. */
   price: number;
+  /** Centros de custo autorizados a usar este serviço (vazio/ausente = todos). */
+  allowedCostCenterCodes?: string[];
   active: boolean;
 }
 
@@ -313,6 +328,8 @@ export interface Decoration {
   category: DecorationCategory;
   price: number;
   photoUrl?: string;
+  /** Centros de custo autorizados a usar esta decoração (vazio/ausente = todos). */
+  allowedCostCenterCodes?: string[];
   active: boolean;
 }
 
@@ -343,6 +360,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "pedido-abastecimento", label: "Novo Pedido · Abastecimento Simples", group: "Área do colaborador" },
   { id: "surpreenda", label: "Surpreenda", group: "Área do colaborador" },
   { id: "pedido-lanche", label: "Novo Pedido · Lanche", group: "Área do colaborador" },
+  { id: "pedido-servicos-diversos", label: "Novo Pedido · Serviços Diversos", group: "Área do colaborador" },
   { id: "pedidos", label: "Gerenciar Pedidos", group: "Área do colaborador" },
   { id: "producao", label: "Produção", group: "Área do colaborador" },
   { id: "fique-por-dentro", label: "Fique por Dentro", group: "Área do colaborador" },
@@ -360,12 +378,17 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-pesquisa-app", label: "Pesquisa da Aplicação (CX/UX/NPS)", group: "Painel Administrativo" },
   { id: "admin-usuarios", label: "Pessoas · Usuários", group: "Painel Administrativo" },
   { id: "admin-permissoes", label: "Pessoas · Perfis e Permissões", group: "Painel Administrativo" },
+  { id: "admin-autocadastro", label: "Pessoas · Autocadastro (atalho)", group: "Painel Administrativo" },
   { id: "admin-faturamento", label: "Financeiro · Faturamento", group: "Painel Administrativo" },
-  { id: "admin-centros-custo", label: "Financeiro · Centros de Custo", group: "Painel Administrativo" },
+  { id: "admin-centros-custo", label: "Cadastros · Centros de Custo", group: "Painel Administrativo" },
   { id: "admin-contratos", label: "Financeiro · Contratos", group: "Painel Administrativo" },
+  { id: "admin-empresas", label: "Cadastros · Empresas", group: "Painel Administrativo" },
+  { id: "admin-filiais", label: "Cadastros · Filiais", group: "Painel Administrativo" },
+  { id: "admin-copas", label: "Cadastros · Copas", group: "Painel Administrativo" },
   { id: "admin-ocorrencias", label: "Ocorrências", group: "Painel Administrativo" },
   { id: "admin-popups", label: "Pop-ups", group: "Painel Administrativo" },
   { id: "admin-parametros", label: "Parâmetros", group: "Painel Administrativo" },
+  { id: "admin-servicos-filial", label: "Configurações · Serviços por Filial", group: "Painel Administrativo" },
   { id: "admin-ativos", label: "Gestão de Ativos", group: "Painel Administrativo" },
   { id: "admin-tipos-ativo", label: "Tipos de Ativo", group: "Painel Administrativo" },
   { id: "admin-ativos-checkin", label: "Check-in / Check-out de Ativos", group: "Painel Administrativo" },
@@ -400,13 +423,50 @@ export interface Profile {
   active: boolean;
 }
 
+export const PHONE_COUNTRIES = [
+  { code: "+55", label: "Brasil" },
+  { code: "+1", label: "Estados Unidos/Canadá" },
+  { code: "+351", label: "Portugal" },
+  { code: "+54", label: "Argentina" },
+  { code: "+595", label: "Paraguai" },
+  { code: "+598", label: "Uruguai" },
+  { code: "+34", label: "Espanha" },
+] as const;
+
+export interface PhoneNumber {
+  /** Código do país, ex.: "+55". */
+  country: string;
+  /** DDD, ex.: "11". */
+  ddd: string;
+  /** Número, ex.: "91234-5678". */
+  number: string;
+}
+
+export function formatPhoneNumber(phone?: PhoneNumber): string | undefined {
+  if (!phone || !phone.ddd.trim() || !phone.number.trim()) return undefined;
+  return `${phone.country} (${phone.ddd}) ${phone.number}`;
+}
+
 export interface AppUser {
   id: string;
   name: string;
   email: string;
+  cpf?: string;
+  /** Matrícula interna (opcional). */
+  matricula?: string;
+  /** Celular/WhatsApp, com país e DDD. */
+  phone?: PhoneNumber;
+  /** Cargo do usuário na empresa. */
+  cargo?: string;
+  /** Senha (mock — sem hashing, app não tem autenticação real). */
+  password?: string;
   profileId?: string;
-  /** Código do centro de custo associado (perfis Cliente solicitante, Gestor aprovador e Consumidor final). */
-  costCenterCode?: string;
+  /** Empresa associada (perfis Cliente solicitante, Gestor aprovador e Consumidor final). */
+  companyId?: string;
+  /** Filiais associadas — filtradas pela empresa. */
+  branchIds?: string[];
+  /** Centros de custo associados — filtrados pelas filiais selecionadas. */
+  costCenterCodes?: string[];
   active: boolean;
   createdAt: string;
   lastPasswordResetAt?: string;
@@ -415,11 +475,73 @@ export interface AppUser {
 /** Perfis cujo usuário fica associado a um centro de custo específico. */
 export const COST_CENTER_LINKED_PROFILE_IDS = ["prof-cliente", "prof-gestor", "prof-consumidor"] as const;
 
+export const COMPANY_TYPES = ["Jurídica", "Física"] as const;
+export type CompanyType = (typeof COMPANY_TYPES)[number];
+
+export interface Company {
+  id: string;
+  type: CompanyType;
+  name: string;
+  tradeName?: string;
+  cnpj: string;
+  /** Usuários responsáveis pela conta — precisam estar cadastrados em Usuários. */
+  accountManagerIds: string[];
+  active: boolean;
+}
+
+export interface Branch {
+  id: string;
+  companyId: string;
+  name: string;
+  cep: string;
+  plantName: string;
+  /** Usuários responsáveis pela filial — precisam estar cadastrados em Usuários. */
+  managerIds: string[];
+  /** IDs dos serviços (tela Home) habilitados para o Cliente solicitante desta filial — ausente = todos habilitados. */
+  enabledServiceIds?: string[];
+  active: boolean;
+}
+
 export interface CostCenter {
   id: string;
   code: string;
   name: string;
-  manager?: string;
+  companyId?: string;
+  branchId?: string;
+  areaName?: string;
+  /** Usuário responsável — precisa ter perfil de Gestor aprovador. */
+  managerUserId?: string;
+  physicalLocation?: string;
+  active: boolean;
+}
+
+export const WEEKDAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"] as const;
+export type Weekday = (typeof WEEKDAYS)[number];
+
+export interface CopaOperatingHours {
+  weekday: Weekday;
+  enabled: boolean;
+  start: string;
+  end: string;
+}
+
+export interface Copa {
+  id: string;
+  name: string;
+  companyId: string;
+  branchId: string;
+  physicalLocation: string;
+  /** Códigos dos centros de custo atendidos por esta copa. */
+  costCenterCodes: string[];
+  /** Usuários Sodexo responsáveis — precisam estar cadastrados em Usuários. */
+  responsibleUserIds: string[];
+  /** SLA: quantidade mínima de horas de antecedência para realizar o pedido. */
+  slaHours: number;
+  operatingHours: CopaOperatingHours[];
+  /** Datas (ISO) não úteis e feriados. */
+  nonBusinessDays: string[];
+  /** Capacidade produtiva: quantos pedidos por cada 30 minutos do período de funcionamento. */
+  capacityPer30min: number;
   active: boolean;
 }
 
@@ -584,6 +706,7 @@ export interface CatracaRedemption {
   pickupTime: string;
   costCenterCode?: string;
   requestedBy?: string;
+  attachments?: OrderAttachment[];
   status: CatracaStatus;
   checkInAt?: string;
   checkOutAt?: string;

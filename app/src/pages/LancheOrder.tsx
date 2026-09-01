@@ -2,10 +2,11 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
+import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { computeKitPrice } from "../mock/pricing";
-import type { Kit } from "../types";
+import type { Kit, OrderAttachment } from "../types";
 import "./OrderFlow.css";
 import "./Surpreenda.css";
 import "./LancheOrder.css";
@@ -35,6 +36,7 @@ export function LancheOrder() {
   const [costCenter, setCostCenter] = useState("");
   const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
   const [payment, setPayment] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [confirmed, setConfirmed] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -98,6 +100,7 @@ export function LancheOrder() {
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Forma de pagamento: ${paymentDef?.label ?? "—"}`,
+      attachments: attachments.length ? attachments : undefined,
     });
     showToast("Pedido de lanche solicitado com sucesso!");
     setConfirmed(true);
@@ -284,6 +287,11 @@ export function LancheOrder() {
               );
             })}
           </div>
+        </div>
+
+        <div className="step-card">
+          <div className="step-heading">4. Anexo</div>
+          <AttachmentsField value={attachments} onChange={setAttachments} />
         </div>
 
         <div className="step-card lanche-summary">

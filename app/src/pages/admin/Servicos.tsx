@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAppData } from "../../mock/AppDataContext";
 import { Modal } from "../../components/Modal";
+import { CostCenterChipSelect } from "../../components/CostCenterChipSelect";
 import { money } from "../../mock/money";
 import { SERVICE_CATALOG_CATEGORIES, type ServiceCatalogCategory, type ServiceCatalogItem } from "../../types";
 import "./Servicos.css";
@@ -10,11 +11,12 @@ const EMPTY_FORM = {
   category: SERVICE_CATALOG_CATEGORIES[0] as ServiceCatalogCategory,
   description: "",
   price: "",
+  allowedCostCenterCodes: [] as string[],
   active: true,
 };
 
 export function Servicos() {
-  const { serviceCatalog, addServiceCatalogItem, updateServiceCatalogItem, removeServiceCatalogItem, showToast } = useAppData();
+  const { serviceCatalog, costCenters, addServiceCatalogItem, updateServiceCatalogItem, removeServiceCatalogItem, showToast } = useAppData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -28,15 +30,26 @@ export function Servicos() {
 
   const openEdit = (s: ServiceCatalogItem) => {
     setEditingId(s.id);
-    setForm({ name: s.name, category: s.category, description: s.description ?? "", price: String(s.price), active: s.active });
+    setForm({ name: s.name, category: s.category, description: s.description ?? "", price: String(s.price), allowedCostCenterCodes: s.allowedCostCenterCodes ?? [], active: s.active });
     setModalOpen(true);
+  };
+
+  const toggleCostCenter = (code: string) => {
+    setForm((f) => ({ ...f, allowedCostCenterCodes: f.allowedCostCenterCodes.includes(code) ? f.allowedCostCenterCodes.filter((c) => c !== code) : [...f.allowedCostCenterCodes, code] }));
   };
 
   const parsedPrice = parseFloat(form.price.replace(",", ".")) || 0;
 
   const save = () => {
     if (!form.name.trim()) return;
-    const payload = { name: form.name, category: form.category, description: form.description || undefined, price: parsedPrice, active: form.active };
+    const payload = {
+      name: form.name,
+      category: form.category,
+      description: form.description || undefined,
+      price: parsedPrice,
+      allowedCostCenterCodes: form.allowedCostCenterCodes.length > 0 ? form.allowedCostCenterCodes : undefined,
+      active: form.active,
+    };
     if (editingId) {
       updateServiceCatalogItem(editingId, payload);
       showToast("Serviço atualizado.");
@@ -96,6 +109,9 @@ export function Servicos() {
               <div>
                 <div className="servicos-table__name">{s.name}</div>
                 {s.description && <div className="servicos-table__desc">{s.description}</div>}
+                {s.allowedCostCenterCodes && s.allowedCostCenterCodes.length > 0 && (
+                  <div className="servicos-table__cc-restrict">Restrito: {s.allowedCostCenterCodes.join(", ")}</div>
+                )}
               </div>
               <div>
                 <span className="pill-tag">{s.category}</span>
@@ -151,6 +167,10 @@ export function Servicos() {
               Descrição <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span>
               <textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </label>
+            <div className="field-label">
+              Centros de custo autorizados <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional — vazio libera para todos)</span>
+            </div>
+            <CostCenterChipSelect costCenters={costCenters.filter((c) => c.active)} selectedCodes={form.allowedCostCenterCodes} onToggle={toggleCostCenter} />
             <label className="servicos-active-check">
               <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />
               Serviço ativo

@@ -85,9 +85,10 @@ export const SERVICES: Service[] = [
   {
     id: "sd",
     name: "Serviços Diversos",
-    desc: "Outros serviços disponíveis.",
+    desc: "Solicite os serviços cadastrados no catálogo, como limpeza, recepção e logística.",
     mono: "SD",
     iconPath: "M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z",
+    route: "/pedido/servicos-diversos",
   },
   {
     id: "sp",

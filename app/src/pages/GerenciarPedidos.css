@@ -471,6 +471,7 @@
   font-weight: 600;
   cursor: pointer;
   flex-shrink: 0;
+  text-decoration: none;
 }
 
 .gp-historico {

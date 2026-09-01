@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Modal } from "../components/Modal";
 import { PathIcon } from "../components/Icon";
+import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { isOpenOrder, SERVICES, STATUS_STYLE } from "../mock/services";
 import { PROMOS } from "../mock/promos";
-import type { Order } from "../types";
+import type { Order, OrderAttachment } from "../types";
 import "./Home.css";
 
 function formatDateTimePt(iso: string) {
@@ -20,7 +21,7 @@ const PROMO_ICON: Record<string, string> = { combo: "☕", coffee: "☕", lanche
 type Modal_ = { type: "service"; service: (typeof SERVICES)[number] } | { type: "order"; order: Order } | null;
 
 export function HomeCliente() {
-  const { orders, addOrder, cancelOrder, duplicateOrder, favorites, toggleFavorite, showToast } = useAppData();
+  const { orders, addOrder, cancelOrder, duplicateOrder, favorites, toggleFavorite, showToast, currentUser, branches } = useAppData();
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,10 +30,22 @@ export function HomeCliente() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [kebabOpenId, setKebabOpenId] = useState<string | null>(null);
   const [modal, setModal] = useState<Modal_>(null);
-  const [form, setForm] = useState({ people: "", date: "", time: "", notes: "" });
+  const [form, setForm] = useState({ people: "", date: "", time: "", notes: "", attachments: [] as OrderAttachment[] });
+
+  // Serviços habilitados nas filiais do usuário (união entre elas). Usuário sem filial vinculada
+  // vê tudo, pra não quebrar perfis que não passam por essa configuração (GU, Produção etc.).
+  const userBranches = branches.filter((b) => (currentUser?.branchIds ?? []).includes(b.id));
+  const visibleServiceIds =
+    userBranches.length > 0 ? new Set(userBranches.flatMap((b) => b.enabledServiceIds ?? SERVICES.map((s) => s.id))) : null;
+  const visibleServices = visibleServiceIds ? SERVICES.filter((sv) => visibleServiceIds.has(sv.id)) : SERVICES;
+  const visiblePromos = PROMOS.filter((p) => {
+    if (!p.route) return true;
+    const svc = SERVICES.find((sv) => sv.route === p.route);
+    return !svc || visibleServices.some((v) => v.id === svc.id);
+  });
 
   const q = searchQuery.trim().toLowerCase();
-  let filtered = SERVICES.filter((sv) => sv.name.toLowerCase().includes(q));
+  let filtered = visibleServices.filter((sv) => sv.name.toLowerCase().includes(q));
   if (activeFilter === "favorites") filtered = filtered.filter((sv) => favorites.has(sv.id));
 
   const openOrders = useMemo(() => orders.filter(isOpenOrder), [orders]);
@@ -45,7 +58,7 @@ export function HomeCliente() {
     if (svc.route) {
       navigate(svc.route);
     } else {
-      setForm({ people: "", date: "", time: "", notes: "" });
+      setForm({ people: "", date: "", time: "", notes: "", attachments: [] });
       setModal({ type: "service", service: svc });
     }
   };
@@ -63,6 +76,8 @@ export function HomeCliente() {
       mono: svc.mono,
       qty: `${form.people || "1"} pessoas`,
       datetime: `${form.date || "A definir"} ${form.time || ""}`.trim(),
+      notes: form.notes || undefined,
+      attachments: form.attachments.length ? form.attachments : undefined,
     });
     setModal(null);
     showToast("Pedido solicitado com sucesso!");
@@ -106,23 +121,26 @@ export function HomeCliente() {
         )}
 
         <div className="home-grid-2x2">
-          <div className="home-hero">
-            <div className="home-hero__blob home-hero__blob--1" />
-            <div className="home-hero__blob home-hero__blob--2" />
-            <span className="home-hero__badge">Mais solicitado</span>
-            <div className="home-hero__content">
-              <div className="home-hero__icon">
-                <PathIcon path="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8zM6 2v4M10 2v4M14 2v4" color="#fff" size={26} strokeWidth={2} />
-              </div>
-              <div>
-                <div className="home-hero__title">Coffee Break</div>
-                <div className="home-hero__desc">Solicite coffee break para reuniões, treinamentos e eventos.</div>
+          {visibleServices.some((sv) => sv.id === "cb") && (
+            <div className="home-hero">
+              <img className="home-hero__photo" src="/coffee-break-hero.png" alt="" />
+              <div className="home-hero__photo-overlay" />
+              <button className="home-hero__arrow-btn" onClick={() => navigate("/pedido/coffee-break")} aria-label="Novo pedido de Coffee Break">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </button>
+              <div className="home-hero__row">
+                <div className="home-hero__icon-badge">
+                  <PathIcon path="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8zM6 2v4M10 2v4M14 2v4" color="#fff" size={20} strokeWidth={2} />
+                </div>
+                <div>
+                  <div className="home-hero__title">Coffee Break</div>
+                  <div className="home-hero__desc">Solicite coffee break para reuniões, treinamentos e eventos.</div>
+                </div>
               </div>
             </div>
-            <button className="btn btn--primary" onClick={() => navigate("/pedido/coffee-break")}>
-              Novo pedido
-            </button>
-          </div>
+          )}
 
           <div className="card home-recent">
             <div className="home-recent__header">
@@ -169,7 +187,7 @@ export function HomeCliente() {
               </a>
             </div>
             <div className="home-promos-compact__list">
-              {PROMOS.map((p) => (
+              {visiblePromos.map((p) => (
                 <div key={p.id} className="home-promo-row" onClick={() => p.route && navigate(p.route)}>
                   <div className="home-promo-row__thumb" style={{ background: p.bg }}>
                     {PROMO_ICON[p.id] ?? "🎉"}
@@ -255,7 +273,7 @@ export function HomeCliente() {
           </div>
         </div>
 
-        {favorites.size > 0 && (
+        {visibleServices.some((sv) => favorites.has(sv.id)) && (
           <div className="home-favorites">
             <div className="home-favorites__header">
               <span className="star-icon">★</span>
@@ -263,7 +281,7 @@ export function HomeCliente() {
               <div className="home-favorites__hint">&bull; serviços mais solicitados por você</div>
             </div>
             <div className="favorites-grid">
-              {SERVICES.filter((sv) => favorites.has(sv.id)).map((sv) => (
+              {visibleServices.filter((sv) => favorites.has(sv.id)).map((sv) => (
                 <div key={sv.id} className="service-card service-card--fav" onClick={() => openService(sv)}>
                   <div className="service-card__icon service-card__icon--primary">
                     <PathIcon path={sv.iconPath} color="#fff" />
@@ -419,6 +437,7 @@ export function HomeCliente() {
               Observações
               <textarea rows={3} placeholder="Opcional" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </label>
+            <AttachmentsField value={form.attachments} onChange={(attachments) => setForm({ ...form, attachments })} />
           </div>
           <div className="modal-actions">
             <button className="btn btn--outline" onClick={() => setModal(null)}>
