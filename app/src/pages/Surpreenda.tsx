@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Stepper } from "../components/Stepper";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
+import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
+import type { OrderAttachment } from "../types";
 import "./OrderFlow.css";
 import "./Surpreenda.css";
 
@@ -49,6 +51,7 @@ export function Surpreenda() {
   const [obs, setObs] = useState("");
   const [hasDietary, setHasDietary] = useState(false);
   const [dietaryDetails, setDietaryDetails] = useState("");
+  const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [payment, setPayment] = useState<string | null>(null);
   const [feeInput, setFeeInput] = useState("");
   const [costCenter, setCostCenter] = useState("");
@@ -123,6 +126,7 @@ export function Surpreenda() {
       notes: obs,
       costCenters: [{ code: costCenter, percent: 100 }],
       requiresApproval: needsApproval,
+      attachments: attachments.length ? attachments : undefined,
     });
     setStep(5);
     showToast("Pedido finalizado com sucesso!");
@@ -417,6 +421,10 @@ export function Surpreenda() {
                 {hasDietary && (
                   <textarea rows={2} placeholder="Descreva as restrições (ex: vegetariano, sem lactose, alergia a nozes...)" value={dietaryDetails} onChange={(e) => setDietaryDetails(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--color-border-input)", fontSize: 13, boxSizing: "border-box", fontFamily: "inherit", resize: "none" }} />
                 )}
+              </div>
+
+              <div className="step-card-divider">
+                <AttachmentsField value={attachments} onChange={setAttachments} />
               </div>
             </div>
 

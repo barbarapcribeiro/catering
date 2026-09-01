@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Layout } from "../components/Layout";
+import { formatSize } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import type { Order } from "../types";
 import "./Producao.css";
@@ -336,6 +337,24 @@ export function Producao() {
                       <div>
                         <div className="prod-detail-fact__label">Restrições alimentares</div>
                         <div className="prod-detail-fact__value">{selected.dietaryRestrictions}</div>
+                      </div>
+                    </div>
+                  )}
+                  {(selected.attachments ?? []).length > 0 && (
+                    <div className="prod-detail-fact">
+                      <span>📎</span>
+                      <div>
+                        <div className="prod-detail-fact__label">Anexos</div>
+                        <div className="prod-detail-fact__value">
+                          {selected.attachments!.map((att) => (
+                            <div key={att.id}>
+                              <a href={att.dataUrl} download={att.name}>
+                                {att.name}
+                              </a>{" "}
+                              <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>({formatSize(att.size)})</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}

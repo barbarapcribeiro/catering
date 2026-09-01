@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
+import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
-import type { Product } from "../types";
+import type { OrderAttachment, Product } from "../types";
 import "./OrderFlow.css";
 import "./AbastecimentoOrder.css";
 
@@ -32,6 +33,7 @@ export function AbastecimentoOrder() {
   }, [linkedCostCenterCode]);
   const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
   const [observations, setObservations] = useState("");
+  const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [hasError, setHasError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -75,6 +77,7 @@ export function AbastecimentoOrder() {
       location: local,
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Entregar para: ${deliverTo}${observations ? " • " + observations : ""}`,
+      attachments: attachments.length ? attachments : undefined,
     });
     showToast("Pedido de abastecimento solicitado com sucesso!");
     navigate("/");
@@ -197,6 +200,9 @@ export function AbastecimentoOrder() {
             Observações
             <textarea rows={3} placeholder="Alguma informação adicional sobre a entrega..." value={observations} onChange={(e) => setObservations(e.target.value)} style={{ resize: "vertical" }} />
           </label>
+          <div style={{ marginTop: 18 }}>
+            <AttachmentsField value={attachments} onChange={setAttachments} />
+          </div>
         </div>
 
         {hasError && <div className="abast-error">{errorMsg}</div>}

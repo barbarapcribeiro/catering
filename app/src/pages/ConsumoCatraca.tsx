@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
 import { Layout } from "../components/Layout";
+import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { catracaEffectiveStatus, catracaCheckInDeadline } from "../mock/catraca";
-import { MEAL_SERVICES, type CatracaEffectiveStatus, type CatracaRedemption, type MealServiceName } from "../types";
+import { MEAL_SERVICES, type CatracaEffectiveStatus, type CatracaRedemption, type MealServiceName, type OrderAttachment } from "../types";
 import "./OrderFlow.css";
 import "./ConsumoCatraca.css";
 
@@ -31,6 +32,7 @@ export function ConsumoCatraca() {
   const [pickupDate, setPickupDate] = useState(todayISO());
   const [pickupTime, setPickupTime] = useState("");
   const [costCenter, setCostCenter] = useState("");
+  const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [confirmed, setConfirmed] = useState<CatracaRedemption | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [qrForId, setQrForId] = useState<string | null>(null);
@@ -75,6 +77,7 @@ export function ConsumoCatraca() {
       pickupTime,
       costCenterCode: costCenter,
       requestedBy: currentUser?.name,
+      attachments: attachments.length ? attachments : undefined,
     });
     setConfirmed(created);
   };
@@ -83,6 +86,7 @@ export function ConsumoCatraca() {
     setConfirmed(null);
     setSelectedKitId(null);
     setPickupTime("");
+    setAttachments([]);
     setTopTab("novo");
   };
 
@@ -212,6 +216,10 @@ export function ConsumoCatraca() {
                   </select>
                 </label>
               </div>
+            </div>
+
+            <div className="step-card">
+              <AttachmentsField value={attachments} onChange={setAttachments} />
             </div>
 
             <button className="btn btn--primary btn--full" style={{ marginTop: 16 }} disabled={!canConfirm} onClick={confirm}>

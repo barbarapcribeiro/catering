@@ -5,10 +5,11 @@ import { Stepper } from "../components/Stepper";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { QrPlaceholder } from "../components/QrPlaceholder";
 import { PathIcon } from "../components/Icon";
+import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
-import type { ProductType } from "../types";
+import type { OrderAttachment, ProductType } from "../types";
 import "./OrderFlow.css";
 
 const CATEGORIES = [
@@ -71,6 +72,7 @@ export function CoffeeBreakOrder() {
   const [coffeeInstructions, setCoffeeInstructions] = useState("");
   const [hasDietary, setHasDietary] = useState(false);
   const [dietaryDetails, setDietaryDetails] = useState("");
+  const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [costCenterSel, setCostCenterSel] = useState<Record<string, boolean>>({});
   const [costCenterPct, setCostCenterPct] = useState<Record<string, number>>({ CC001: 100, CC002: 100, CC003: 100 });
 
@@ -181,6 +183,7 @@ export function CoffeeBreakOrder() {
       dietaryRestrictions: hasDietary ? dietaryDetails || "Sim, sem detalhes" : "Nenhuma",
       costCenters: selCodes.map((code) => ({ code, percent: multiSel ? costCenterPct[code] : 100 })),
       requiresApproval: needsApproval,
+      attachments: attachments.length ? attachments : undefined,
     });
     setStep(4);
     showToast("Faturamento confirmado!");
@@ -537,6 +540,10 @@ export function CoffeeBreakOrder() {
                 {hasDietary && (
                   <textarea rows={2} placeholder="Descreva as restrições (ex: vegetariano, sem lactose, alergia a nozes...)" value={dietaryDetails} onChange={(e) => setDietaryDetails(e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--color-border-input)", fontSize: 13, boxSizing: "border-box", fontFamily: "inherit", resize: "none" }} />
                 )}
+              </div>
+
+              <div className="step-card-divider">
+                <AttachmentsField value={attachments} onChange={setAttachments} />
               </div>
             </div>
 

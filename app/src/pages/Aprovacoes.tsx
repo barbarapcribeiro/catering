@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
+import { formatSize } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { STATUS_STYLE } from "../mock/services";
 import type { Order } from "../types";
@@ -120,6 +121,21 @@ export function Aprovacoes() {
                       <div className="apr-card__summary-label">Itens selecionados</div>
                       <div className="apr-card__summary-value">{o.items?.length ?? 0} itens</div>
                     </div>
+                    {(o.attachments ?? []).length > 0 && (
+                      <div className="apr-card__summary-row">
+                        <div className="apr-card__summary-label">Anexos</div>
+                        <div className="apr-card__summary-value">
+                          {o.attachments!.map((att) => (
+                            <div key={att.id}>
+                              <a href={att.dataUrl} download={att.name}>
+                                {att.name}
+                              </a>{" "}
+                              <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>({formatSize(att.size)})</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="apr-card__summary-row apr-card__summary-row--total">
                       <div className="apr-card__summary-label">Total</div>
                       <div className="apr-card__total">{o.value}</div>

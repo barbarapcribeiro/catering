@@ -32,6 +32,14 @@ export interface OrderItem {
   productId?: string;
 }
 
+export interface OrderAttachment {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  dataUrl: string;
+}
+
 export interface Order {
   id: string;
   category: string;
@@ -53,6 +61,7 @@ export interface Order {
   dietaryRestrictions?: string;
   notes?: string;
   costCenters?: CostCenterAllocation[];
+  attachments?: OrderAttachment[];
   /** Status do fechamento financeiro do pedido — controlado na tela de Faturamento. */
   billingStatus?: "Pendente" | "Fechado" | "Enviado ao ERP";
   requiresApproval?: boolean;
@@ -697,6 +706,7 @@ export interface CatracaRedemption {
   pickupTime: string;
   costCenterCode?: string;
   requestedBy?: string;
+  attachments?: OrderAttachment[];
   status: CatracaStatus;
   checkInAt?: string;
   checkOutAt?: string;

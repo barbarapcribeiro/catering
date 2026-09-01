@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Modal } from "../components/Modal";
+import { formatSize } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { STATUS_STYLE } from "../mock/services";
 import { money } from "../mock/money";
@@ -12,10 +13,6 @@ type ListTab = "andamento" | "finalizado" | "cancelado";
 type DetailTab = "resumo" | "itens" | "informacoes" | "anexos" | "historico";
 
 const STAGES = ["Pedido recebido", "Aguardando aprovação", "Aguardando aprovação do restaurante", "Em preparação", "Entrega"];
-
-// Attachments aren't part of the shared Order type (display-only, mock-only data).
-// Keyed by order id — orders without a match simply show the empty state.
-const ATTACHMENTS: Record<string, { name: string; meta: string }[]> = {};
 
 function tabOf(o: Order): ListTab {
   if (o.status === "Cancelado") return "cancelado";
@@ -262,7 +259,7 @@ export function GerenciarPedidos() {
         { id: "resumo", label: "Resumo do pedido" },
         { id: "itens", label: `Itens (${items.length})` },
         { id: "informacoes", label: "Informações" },
-        { id: "anexos", label: `Anexos (${(ATTACHMENTS[selected.id] ?? []).length})` },
+        { id: "anexos", label: `Anexos (${(selected.attachments ?? []).length})` },
         { id: "historico", label: "Histórico" },
       ]
     : [];
@@ -582,17 +579,19 @@ export function GerenciarPedidos() {
 
                 {detailTab === "anexos" && (
                   <div className="gp-anexos-list">
-                    {(ATTACHMENTS[selected.id] ?? []).map((att) => (
-                      <div key={att.name} className="gp-anexo-row">
+                    {(selected.attachments ?? []).map((att) => (
+                      <div key={att.id} className="gp-anexo-row">
                         <div className="gp-anexo-row__icon">📄</div>
                         <div className="gp-anexo-row__info">
                           <div className="gp-anexo-row__name">{att.name}</div>
-                          <div className="gp-anexo-row__meta">{att.meta}</div>
+                          <div className="gp-anexo-row__meta">{formatSize(att.size)}</div>
                         </div>
-                        <button className="gp-anexo-row__download">Baixar</button>
+                        <a className="gp-anexo-row__download" href={att.dataUrl} download={att.name}>
+                          Baixar
+                        </a>
                       </div>
                     ))}
-                    {(ATTACHMENTS[selected.id] ?? []).length === 0 && <div className="empty-state">Nenhum anexo neste pedido.</div>}
+                    {(selected.attachments ?? []).length === 0 && <div className="empty-state">Nenhum anexo neste pedido.</div>}
                   </div>
                 )}
 

@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
+import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
+import type { OrderAttachment } from "../types";
 import "./OrderFlow.css";
 import "./Surpreenda.css";
 import "./ServicosDiversosOrder.css";
@@ -28,6 +30,7 @@ export function ServicosDiversosOrder() {
   const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
   const [payment, setPayment] = useState<string | null>(null);
   const [observations, setObservations] = useState("");
+  const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [confirmed, setConfirmed] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -89,6 +92,7 @@ export function ServicosDiversosOrder() {
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: [`Forma de pagamento: ${paymentDef?.label ?? "—"}`, observations && `Observações: ${observations}`].filter(Boolean).join(" · "),
+      attachments: attachments.length ? attachments : undefined,
     });
     showToast("Pedido de serviços diversos solicitado com sucesso!");
     setConfirmed(true);
@@ -263,6 +267,10 @@ export function ServicosDiversosOrder() {
         <div className="step-card">
           <div className="step-heading">3. Observações <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span></div>
           <textarea rows={3} value={observations} onChange={(e) => setObservations(e.target.value)} placeholder="Detalhes adicionais sobre o serviço solicitado" style={{ width: "100%" }} />
+        </div>
+
+        <div className="step-card">
+          <AttachmentsField value={attachments} onChange={setAttachments} />
         </div>
 
         <div className="step-card">

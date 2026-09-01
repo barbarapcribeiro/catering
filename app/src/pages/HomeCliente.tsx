@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Modal } from "../components/Modal";
 import { PathIcon } from "../components/Icon";
+import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { isOpenOrder, SERVICES, STATUS_STYLE } from "../mock/services";
 import { PROMOS } from "../mock/promos";
-import type { Order } from "../types";
+import type { Order, OrderAttachment } from "../types";
 import "./Home.css";
 
 function formatDateTimePt(iso: string) {
@@ -29,7 +30,7 @@ export function HomeCliente() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [kebabOpenId, setKebabOpenId] = useState<string | null>(null);
   const [modal, setModal] = useState<Modal_>(null);
-  const [form, setForm] = useState({ people: "", date: "", time: "", notes: "" });
+  const [form, setForm] = useState({ people: "", date: "", time: "", notes: "", attachments: [] as OrderAttachment[] });
 
   // Serviços habilitados nas filiais do usuário (união entre elas). Usuário sem filial vinculada
   // vê tudo, pra não quebrar perfis que não passam por essa configuração (GU, Produção etc.).
@@ -57,7 +58,7 @@ export function HomeCliente() {
     if (svc.route) {
       navigate(svc.route);
     } else {
-      setForm({ people: "", date: "", time: "", notes: "" });
+      setForm({ people: "", date: "", time: "", notes: "", attachments: [] });
       setModal({ type: "service", service: svc });
     }
   };
@@ -75,6 +76,8 @@ export function HomeCliente() {
       mono: svc.mono,
       qty: `${form.people || "1"} pessoas`,
       datetime: `${form.date || "A definir"} ${form.time || ""}`.trim(),
+      notes: form.notes || undefined,
+      attachments: form.attachments.length ? form.attachments : undefined,
     });
     setModal(null);
     showToast("Pedido solicitado com sucesso!");
@@ -433,6 +436,7 @@ export function HomeCliente() {
               Observações
               <textarea rows={3} placeholder="Opcional" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </label>
+            <AttachmentsField value={form.attachments} onChange={(attachments) => setForm({ ...form, attachments })} />
           </div>
           <div className="modal-actions">
             <button className="btn btn--outline" onClick={() => setModal(null)}>
