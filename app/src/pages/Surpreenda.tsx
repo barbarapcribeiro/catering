@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Stepper } from "../components/Stepper";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
@@ -33,8 +33,10 @@ const STEP_DEFS = [
 ];
 
 export function Surpreenda() {
-  const { addOrder, showToast, costCenters, serviceParameters } = useAppData();
+  const { addOrder, showToast, costCenters, serviceParameters, orders } = useAppData();
   const navigate = useNavigate();
+  const routerLocation = useLocation();
+  const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
   const activeCostCenters = costCenters.filter((c) => c.active);
   const linkedCostCenterCode = serviceParameters.find((s) => s.category === "Surpreenda")?.linkedCostCenterCode;
 
@@ -63,6 +65,24 @@ export function Surpreenda() {
   const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
 
   const setQty = (id: string, v: number) => setQtys((s) => ({ ...s, [id]: Math.max(0, v) }));
+
+  useEffect(() => {
+    if (!repeatOrderId) return;
+    const source = orders.find((o) => o.id === repeatOrderId);
+    if (!source) return;
+    const nextQtys: Record<string, number> = {};
+    (source.items ?? []).forEach((it) => {
+      const kit = KITS.find((k) => k.name === it.name);
+      if (kit) nextQtys[kit.id] = it.qty;
+    });
+    setQtys(nextQtys);
+    if (source.eventName) setEventName(source.eventName);
+    if (source.location) setEventLocal(source.location);
+    if (source.peopleCount) setPeople(source.peopleCount);
+    if (source.costCenters && source.costCenters.length > 0) setCostCenter(source.costCenters[0].code);
+    showToast("Carrinho preenchido com os itens do pedido anterior. Revise e confirme.");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repeatOrderId]);
 
   const clearAll = () => {
     setQtys({});

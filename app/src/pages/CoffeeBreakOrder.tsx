@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Stepper } from "../components/Stepper";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
@@ -49,9 +49,11 @@ const STEP_DEFS = [
 ];
 
 export function CoffeeBreakOrder() {
-  const { addOrder, showToast, products, serviceParameters } = useAppData();
+  const { addOrder, showToast, products, serviceParameters, orders } = useAppData();
   const svcParams = serviceParameters.find((s) => s.category === "Coffee Break");
   const navigate = useNavigate();
+  const routerLocation = useLocation();
+  const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
   const avulsoProducts = products.filter((p) => p.active && (p.pages ?? []).includes("Coffee Break"));
 
   const [orderId] = useState(() => `#CB-${Math.floor(15200 + Math.random() * 800)}`);
@@ -105,6 +107,39 @@ export function CoffeeBreakOrder() {
     setQtys({});
     showToast("Carrinho limpo.");
   };
+
+  useEffect(() => {
+    if (!repeatOrderId) return;
+    const source = orders.find((o) => o.id === repeatOrderId);
+    if (!source) return;
+    const nextQtys: Record<string, number> = {};
+    let matchedKit: string | null = null;
+    (source.items ?? []).forEach((it) => {
+      if (it.productId) {
+        nextQtys[it.productId] = it.qty;
+      } else {
+        const kit = KITS.find((k) => k.name === it.name);
+        if (kit) matchedKit = kit.id;
+      }
+    });
+    setQtys(nextQtys);
+    setSelectedKit(matchedKit);
+    if (source.eventName) setEventName(source.eventName);
+    if (source.location) setEventLocal(source.location);
+    if (source.peopleCount) setPeople(source.peopleCount);
+    if (source.costCenters && source.costCenters.length > 0) {
+      const sel: Record<string, boolean> = {};
+      const pct: Record<string, number> = {};
+      source.costCenters.forEach((cc) => {
+        sel[cc.code] = true;
+        pct[cc.code] = cc.percent;
+      });
+      setCostCenterSel(sel);
+      setCostCenterPct((p) => ({ ...p, ...pct }));
+    }
+    showToast("Carrinho preenchido com os itens do pedido anterior. Revise e confirme.");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repeatOrderId]);
 
   let avulsosList = avulsoProducts;
   if (activeCategory !== "kits") avulsosList = avulsosList.filter((p) => TYPE_TO_CATEGORY[p.type] === activeCategory);

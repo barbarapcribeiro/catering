@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
@@ -16,8 +16,10 @@ const PAYMENTS = [
 ];
 
 export function ServicosDiversosOrder() {
-  const { addOrder, showToast, costCenters, serviceCatalog } = useAppData();
+  const { addOrder, showToast, costCenters, serviceCatalog, orders } = useAppData();
   const navigate = useNavigate();
+  const routerLocation = useLocation();
+  const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
 
   const activeCostCenters = costCenters.filter((c) => c.active);
   const activeServices = serviceCatalog.filter((s) => s.active);
@@ -36,6 +38,21 @@ export function ServicosDiversosOrder() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const setQty = (id: string, v: number) => setQtys((s) => ({ ...s, [id]: Math.max(0, v) }));
+
+  useEffect(() => {
+    if (!repeatOrderId) return;
+    const source = orders.find((o) => o.id === repeatOrderId);
+    if (!source) return;
+    const nextQtys: Record<string, number> = {};
+    (source.items ?? []).forEach((it) => {
+      const svc = activeServices.find((s) => s.name === it.name);
+      if (svc) nextQtys[svc.id] = it.qty;
+    });
+    setQtys(nextQtys);
+    if (source.costCenters && source.costCenters.length > 0) setCostCenter(source.costCenters[0].code);
+    showToast("Carrinho preenchido com os itens do pedido anterior. Revise e confirme.");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repeatOrderId]);
 
   const cartItems = useMemo(
     () =>

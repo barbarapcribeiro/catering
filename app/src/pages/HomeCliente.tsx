@@ -66,7 +66,12 @@ export function HomeCliente() {
   };
 
   const repeatOrder = (order: Order) => {
-    duplicateOrder(order.id);
+    const route = SERVICES.find((sv) => sv.name === order.category)?.route;
+    if (!route) {
+      duplicateOrder(order.id);
+      return;
+    }
+    navigate(route, { state: { repeatOrderId: order.id } });
   };
 
   const submitOrder = () => {
