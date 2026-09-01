@@ -747,14 +747,25 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const updateOrder: AppDataValue["updateOrder"] = (id, patch) => {
     setState((s) => ({
       ...s,
-      orders: s.orders.map((o) => (o.id === id ? { ...o, ...patch } : o)),
+      orders: s.orders.map((o) => {
+        if (o.id !== id) return o;
+        const next = { ...o, ...patch };
+        if (patch.status && patch.status !== o.status) {
+          next.history = [...(o.history ?? []), { label: `Status alterado para "${patch.status}"`, time: new Date().toLocaleString("pt-BR") }];
+        }
+        return next;
+      }),
     }));
   };
 
   const cancelOrder = (id: string) => {
     setState((s) => ({
       ...s,
-      orders: s.orders.map((o) => (o.id === id ? { ...o, status: "Cancelado" as const } : o)),
+      orders: s.orders.map((o) =>
+        o.id === id
+          ? { ...o, status: "Cancelado" as const, history: [...(o.history ?? []), { label: "Pedido cancelado", time: new Date().toLocaleString("pt-BR") }] }
+          : o,
+      ),
     }));
     showToast("Pedido cancelado.");
   };

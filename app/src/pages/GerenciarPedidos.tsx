@@ -187,6 +187,10 @@ export function GerenciarPedidos() {
     showToast("Orçamento recusado.");
     setQuickActionsOpen(false);
   };
+  const printOrder = () => {
+    setQuickActionsOpen(false);
+    window.print();
+  };
   const openReportModal = () => {
     setReportType(OCCURRENCE_TYPES[0]);
     setReportDescription("");
@@ -400,6 +404,7 @@ export function GerenciarPedidos() {
                           <button onClick={openReportModal}>Reportar problema</button>
                         )}
                         <button onClick={openEditModal}>Editar pedido</button>
+                        <button onClick={printOrder}>Imprimir</button>
                         <button onClick={duplicate}>Duplicar pedido</button>
                         <button className="kebab-menu__danger" onClick={cancel}>
                           Cancelar pedido
@@ -502,9 +507,14 @@ export function GerenciarPedidos() {
                       ))}
                     </div>
                     <div className="gp-resumo-footer">
-                      <button className="btn btn--outline" onClick={openEditModal}>
-                        ✎ Editar pedido
-                      </button>
+                      <div className="gp-resumo-footer__buttons">
+                        <button className="btn btn--outline" onClick={openEditModal}>
+                          ✎ Editar pedido
+                        </button>
+                        <button className="btn btn--outline" onClick={printOrder}>
+                          🖨 Imprimir
+                        </button>
+                      </div>
                       {operatingParameters.showTotalValueInOrder && (
                         <div className="gp-resumo-totals">
                           <div className="gp-resumo-totals__col">
@@ -688,6 +698,65 @@ export function GerenciarPedidos() {
         </div>
 
         {selected && (
+          <div className="gp-print-area">
+            <div className="gp-print-header">
+              <div className="gp-print-eyebrow">Recibo</div>
+              <div className="gp-print-title">{selected.category} &bull; Direct Eventos</div>
+              <div className="gp-print-meta">Pedido {selected.id} &bull; {selected.createdAt ? new Date(selected.createdAt).toLocaleString("pt-BR") : "—"}</div>
+            </div>
+            <div className="gp-print-summary-grid">
+              <div>
+                <span>Data/Hora</span>
+                <strong>{selDate} &bull; {selTime}</strong>
+              </div>
+              {operatingParameters.showDeliveryLocationField && (
+                <div>
+                  <span>Local</span>
+                  <strong>{selected.location ?? "—"}</strong>
+                </div>
+              )}
+              <div>
+                <span>Pessoas</span>
+                <strong>{selected.peopleCount ?? selected.qty}</strong>
+              </div>
+              <div>
+                <span>Status</span>
+                <strong>{selected.status}</strong>
+              </div>
+            </div>
+            <div className="gp-print-table-head">
+              <div>Item</div>
+              <div>Qtd.</div>
+              <div>Total</div>
+            </div>
+            {items.map((it) => (
+              <div key={it.key} className="gp-print-row">
+                <div>{it.name}</div>
+                <div>{it.qty}</div>
+                <div>{money(it.total)}</div>
+              </div>
+            ))}
+            {operatingParameters.showTotalValueInOrder && (
+              <div className="gp-print-totals">
+                <div>
+                  <span>Subtotal</span>
+                  <span>{money(subtotal)}</span>
+                </div>
+                <div>
+                  <span>Taxa ({(serviceParameters.find((sp) => sp.category === selected.category)?.adminFeePercent ?? 10)}%)</span>
+                  <span>{money(fee)}</span>
+                </div>
+                <div className="gp-print-totals__final">
+                  <span>Total</span>
+                  <span>{money(total)}</span>
+                </div>
+              </div>
+            )}
+            <div className="gp-print-disclaimer">Este recibo é uma demonstração e não possui valor fiscal.</div>
+          </div>
+        )}
+
+        {selected && (
           <div className="gp-action-bar">
             {selected.status === "Orçamento enviado" && (
               <>
@@ -704,6 +773,9 @@ export function GerenciarPedidos() {
             </button>
             <button className="btn btn--outline gp-action-bar__primary-outline" onClick={openEditModal}>
               ✎ Editar pedido
+            </button>
+            <button className="btn btn--outline" onClick={printOrder}>
+              🖨 Imprimir
             </button>
             <button className="btn btn--outline" onClick={converse}>
               💬 Conversar
