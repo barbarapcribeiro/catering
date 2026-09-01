@@ -12,8 +12,10 @@ import {
   type ChatMessage,
   type Company,
   type Branch,
+  type BusinessUnit,
   type Contract,
   type Copa,
+  type Segment,
   type CostCenter,
   type Decoration,
   type Kit,
@@ -59,6 +61,8 @@ interface StoredState {
   premiumEvents: PremiumEvent[];
   profiles: Profile[];
   users: AppUser[];
+  segments: Segment[];
+  businessUnits: BusinessUnit[];
   companies: Company[];
   branches: Branch[];
   costCenters: CostCenter[];
@@ -287,6 +291,8 @@ const initialProfiles: Profile[] = [
       "admin-usuarios": { ver: true },
       "admin-permissoes": { ver: true },
       "admin-faturamento": { ver: true, criarEditar: true, aprovar: true },
+      "admin-segmentos": { ver: true },
+      "admin-unidades": { ver: true },
       "admin-empresas": { ver: true },
       "admin-filiais": { ver: true },
       "admin-centros-custo": { ver: true },
@@ -357,8 +363,19 @@ const initialUsers: AppUser[] = [
   { id: "user8", name: "Administrador do Sistema", email: "admin@sparkxp.com", profileId: "prof-admin", companyId: "comp1", branchIds: ["branch1", "branch2"], active: true, createdAt: "2026-01-01T09:00:00Z" },
 ];
 
+const initialSegments: Segment[] = [
+  { id: "seg1", name: "Corporativo", active: true },
+  { id: "seg2", name: "Educação", active: true },
+  { id: "seg3", name: "Energia e Recursos", active: true },
+  { id: "seg4", name: "Saúde", active: true },
+];
+
+const initialBusinessUnits: BusinessUnit[] = [
+  { id: "unit1", segmentId: "seg1", name: "Unidade SP Corporativo", contract: "CT-2026-001", active: true },
+];
+
 const initialCompanies: Company[] = [
-  { id: "comp1", type: "Jurídica", name: "Cliente Empresa Ltda.", tradeName: "Cliente Empresa", cnpj: "12.345.678/0001-90", accountManagerIds: ["user3", "user4"], active: true },
+  { id: "comp1", type: "Jurídica", name: "Cliente Empresa Ltda.", tradeName: "Cliente Empresa", cnpj: "12.345.678/0001-90", unitId: "unit1", accountManagerIds: ["user3", "user4"], active: true },
 ];
 
 const initialBranches: Branch[] = [
@@ -448,6 +465,8 @@ const defaultState: StoredState = {
   premiumEvents: initialPremiumEvents,
   profiles: initialProfiles,
   users: initialUsers,
+  segments: initialSegments,
+  businessUnits: initialBusinessUnits,
   companies: initialCompanies,
   branches: initialBranches,
   costCenters: initialCostCenters,
@@ -569,6 +588,16 @@ interface AppDataValue {
   updateUser: (id: string, patch: Partial<AppUser>) => void;
   removeUser: (id: string) => void;
   resetUserPassword: (id: string) => void;
+
+  segments: Segment[];
+  addSegment: (segment: Omit<Segment, "id">) => void;
+  updateSegment: (id: string, patch: Partial<Segment>) => void;
+  removeSegment: (id: string) => void;
+
+  businessUnits: BusinessUnit[];
+  addBusinessUnit: (unit: Omit<BusinessUnit, "id">) => void;
+  updateBusinessUnit: (id: string, patch: Partial<BusinessUnit>) => void;
+  removeBusinessUnit: (id: string) => void;
 
   companies: Company[];
   addCompany: (company: Omit<Company, "id">) => void;
@@ -934,6 +963,26 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     showToast("Senha redefinida. Um e-mail com instruções foi enviado ao usuário.");
   };
 
+  const addSegment: AppDataValue["addSegment"] = (segment) => {
+    setState((s) => ({ ...s, segments: [{ ...segment, id: `seg${Date.now()}` }, ...s.segments] }));
+  };
+  const updateSegment: AppDataValue["updateSegment"] = (id, patch) => {
+    setState((s) => ({ ...s, segments: s.segments.map((seg) => (seg.id === id ? { ...seg, ...patch } : seg)) }));
+  };
+  const removeSegment = (id: string) => {
+    setState((s) => ({ ...s, segments: s.segments.filter((seg) => seg.id !== id) }));
+  };
+
+  const addBusinessUnit: AppDataValue["addBusinessUnit"] = (unit) => {
+    setState((s) => ({ ...s, businessUnits: [{ ...unit, id: `unit${Date.now()}` }, ...s.businessUnits] }));
+  };
+  const updateBusinessUnit: AppDataValue["updateBusinessUnit"] = (id, patch) => {
+    setState((s) => ({ ...s, businessUnits: s.businessUnits.map((u) => (u.id === id ? { ...u, ...patch } : u)) }));
+  };
+  const removeBusinessUnit = (id: string) => {
+    setState((s) => ({ ...s, businessUnits: s.businessUnits.filter((u) => u.id !== id) }));
+  };
+
   const addCompany: AppDataValue["addCompany"] = (company) => {
     setState((s) => ({ ...s, companies: [{ ...company, id: `comp${Date.now()}` }, ...s.companies] }));
   };
@@ -1153,6 +1202,14 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       updateUser,
       removeUser,
       resetUserPassword,
+      segments: state.segments,
+      addSegment,
+      updateSegment,
+      removeSegment,
+      businessUnits: state.businessUnits,
+      addBusinessUnit,
+      updateBusinessUnit,
+      removeBusinessUnit,
       companies: state.companies,
       addCompany,
       updateCompany,

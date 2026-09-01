@@ -5,21 +5,28 @@ import { UserChipSelect } from "../../components/UserChipSelect";
 import { COMPANY_TYPES, type Company } from "../../types";
 import "./Empresas.css";
 
-const EMPTY_FORM = { type: COMPANY_TYPES[0] as (typeof COMPANY_TYPES)[number], name: "", tradeName: "", cnpj: "", accountManagerIds: [] as string[], active: true };
+const EMPTY_FORM = { type: COMPANY_TYPES[0] as (typeof COMPANY_TYPES)[number], name: "", tradeName: "", cnpj: "", unitId: "", accountManagerIds: [] as string[], active: true };
 
 export function Empresas() {
-  const { companies, branches, users, addCompany, updateCompany, removeCompany, showToast } = useAppData();
+  const { companies, branches, users, segments, businessUnits, addCompany, updateCompany, removeCompany, showToast } = useAppData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
 
   const activeUsers = users.filter((u) => u.active);
+  const activeUnits = businessUnits.filter((u) => u.active);
   const branchCount = (companyId: string) => branches.filter((b) => b.companyId === companyId).length;
   const managerNames = (ids: string[]) =>
     ids
       .map((id) => users.find((u) => u.id === id)?.name)
       .filter(Boolean)
       .join(", ");
+  const unitLabel = (unitId: string) => {
+    const unit = businessUnits.find((u) => u.id === unitId);
+    if (!unit) return "—";
+    const segment = segments.find((s) => s.id === unit.segmentId);
+    return segment ? `${unit.name} (${segment.name})` : unit.name;
+  };
 
   const openNew = () => {
     setEditingId(null);
@@ -29,7 +36,7 @@ export function Empresas() {
 
   const openEdit = (c: Company) => {
     setEditingId(c.id);
-    setForm({ type: c.type, name: c.name, tradeName: c.tradeName ?? "", cnpj: c.cnpj, accountManagerIds: c.accountManagerIds, active: c.active });
+    setForm({ type: c.type, name: c.name, tradeName: c.tradeName ?? "", cnpj: c.cnpj, unitId: c.unitId, accountManagerIds: c.accountManagerIds, active: c.active });
     setModalOpen(true);
   };
 
@@ -37,11 +44,11 @@ export function Empresas() {
     setForm((f) => ({ ...f, accountManagerIds: f.accountManagerIds.includes(id) ? f.accountManagerIds.filter((x) => x !== id) : [...f.accountManagerIds, id] }));
   };
 
-  const canSave = form.name.trim() && form.cnpj.trim() && form.accountManagerIds.length > 0;
+  const canSave = form.name.trim() && form.cnpj.trim() && form.unitId && form.accountManagerIds.length > 0;
 
   const save = () => {
     if (!canSave) return;
-    const payload = { type: form.type, name: form.name, tradeName: form.tradeName || undefined, cnpj: form.cnpj, accountManagerIds: form.accountManagerIds, active: form.active };
+    const payload = { type: form.type, name: form.name, tradeName: form.tradeName || undefined, cnpj: form.cnpj, unitId: form.unitId, accountManagerIds: form.accountManagerIds, active: form.active };
     if (editingId) {
       updateCompany(editingId, payload);
       showToast("Empresa atualizada.");
@@ -84,6 +91,7 @@ export function Empresas() {
             <div>Tipo</div>
             <div>Nome</div>
             <div>CNPJ</div>
+            <div>Unidade</div>
             <div>Responsáveis</div>
             <div>Filiais</div>
             <div>Status</div>
@@ -99,6 +107,7 @@ export function Empresas() {
                 {c.tradeName && <div className="empresas-table__muted">{c.tradeName}</div>}
               </div>
               <div className="empresas-table__muted">{c.cnpj}</div>
+              <div className="empresas-table__muted">{unitLabel(c.unitId)}</div>
               <div className="empresas-table__muted">{managerNames(c.accountManagerIds) || "—"}</div>
               <div className="empresas-table__muted">{branchCount(c.id)}</div>
               <div>
@@ -151,6 +160,18 @@ export function Empresas() {
               CNPJ
               <input value={form.cnpj} onChange={(e) => setForm({ ...form, cnpj: e.target.value })} placeholder="00.000.000/0000-00" />
             </label>
+            <label className="field-label">
+              Unidade <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(cadastradas em Cadastros &rsaquo; Unidades)</span>
+              <select value={form.unitId} onChange={(e) => setForm({ ...form, unitId: e.target.value })}>
+                <option value="">Selecione a unidade</option>
+                {activeUnits.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {unitLabel(u.id)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {activeUnits.length === 0 && <span className="field-hint">Nenhuma unidade ativa cadastrada. Cadastre em Cadastros &rsaquo; Unidades.</span>}
             <label className="field-label">
               Responsável pela conta <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(um ou mais, cadastrados em Usuários)</span>
               <UserChipSelect users={activeUsers} selectedIds={form.accountManagerIds} onToggle={toggleManager} />
