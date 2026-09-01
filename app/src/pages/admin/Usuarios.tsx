@@ -84,7 +84,14 @@ export function Usuarios() {
     setForm((f) => ({ ...f, costCenterCodes: f.costCenterCodes.includes(code) ? f.costCenterCodes.filter((c) => c !== code) : [...f.costCenterCodes, code] }));
   };
 
-  const canSave = form.name.trim() && form.email.trim() && form.cpf.trim() && form.phone.trim() && (editingId || form.password.trim());
+  const canSave =
+    form.name.trim() &&
+    form.email.trim() &&
+    form.cpf.trim() &&
+    form.phone.trim() &&
+    form.companyId &&
+    form.branchIds.length > 0 &&
+    (editingId || form.password.trim());
 
   const save = () => {
     if (!canSave) return;
@@ -96,8 +103,8 @@ export function Usuarios() {
       phone: form.phone,
       ...(form.password.trim() ? { password: form.password } : {}),
       profileId: form.profileId || undefined,
-      companyId: needsCostCenter ? form.companyId || undefined : undefined,
-      branchIds: needsCostCenter && form.branchIds.length > 0 ? form.branchIds : undefined,
+      companyId: form.companyId,
+      branchIds: form.branchIds,
       costCenterCodes: needsCostCenter && form.costCenterCodes.length > 0 ? form.costCenterCodes : undefined,
       active: form.active,
     };
@@ -251,58 +258,56 @@ export function Usuarios() {
               </select>
             </label>
 
-            {needsCostCenter && (
-              <>
-                <label className="field-label">
-                  Empresa
-                  <select value={form.companyId} onChange={(e) => setCompany(e.target.value)}>
-                    <option value="">Nenhuma selecionada</option>
-                    {activeCompanies.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
+            <label className="field-label">
+              Empresa <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(obrigatório para todo usuário)</span>
+              <select value={form.companyId} onChange={(e) => setCompany(e.target.value)}>
+                <option value="">Nenhuma selecionada</option>
+                {activeCompanies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="field-label">
+              Filiais <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(uma ou mais)</span>
+              {form.companyId ? (
+                branchesForCompany.length > 0 ? (
+                  <div className="usuarios-chip-row">
+                    {branchesForCompany.map((b) => (
+                      <button key={b.id} type="button" className={form.branchIds.includes(b.id) ? "is-active" : ""} onClick={() => toggleBranch(b.id)}>
+                        {b.name}
+                      </button>
                     ))}
-                  </select>
-                </label>
+                  </div>
+                ) : (
+                  <span className="field-hint">Nenhuma filial ativa cadastrada para esta empresa.</span>
+                )
+              ) : (
+                <span className="field-hint">Selecione a empresa para listar as filiais.</span>
+              )}
+            </label>
 
-                <label className="field-label">
-                  Filiais <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(uma ou mais)</span>
-                  {form.companyId ? (
-                    branchesForCompany.length > 0 ? (
-                      <div className="usuarios-chip-row">
-                        {branchesForCompany.map((b) => (
-                          <button key={b.id} type="button" className={form.branchIds.includes(b.id) ? "is-active" : ""} onClick={() => toggleBranch(b.id)}>
-                            {b.name}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="field-hint">Nenhuma filial ativa cadastrada para esta empresa.</span>
-                    )
+            {needsCostCenter && (
+              <label className="field-label">
+                Centros de custo <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(um ou mais)</span>
+                {form.branchIds.length > 0 ? (
+                  costCentersForBranches.length > 0 ? (
+                    <div className="usuarios-chip-row">
+                      {costCentersForBranches.map((cc) => (
+                        <button key={cc.id} type="button" className={form.costCenterCodes.includes(cc.code) ? "is-active" : ""} onClick={() => toggleCostCenter(cc.code)}>
+                          {cc.code} · {cc.name}
+                        </button>
+                      ))}
+                    </div>
                   ) : (
-                    <span className="field-hint">Selecione a empresa para listar as filiais.</span>
-                  )}
-                </label>
-
-                <label className="field-label">
-                  Centros de custo <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(um ou mais)</span>
-                  {form.branchIds.length > 0 ? (
-                    costCentersForBranches.length > 0 ? (
-                      <div className="usuarios-chip-row">
-                        {costCentersForBranches.map((cc) => (
-                          <button key={cc.id} type="button" className={form.costCenterCodes.includes(cc.code) ? "is-active" : ""} onClick={() => toggleCostCenter(cc.code)}>
-                            {cc.code} · {cc.name}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="field-hint">Nenhum centro de custo ativo nas filiais selecionadas.</span>
-                    )
-                  ) : (
-                    <span className="field-hint">Selecione ao menos uma filial para listar os centros de custo.</span>
-                  )}
-                </label>
-              </>
+                    <span className="field-hint">Nenhum centro de custo ativo nas filiais selecionadas.</span>
+                  )
+                ) : (
+                  <span className="field-hint">Selecione ao menos uma filial para listar os centros de custo.</span>
+                )}
+              </label>
             )}
 
             <label className="usuarios-active-check">
