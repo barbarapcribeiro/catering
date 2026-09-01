@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { Layout } from "../components/Layout";
 import { formatSize } from "../components/AttachmentsField";
+import { WhatsAppButton } from "../components/WhatsAppButton";
 import { useAppData } from "../mock/AppDataContext";
+import { orderStatusMessage } from "../mock/whatsapp";
 import type { Order } from "../types";
 import "./Producao.css";
 
@@ -269,6 +271,9 @@ export function Producao() {
                   <span className="status-pill" style={{ background: (STATUS_STYLE[selected.status] ?? STATUS_STYLE["Em preparação"]).bg, color: (STATUS_STYLE[selected.status] ?? STATUS_STYLE["Em preparação"]).color }}>
                     {bucketOf(selected) === "producao" ? "Em produção" : selected.status}
                   </span>
+                  <div style={{ marginTop: 10 }}>
+                    <WhatsAppButton message={orderStatusMessage(selected)} label="Avisar status" />
+                  </div>
                 </div>
 
                 <div className="prod-detail-summary">

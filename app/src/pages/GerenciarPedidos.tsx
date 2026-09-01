@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Modal } from "../components/Modal";
 import { formatSize } from "../components/AttachmentsField";
+import { WhatsAppButton } from "../components/WhatsAppButton";
 import { useAppData } from "../mock/AppDataContext";
 import { STATUS_STYLE } from "../mock/services";
+import { orderStatusMessage } from "../mock/whatsapp";
 import { money } from "../mock/money";
 import { OCCURRENCE_TYPES, type Order, type OccurrenceType } from "../types";
 import "./GerenciarPedidos.css";
@@ -376,6 +378,7 @@ export function GerenciarPedidos() {
                     </div>
                   </div>
                   <div className="gp-quick-actions">
+                    <WhatsAppButton message={orderStatusMessage(selected)} label="Avisar status" />
                     <button className="btn btn--outline gp-quick-actions__btn" onClick={() => setQuickActionsOpen((v) => !v)}>
                       Ações rápidas
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#46526a" strokeWidth="2">

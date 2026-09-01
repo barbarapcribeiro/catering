@@ -1,0 +1,22 @@
+.whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border-radius: 20px;
+  background: #25d366;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+}
+.whatsapp-btn:hover {
+  background: #1ebd5a;
+}
+.whatsapp-btn svg {
+  flex-shrink: 0;
+}
