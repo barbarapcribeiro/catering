@@ -384,6 +384,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-contratos", label: "Financeiro · Contratos", group: "Painel Administrativo" },
   { id: "admin-segmentos", label: "Cadastros · Segmentos", group: "Painel Administrativo" },
   { id: "admin-unidades", label: "Cadastros · Unidades", group: "Painel Administrativo" },
+  { id: "admin-marcas", label: "Cadastros · Marcas", group: "Painel Administrativo" },
   { id: "admin-empresas", label: "Cadastros · Empresas", group: "Painel Administrativo" },
   { id: "admin-filiais", label: "Cadastros · Filiais", group: "Painel Administrativo" },
   { id: "admin-copas", label: "Cadastros · Copas", group: "Painel Administrativo" },
@@ -484,6 +485,13 @@ export interface Segment {
   active: boolean;
 }
 
+/** Marca operada pela filial (ex.: Sabor Brasil, Modern Receipt) — usada no cadastro de Filial. */
+export interface Brand {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
 /** Unidade operacional da Direct Eventos, vinculada a um Segmento e a um contrato. */
 export interface BusinessUnit {
   id: string;
@@ -517,6 +525,8 @@ export interface Branch {
   name: string;
   cep: string;
   plantName: string;
+  /** Marca operada por esta filial — precisa estar cadastrada em Marcas. */
+  brandId: string;
   /** Usuários responsáveis pela filial — precisam estar cadastrados em Usuários. */
   managerIds: string[];
   /** IDs dos serviços (tela Home) habilitados para o Cliente solicitante desta filial — ausente = todos habilitados. */

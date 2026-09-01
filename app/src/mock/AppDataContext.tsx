@@ -12,6 +12,7 @@ import {
   type ChatMessage,
   type Company,
   type Branch,
+  type Brand,
   type BusinessUnit,
   type Contract,
   type Copa,
@@ -63,6 +64,7 @@ interface StoredState {
   users: AppUser[];
   segments: Segment[];
   businessUnits: BusinessUnit[];
+  brands: Brand[];
   companies: Company[];
   branches: Branch[];
   costCenters: CostCenter[];
@@ -293,6 +295,7 @@ const initialProfiles: Profile[] = [
       "admin-faturamento": { ver: true, criarEditar: true, aprovar: true },
       "admin-segmentos": { ver: true },
       "admin-unidades": { ver: true },
+      "admin-marcas": { ver: true },
       "admin-empresas": { ver: true },
       "admin-filiais": { ver: true },
       "admin-centros-custo": { ver: true },
@@ -374,13 +377,20 @@ const initialBusinessUnits: BusinessUnit[] = [
   { id: "unit1", segmentId: "seg1", name: "Unidade SP Corporativo", contract: "CT-2026-001", active: true },
 ];
 
+const initialBrands: Brand[] = [
+  { id: "brand1", name: "Sabor Brasil", active: true },
+  { id: "brand2", name: "Sabor Brasil Premium", active: true },
+  { id: "brand3", name: "Modern Receipt", active: true },
+  { id: "brand4", name: "No Ponto", active: true },
+];
+
 const initialCompanies: Company[] = [
   { id: "comp1", type: "Jurídica", name: "Cliente Empresa Ltda.", tradeName: "Cliente Empresa", cnpj: "12.345.678/0001-90", unitId: "unit1", accountManagerIds: ["user3", "user4"], active: true },
 ];
 
 const initialBranches: Branch[] = [
-  { id: "branch1", companyId: "comp1", name: "Matriz São Paulo", cep: "01310-100", plantName: "Planta SP-1", managerIds: ["user3"], active: true },
-  { id: "branch2", companyId: "comp1", name: "Filial Campinas", cep: "13015-904", plantName: "Planta CPS-1", managerIds: ["user4"], active: true },
+  { id: "branch1", companyId: "comp1", name: "Matriz São Paulo", cep: "01310-100", plantName: "Planta SP-1", brandId: "brand1", managerIds: ["user3"], active: true },
+  { id: "branch2", companyId: "comp1", name: "Filial Campinas", cep: "13015-904", plantName: "Planta CPS-1", brandId: "brand1", managerIds: ["user4"], active: true },
 ];
 
 const initialCostCenters: CostCenter[] = [
@@ -467,6 +477,7 @@ const defaultState: StoredState = {
   users: initialUsers,
   segments: initialSegments,
   businessUnits: initialBusinessUnits,
+  brands: initialBrands,
   companies: initialCompanies,
   branches: initialBranches,
   costCenters: initialCostCenters,
@@ -598,6 +609,11 @@ interface AppDataValue {
   addBusinessUnit: (unit: Omit<BusinessUnit, "id">) => void;
   updateBusinessUnit: (id: string, patch: Partial<BusinessUnit>) => void;
   removeBusinessUnit: (id: string) => void;
+
+  brands: Brand[];
+  addBrand: (brand: Omit<Brand, "id">) => void;
+  updateBrand: (id: string, patch: Partial<Brand>) => void;
+  removeBrand: (id: string) => void;
 
   companies: Company[];
   addCompany: (company: Omit<Company, "id">) => void;
@@ -983,6 +999,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, businessUnits: s.businessUnits.filter((u) => u.id !== id) }));
   };
 
+  const addBrand: AppDataValue["addBrand"] = (brand) => {
+    setState((s) => ({ ...s, brands: [{ ...brand, id: `brand${Date.now()}` }, ...s.brands] }));
+  };
+  const updateBrand: AppDataValue["updateBrand"] = (id, patch) => {
+    setState((s) => ({ ...s, brands: s.brands.map((b) => (b.id === id ? { ...b, ...patch } : b)) }));
+  };
+  const removeBrand = (id: string) => {
+    setState((s) => ({ ...s, brands: s.brands.filter((b) => b.id !== id) }));
+  };
+
   const addCompany: AppDataValue["addCompany"] = (company) => {
     setState((s) => ({ ...s, companies: [{ ...company, id: `comp${Date.now()}` }, ...s.companies] }));
   };
@@ -1210,6 +1236,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       addBusinessUnit,
       updateBusinessUnit,
       removeBusinessUnit,
+      brands: state.brands,
+      addBrand,
+      updateBrand,
+      removeBrand,
       companies: state.companies,
       addCompany,
       updateCompany,

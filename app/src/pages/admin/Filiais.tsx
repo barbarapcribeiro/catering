@@ -5,17 +5,19 @@ import { UserChipSelect } from "../../components/UserChipSelect";
 import type { Branch } from "../../types";
 import "./Filiais.css";
 
-const EMPTY_FORM = { companyId: "", name: "", cep: "", plantName: "", managerIds: [] as string[], active: true };
+const EMPTY_FORM = { companyId: "", name: "", cep: "", plantName: "", brandId: "", managerIds: [] as string[], active: true };
 
 export function Filiais() {
-  const { branches, companies, costCenters, users, addBranch, updateBranch, removeBranch, showToast } = useAppData();
+  const { branches, companies, costCenters, users, brands, addBranch, updateBranch, removeBranch, showToast } = useAppData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
 
   const activeCompanies = companies.filter((c) => c.active);
   const activeUsers = users.filter((u) => u.active);
+  const activeBrands = brands.filter((b) => b.active);
   const companyName = (id: string) => companies.find((c) => c.id === id)?.name ?? "Empresa removida";
+  const brandName = (id: string) => brands.find((b) => b.id === id)?.name ?? "—";
   const costCenterCount = (branchId: string) => costCenters.filter((cc) => cc.branchId === branchId).length;
   const managerNames = (ids: string[]) =>
     ids
@@ -31,7 +33,7 @@ export function Filiais() {
 
   const openEdit = (b: Branch) => {
     setEditingId(b.id);
-    setForm({ companyId: b.companyId, name: b.name, cep: b.cep, plantName: b.plantName, managerIds: b.managerIds, active: b.active });
+    setForm({ companyId: b.companyId, name: b.name, cep: b.cep, plantName: b.plantName, brandId: b.brandId, managerIds: b.managerIds, active: b.active });
     setModalOpen(true);
   };
 
@@ -39,11 +41,11 @@ export function Filiais() {
     setForm((f) => ({ ...f, managerIds: f.managerIds.includes(id) ? f.managerIds.filter((x) => x !== id) : [...f.managerIds, id] }));
   };
 
-  const canSave = form.companyId && form.name.trim() && form.cep.trim() && form.plantName.trim() && form.managerIds.length > 0;
+  const canSave = form.companyId && form.name.trim() && form.cep.trim() && form.plantName.trim() && form.brandId && form.managerIds.length > 0;
 
   const save = () => {
     if (!canSave) return;
-    const payload = { companyId: form.companyId, name: form.name, cep: form.cep, plantName: form.plantName, managerIds: form.managerIds, active: form.active };
+    const payload = { companyId: form.companyId, name: form.name, cep: form.cep, plantName: form.plantName, brandId: form.brandId, managerIds: form.managerIds, active: form.active };
     if (editingId) {
       updateBranch(editingId, payload);
       showToast("Filial atualizada.");
@@ -89,6 +91,7 @@ export function Filiais() {
             <div>Nome</div>
             <div>Planta</div>
             <div>CEP</div>
+            <div>Marca</div>
             <div>Responsáveis</div>
             <div>Status</div>
             <div>Ações</div>
@@ -99,6 +102,7 @@ export function Filiais() {
               <div className="filiais-table__name">{b.name}</div>
               <div className="filiais-table__muted">{b.plantName}</div>
               <div className="filiais-table__muted">{b.cep}</div>
+              <div className="filiais-table__muted">{brandName(b.brandId)}</div>
               <div className="filiais-table__muted">{managerNames(b.managerIds) || "—"}</div>
               <div>
                 <span className="status-pill" style={{ background: b.active ? "var(--color-success-soft)" : "var(--color-border-soft)", color: b.active ? "var(--color-success)" : "var(--color-text-muted)" }}>
@@ -150,6 +154,18 @@ export function Filiais() {
               Nome da planta
               <input value={form.plantName} onChange={(e) => setForm({ ...form, plantName: e.target.value })} placeholder="Ex.: Planta CPS-1" />
             </label>
+            <label className="field-label">
+              Marca <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(cadastradas em Cadastros &rsaquo; Marcas)</span>
+              <select value={form.brandId} onChange={(e) => setForm({ ...form, brandId: e.target.value })}>
+                <option value="">Selecione a marca</option>
+                {activeBrands.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {activeBrands.length === 0 && <span className="field-hint">Nenhuma marca ativa cadastrada. Cadastre em Cadastros &rsaquo; Marcas.</span>}
             <label className="field-label">
               Responsável pela filial <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(um ou mais, cadastrados em Usuários)</span>
               <UserChipSelect users={activeUsers} selectedIds={form.managerIds} onToggle={toggleManager} />
