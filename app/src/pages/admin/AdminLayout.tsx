@@ -105,11 +105,12 @@ export function AdminLayout() {
   const location = useLocation();
   const { notifications, currentUser, currentProfile, hasPageAccess } = useAppData();
   const [topSearch, setTopSearch] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const unread = notifications.filter((n) => !n.read).length;
   const displayName = currentUser?.name ?? currentProfile?.name ?? "Visitante";
 
   return (
-    <div className="admin-shell">
+    <div className={`admin-shell ${sidebarOpen ? "" : "admin-shell--sidebar-collapsed"}`}>
       <aside className="admin-sidebar">
         <div className="admin-sidebar__brand">
           <div className="admin-sidebar__logo">D</div>
@@ -141,6 +142,16 @@ export function AdminLayout() {
 
       <div className="admin-main">
         <div className="admin-topbar">
+          <button
+            className="admin-topbar__menu-toggle"
+            aria-label={sidebarOpen ? "Ocultar menu lateral" : "Mostrar menu lateral"}
+            aria-pressed={sidebarOpen}
+            onClick={() => setSidebarOpen((v) => !v)}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#46526a" strokeWidth="2" strokeLinecap="round">
+              <path d="M3 6h18M3 12h18M3 18h18" />
+            </svg>
+          </button>
           <div className="admin-topbar__search">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7d8798" strokeWidth="2">
               <circle cx="11" cy="11" r="7" />
