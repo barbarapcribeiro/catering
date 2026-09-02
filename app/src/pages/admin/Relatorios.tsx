@@ -5,13 +5,13 @@ import { useAppData } from "../../mock/AppDataContext";
 import { STATUS_STYLE } from "../../mock/services";
 import { money } from "../../mock/money";
 import { Modal } from "../../components/Modal";
-import { ASSET_STATUSES, MEAL_SERVICES, ORDER_CATEGORIES, type AssetStatus, type CatracaEffectiveStatus, type CostCenter, type Order } from "../../types";
+import { ASSET_STATUSES, MEAL_SERVICES, ORDER_CATEGORIES, type AssetStatus, type CatracaEffectiveStatus, type CostCenter, type Order, type QuoteStatus } from "../../types";
 import { catracaEffectiveStatus } from "../../mock/catraca";
 import "./Relatorios.css";
 
 const PALETTE = ["var(--color-primary)", "#1e4fa3", "#1a7a4f", "#b5690f", "#5a4a8a", "#c99a1f", "#c0392b"];
 
-export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "lucro-produto" | "ativos" | "catraca" | "pesquisa-satisfacao" | "pesquisa-aplicacao";
+export type ReportDash = "geral" | "faturamento" | "pedidos" | "centros-custo" | "lucro-produto" | "ativos" | "catraca" | "orcamentos" | "pesquisa-satisfacao" | "pesquisa-aplicacao";
 
 const DASH_TABS: { key: ReportDash; label: string }[] = [
   { key: "geral", label: "Visão Geral" },
@@ -21,9 +21,20 @@ const DASH_TABS: { key: ReportDash; label: string }[] = [
   { key: "lucro-produto", label: "Lucro por Produto" },
   { key: "ativos", label: "Ativos" },
   { key: "catraca", label: "Consumo Catraca" },
+  { key: "orcamentos", label: "Orçamentos" },
   { key: "pesquisa-satisfacao", label: "Pesquisa de Satisfação" },
   { key: "pesquisa-aplicacao", label: "Pesquisa da Aplicação" },
 ];
+
+const QUOTE_STATUS_STYLE: Record<QuoteStatus, { bg: string; color: string }> = {
+  Solicitado: { bg: "var(--color-info-soft)", color: "var(--color-info)" },
+  "Em elaboração": { bg: "var(--color-warning-soft)", color: "var(--color-warning-dark)" },
+  Editado: { bg: "var(--color-warning-soft)", color: "var(--color-warning-dark)" },
+  "Enviado para aprovação": { bg: "var(--color-primary-soft)", color: "var(--color-primary)" },
+  Aprovado: { bg: "var(--color-success-soft)", color: "var(--color-success)" },
+  Rejeitado: { bg: "var(--color-danger-soft, #fbe4e4)", color: "var(--color-danger)" },
+  Cancelado: { bg: "var(--color-danger-soft, #fbe4e4)", color: "var(--color-danger)" },
+};
 
 const EXPORT_FIELD_DEFS = [
   { key: "id", label: "Pedido" },
@@ -96,7 +107,7 @@ function Sparkline({ seed, color }: { seed: number; color: string }) {
 }
 
 export function Relatorios() {
-  const { orders, costCenters, occurrences, showToast, surveyQuestions, appSurveyQuestions, surveyResponses, products, assets, assetTypes, assetMovements, catracaRedemptions, kits } = useAppData();
+  const { orders, costCenters, occurrences, showToast, surveyQuestions, appSurveyQuestions, surveyResponses, products, assets, assetTypes, assetMovements, catracaRedemptions, kits, quoteRequests } = useAppData();
   const navigate = useNavigate();
   const params = useParams<{ dash?: string }>();
   const dash: ReportDash = (DASH_TABS.some((t) => t.key === params.dash) ? params.dash : "geral") as ReportDash;
@@ -287,6 +298,15 @@ export function Relatorios() {
     { glyph: "👥", label: "Unidades atendidas", value: String(unidadesAtendidas), seed: 4, sparkColor: "#b5690f", dash: "centros-custo" },
     { glyph: "⭐", label: "Satisfação (NPS)", value: pedidoNps.count > 0 ? String(pedidoNps.score) : "—", seed: 5, sparkColor: "#c99a1f", dash: "pesquisa-satisfacao" },
   ];
+
+  const quotesByDateDesc = useMemo(
+    () => [...quoteRequests].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    [quoteRequests],
+  );
+  const countQuoteStatus = (s: QuoteStatus) => quoteRequests.filter((q) => q.status === s).length;
+  const approvedQuoteValue = quoteRequests
+    .filter((q) => q.status === "Aprovado")
+    .reduce((sum, q) => sum + (q.items ?? []).reduce((s, it) => s + it.qty * it.price, 0) * (1 + (q.serviceFeePercent ?? 0) / 100), 0);
 
   const recentOrders = ordersByDateDesc.slice(0, 5);
   const periodOrders = ordersByDateDesc;
@@ -986,6 +1006,78 @@ export function Relatorios() {
               </div>
             ))}
             {recentCatraca.length === 0 && <div className="empty-state">Nenhum consumo registrado ainda.</div>}
+          </div>
+        </>
+      )}
+
+      {dash === "orcamentos" && (
+        <>
+          <div className="relatorios-kpis">
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Aprovados</span>
+                <span>✅</span>
+              </div>
+              <div className="relatorios-kpi__value">{countQuoteStatus("Aprovado")}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Rejeitados</span>
+                <span>✕</span>
+              </div>
+              <div className="relatorios-kpi__value">{countQuoteStatus("Rejeitado")}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Cancelados</span>
+                <span>🚫</span>
+              </div>
+              <div className="relatorios-kpi__value">{countQuoteStatus("Cancelado")}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Editados (em revisão)</span>
+                <span>✎</span>
+              </div>
+              <div className="relatorios-kpi__value">{countQuoteStatus("Editado")}</div>
+            </div>
+            <div className="card relatorios-kpi">
+              <div className="relatorios-kpi__head">
+                <span className="relatorios-kpi__label">Valor aprovado</span>
+                <span>💰</span>
+              </div>
+              <div className="relatorios-kpi__value">{money(approvedQuoteValue)}</div>
+            </div>
+          </div>
+
+          <div className="card relatorios-panel">
+            <div className="relatorios-panel-head">
+              <div className="relatorios-panel-title" style={{ marginBottom: 0 }}>Todas as solicitações de orçamento</div>
+              <Link to="/admin/orcamentos" className="link">
+                Ir para Orçamentos &rsaquo;
+              </Link>
+            </div>
+            <div className="relatorios-summary__head" style={{ gridTemplateColumns: "1.3fr 1.1fr 0.9fr 0.9fr 1fr" }}>
+              <div>Serviço</div>
+              <div>Cliente</div>
+              <div>Data prevista</div>
+              <div>Pedido gerado</div>
+              <div>Status</div>
+            </div>
+            {quotesByDateDesc.map((q) => (
+              <div className="relatorios-summary__row" key={q.id} style={{ gridTemplateColumns: "1.3fr 1.1fr 0.9fr 0.9fr 1fr" }}>
+                <div className="relatorios-summary__type">{q.serviceType}</div>
+                <div className="relatorios-muted">{q.requestedBy ?? "—"}</div>
+                <div className="relatorios-muted">{new Date(`${q.expectedDate}T00:00:00`).toLocaleDateString("pt-BR")}</div>
+                <div className="relatorios-muted">{q.orderId ?? "—"}</div>
+                <div>
+                  <span className="status-pill" style={{ background: QUOTE_STATUS_STYLE[q.status].bg, color: QUOTE_STATUS_STYLE[q.status].color }}>
+                    {q.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+            {quotesByDateDesc.length === 0 && <div className="empty-state">Nenhuma solicitação de orçamento ainda.</div>}
           </div>
         </>
       )}

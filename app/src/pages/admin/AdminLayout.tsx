@@ -101,6 +101,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Lucro por Produto", to: "/admin/relatorios/lucro-produto", glyph: "💰", pageId: "admin-relatorios" },
       { label: "Ativos", to: "/admin/relatorios/ativos", glyph: "🧴", pageId: "admin-relatorios" },
       { label: "Consumo Catraca", to: "/admin/relatorios/catraca", glyph: "🍽", pageId: "admin-relatorios" },
+      { label: "Orçamentos", to: "/admin/relatorios/orcamentos", glyph: "🧾", pageId: "admin-relatorios" },
       { label: "Pesquisa de Satisfação", to: "/admin/relatorios/pesquisa-satisfacao", glyph: "⭐", pageId: "admin-relatorios" },
       { label: "Pesquisa da Aplicação", to: "/admin/relatorios/pesquisa-aplicacao", glyph: "💬", pageId: "admin-relatorios" },
     ],
