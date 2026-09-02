@@ -4,6 +4,7 @@ import { Layout } from "../components/Layout";
 import { Stepper } from "../components/Stepper";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { AttachmentsField } from "../components/AttachmentsField";
+import { KitDetailsModal } from "../components/KitDetailsModal";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
@@ -12,10 +13,65 @@ import "./OrderFlow.css";
 import "./Surpreenda.css";
 
 const KITS = [
-  { id: "manha", name: "Kit Café da Manhã", desc: "Pães, frios, frutas, bolos, café, leite e sucos para começar o dia.", price: 180, badge: "CAFÉ DA MANHÃ", badgeBg: "#b5690f" },
-  { id: "tarde", name: "Kit Café da Tarde", desc: "Bolos, biscoitos, salgados assados, café e chás para a pausa da tarde.", price: 170, badge: "CAFÉ DA TARDE", badgeBg: "#1a7a4f" },
-  { id: "horaextra", name: "Kit Hora Extra", desc: "Lanches reforçados, sanduíches, sucos e café para quem fica além do horário.", price: 190, badge: "HORA EXTRA", badgeBg: "#2c5f8a" },
-  { id: "aniversariante", name: "Kit Aniversariante", desc: "Bolo confeitado, salgadinhos, doces e refrigerantes para celebrar.", price: 220, badge: "ANIVERSARIANTE", badgeBg: "var(--color-primary)" },
+  {
+    id: "manha",
+    name: "Kit Café da Manhã",
+    desc: "Pães, frios, frutas, bolos, café, leite e sucos para começar o dia.",
+    price: 180,
+    badge: "CAFÉ DA MANHÃ",
+    badgeBg: "#b5690f",
+    items: [
+      { label: "Pães variados", qty: 16 },
+      { label: "Frios e queijos", qty: 1 },
+      { label: "Frutas da estação", qty: 8 },
+      { label: "Bolo caseiro (fatias)", qty: 8 },
+      { label: "Café e leite (garrafas térmicas)", qty: 2 },
+      { label: "Suco (jarras)", qty: 1 },
+    ],
+  },
+  {
+    id: "tarde",
+    name: "Kit Café da Tarde",
+    desc: "Bolos, biscoitos, salgados assados, café e chás para a pausa da tarde.",
+    price: 170,
+    badge: "CAFÉ DA TARDE",
+    badgeBg: "#1a7a4f",
+    items: [
+      { label: "Bolo caseiro (fatias)", qty: 8 },
+      { label: "Biscoitos variados", qty: 8 },
+      { label: "Salgados assados", qty: 16 },
+      { label: "Café (garrafa térmica)", qty: 1 },
+      { label: "Chás variados", qty: 1 },
+    ],
+  },
+  {
+    id: "horaextra",
+    name: "Kit Hora Extra",
+    desc: "Lanches reforçados, sanduíches, sucos e café para quem fica além do horário.",
+    price: 190,
+    badge: "HORA EXTRA",
+    badgeBg: "#2c5f8a",
+    items: [
+      { label: "Sanduíches reforçados", qty: 8 },
+      { label: "Salgados assados", qty: 16 },
+      { label: "Suco (jarras)", qty: 1 },
+      { label: "Café (garrafa térmica)", qty: 1 },
+    ],
+  },
+  {
+    id: "aniversariante",
+    name: "Kit Aniversariante",
+    desc: "Bolo confeitado, salgadinhos, doces e refrigerantes para celebrar.",
+    price: 220,
+    badge: "ANIVERSARIANTE",
+    badgeBg: "var(--color-primary)",
+    items: [
+      { label: "Bolo confeitado (fatias)", qty: 8 },
+      { label: "Salgadinhos variados", qty: 16 },
+      { label: "Doces variados", qty: 8 },
+      { label: "Refrigerante (garrafas)", qty: 2 },
+    ],
+  },
 ];
 
 const PAYMENTS = [
@@ -42,6 +98,7 @@ export function Surpreenda() {
 
   const [orderId] = useState(() => `#SP-${Math.floor(15200 + Math.random() * 800)}`);
   const [step, setStep] = useState(1);
+  const [detailsKitId, setDetailsKitId] = useState<string | null>(null);
   const [qtys, setQtys] = useState<Record<string, number>>({});
   const [people, setPeople] = useState(8);
   const [eventName, setEventName] = useState("");
@@ -100,6 +157,7 @@ export function Surpreenda() {
           qty,
           unitPrice: k.price,
           total: k.price * qty,
+          contents: k.items,
           inc: () => setQty(k.id, qty + 1),
           dec: () => setQty(k.id, qty - 1),
           remove: () => setQty(k.id, 0),
@@ -207,7 +265,10 @@ export function Surpreenda() {
                           </svg>
                           Mínimo 8 pessoas
                         </div>
-                        <div style={{ fontSize: 12.5, color: "var(--color-text-secondary)", lineHeight: 1.45, marginBottom: 12, minHeight: 36 }}>{k.desc}</div>
+                        <div style={{ fontSize: 12.5, color: "var(--color-text-secondary)", lineHeight: 1.45, marginBottom: 8, minHeight: 36 }}>{k.desc}</div>
+                        <button className="link" style={{ fontSize: 12, marginBottom: 10 }} onClick={() => setDetailsKitId(k.id)}>
+                          Detalhes
+                        </button>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                           <div style={{ fontSize: 16, fontWeight: 800 }}>{money(k.price)}</div>
                           <div className="qty-stepper">
@@ -324,6 +385,15 @@ export function Surpreenda() {
                     <div className="cart-item__body">
                       <div className="cart-item__name">{ci.name}</div>
                       <div className="cart-item__sub">{ci.sub}</div>
+                      {ci.contents && (
+                        <ul className="cart-item__contents">
+                          {ci.contents.map((c, i) => (
+                            <li key={i}>
+                              {c.qty}x {c.label}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       <div className="cart-item__row">
                         <div className="qty-stepper qty-stepper--sm">
                           <button onClick={ci.dec}>&minus;</button>
@@ -725,6 +795,12 @@ export function Surpreenda() {
           </div>
         )}
       </div>
+
+      {detailsKitId &&
+        (() => {
+          const k = KITS.find((x) => x.id === detailsKitId)!;
+          return <KitDetailsModal name={k.name} description={k.desc} contents={k.items} onClose={() => setDetailsKitId(null)} />;
+        })()}
     </Layout>
   );
 }

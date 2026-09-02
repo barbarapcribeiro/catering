@@ -4,10 +4,12 @@ import QRCode from "qrcode";
 import { Layout } from "../components/Layout";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { AttachmentsField } from "../components/AttachmentsField";
+import { KitDetailsModal } from "../components/KitDetailsModal";
 import { useAppData } from "../mock/AppDataContext";
 import { catracaEffectiveStatus, catracaCheckInDeadline } from "../mock/catraca";
 import { money } from "../mock/money";
 import { computeKitPrice } from "../mock/pricing";
+import { kitContentsFromCatalog } from "../mock/kitContents";
 import { MEAL_SERVICES, type CatracaEffectiveStatus, type CatracaRedemption, type Kit, type MealServiceName, type OrderAttachment } from "../types";
 import "./OrderFlow.css";
 import "./ConsumoCatraca.css";
@@ -27,11 +29,12 @@ function todayISO() {
 
 export function ConsumoCatraca() {
   const navigate = useNavigate();
-  const { kits, products, costCenters, currentUser, addCatracaRedemption, checkOutCatraca, catracaRedemptions, showToast } = useAppData();
+  const { kits, products, serviceCatalog, costCenters, currentUser, addCatracaRedemption, checkOutCatraca, catracaRedemptions, showToast } = useAppData();
 
   const [topTab, setTopTab] = useState<TopTab>("novo");
   const [meal, setMeal] = useState<MealServiceName>(MEAL_SERVICES[0]);
   const [selectedKitId, setSelectedKitId] = useState<string | null>(null);
+  const [detailsKitId, setDetailsKitId] = useState<string | null>(null);
   const [pickupDate, setPickupDate] = useState(todayISO());
   const [pickupTime, setPickupTime] = useState("");
   const [costCenter, setCostCenter] = useState("");
@@ -201,6 +204,16 @@ export function ConsumoCatraca() {
                     <div className="kit-card__body">
                       <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 3 }}>{k.name}</div>
                       {k.description && <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 6 }}>{k.description}</div>}
+                      <button
+                        className="link"
+                        style={{ fontSize: 12, marginBottom: 6 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDetailsKitId(k.id);
+                        }}
+                      >
+                        Detalhes
+                      </button>
                       <div style={{ fontSize: 14, fontWeight: 800 }}>{money(kitPrice(k))}</div>
                     </div>
                   </div>
@@ -267,6 +280,20 @@ export function ConsumoCatraca() {
                     <div className="cart-item__body">
                       <div className="cart-item__name">{selectedKit.name}</div>
                       <div className="cart-item__sub">{meal}</div>
+                      {(() => {
+                        const contents = kitContentsFromCatalog(selectedKit, products, serviceCatalog);
+                        return (
+                          contents.length > 0 && (
+                            <ul className="cart-item__contents">
+                              {contents.map((c, i) => (
+                                <li key={i}>
+                                  {c.qty}x {c.label}
+                                </li>
+                              ))}
+                            </ul>
+                          )
+                        );
+                      })()}
                       <div className="cart-item__row">
                         <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>1 kit</span>
                         <div className="cart-item__price">{money(kitPrice(selectedKit))}</div>
@@ -337,6 +364,13 @@ export function ConsumoCatraca() {
           </div>
         )}
       </div>
+
+      {detailsKitId &&
+        (() => {
+          const k = kitById[detailsKitId];
+          if (!k) return null;
+          return <KitDetailsModal name={k.name} description={k.description} contents={kitContentsFromCatalog(k, products, serviceCatalog)} onClose={() => setDetailsKitId(null)} />;
+        })()}
     </Layout>
   );
 }

@@ -60,13 +60,18 @@ export function ServicosDiversosOrder() {
         .filter((sv) => (qtys[sv.id] || 0) > 0)
         .map((sv) => {
           const qty = qtys[sv.id];
-          return { id: sv.id, name: sv.name, qty, unitPrice: sv.price, total: sv.price * qty };
+          return { id: sv.id, name: sv.name, qty, unitPrice: sv.price, total: sv.price * qty, dec: () => setQty(sv.id, qty - 1), inc: () => setQty(sv.id, qty + 1), remove: () => setQty(sv.id, 0) };
         }),
     [qtys, activeServices],
   );
 
   const totalUnits = cartItems.reduce((sum, ci) => sum + ci.qty, 0);
   const total = cartItems.reduce((sum, ci) => sum + ci.total, 0);
+  const cartEmpty = cartItems.length === 0;
+  const clearAll = () => {
+    setQtys({});
+    showToast("Carrinho limpo.");
+  };
   const paymentDef = PAYMENTS.find((p) => p.id === payment);
   const todayLabel = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 
@@ -205,7 +210,7 @@ export function ServicosDiversosOrder() {
 
   return (
     <Layout>
-      <div className="page-container" style={{ paddingTop: 24, maxWidth: 1000 }}>
+      <div className="page-container" style={{ paddingTop: 24 }}>
         <button className="order-back-link" onClick={() => navigate("/")}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M15 18l-6-6 6-6" />
@@ -221,110 +226,153 @@ export function ServicosDiversosOrder() {
           </div>
         </div>
 
-        <div className="catalog-heading">1. Escolha os serviços</div>
-        <div className="sd-service-list">
-          {activeServices.map((sv) => {
-            const qty = qtys[sv.id] || 0;
-            return (
-              <div key={sv.id} className="sd-service-row" style={{ borderColor: qty > 0 ? "var(--color-primary)" : "var(--color-border)" }}>
-                <div className="sd-service-row__info">
-                  <div className="sd-service-row__name-line">
-                    <span className="sd-service-row__name">{sv.name}</span>
-                    <span className="pill-tag">{sv.category}</span>
+        <div className="step1-grid">
+          <div style={{ minWidth: 0 }}>
+            <div className="catalog-heading">1. Escolha os serviços</div>
+            <div className="sd-service-list">
+              {activeServices.map((sv) => {
+                const qty = qtys[sv.id] || 0;
+                return (
+                  <div key={sv.id} className="sd-service-row" style={{ borderColor: qty > 0 ? "var(--color-primary)" : "var(--color-border)" }}>
+                    <div className="sd-service-row__info">
+                      <div className="sd-service-row__name-line">
+                        <span className="sd-service-row__name">{sv.name}</span>
+                        <span className="pill-tag">{sv.category}</span>
+                      </div>
+                      {sv.description && <div className="sd-service-row__desc">{sv.description}</div>}
+                      <div className="sd-service-row__price">{money(sv.price)}</div>
+                    </div>
+                    <div className="qty-stepper">
+                      <button onClick={() => setQty(sv.id, qty - 1)}>&minus;</button>
+                      <span>{qty}</span>
+                      <button onClick={() => setQty(sv.id, qty + 1)}>+</button>
+                    </div>
                   </div>
-                  {sv.description && <div className="sd-service-row__desc">{sv.description}</div>}
-                  <div className="sd-service-row__price">{money(sv.price)}</div>
-                </div>
-                <div className="qty-stepper">
-                  <button onClick={() => setQty(sv.id, qty - 1)}>&minus;</button>
-                  <span>{qty}</span>
-                  <button onClick={() => setQty(sv.id, qty + 1)}>+</button>
-                </div>
-              </div>
-            );
-          })}
-          {activeServices.length === 0 && <div className="empty-state">Nenhum serviço cadastrado ainda. Cadastre em Catálogos &rsaquo; Serviços.</div>}
-        </div>
+                );
+              })}
+              {activeServices.length === 0 && <div className="empty-state">Nenhum serviço cadastrado ainda. Cadastre em Catálogos &rsaquo; Serviços.</div>}
+            </div>
 
-        <div className="step-card">
-          <div className="step-heading">2. Data e horário do serviço</div>
-          <div className="sd-fields-grid">
-            <label className="field-label">
-              Data do serviço
-              <input type="date" value={serviceDate} onChange={(e) => setServiceDate(e.target.value)} />
-            </label>
-            <label className="field-label">
-              Horário do serviço
-              <input type="time" value={serviceTime} onChange={(e) => setServiceTime(e.target.value)} />
-            </label>
-            <div style={{ position: "relative" }}>
-              <label className="field-label" style={{ marginBottom: 6 }}>Centro de custo</label>
-              <div className="sd-local-box" onClick={() => setCostCenterMenuOpen((v) => !v)} style={{ color: costCenter ? "var(--color-text)" : "var(--color-text-muted)" }}>
-                {costCenter ? `${costCenter} · ${activeCostCenters.find((c) => c.code === costCenter)?.name}` : "Selecionar centro de custo"}
-              </div>
-              {costCenterMenuOpen && (
-                <div className="location-dropdown">
-                  {activeCostCenters.map((c) => (
-                    <button
-                      key={c.code}
-                      onClick={() => {
-                        setCostCenter(c.code);
-                        setCostCenterMenuOpen(false);
-                      }}
-                    >
-                      {c.code} · {c.name}
-                    </button>
-                  ))}
+            <div className="step-card">
+              <div className="step-heading">2. Data e horário do serviço</div>
+              <div className="sd-fields-grid">
+                <label className="field-label">
+                  Data do serviço
+                  <input type="date" value={serviceDate} onChange={(e) => setServiceDate(e.target.value)} />
+                </label>
+                <label className="field-label">
+                  Horário do serviço
+                  <input type="time" value={serviceTime} onChange={(e) => setServiceTime(e.target.value)} />
+                </label>
+                <div style={{ position: "relative" }}>
+                  <label className="field-label" style={{ marginBottom: 6 }}>Centro de custo</label>
+                  <div className="sd-local-box" onClick={() => setCostCenterMenuOpen((v) => !v)} style={{ color: costCenter ? "var(--color-text)" : "var(--color-text-muted)" }}>
+                    {costCenter ? `${costCenter} · ${activeCostCenters.find((c) => c.code === costCenter)?.name}` : "Selecionar centro de custo"}
+                  </div>
+                  {costCenterMenuOpen && (
+                    <div className="location-dropdown">
+                      {activeCostCenters.map((c) => (
+                        <button
+                          key={c.code}
+                          onClick={() => {
+                            setCostCenter(c.code);
+                            setCostCenterMenuOpen(false);
+                          }}
+                        >
+                          {c.code} · {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+            </div>
+
+            <div className="step-card">
+              <div className="step-heading">3. Observações <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span></div>
+              <textarea rows={3} value={observations} onChange={(e) => setObservations(e.target.value)} placeholder="Detalhes adicionais sobre o serviço solicitado" style={{ width: "100%" }} />
+            </div>
+
+            <div className="step-card">
+              <AttachmentsField value={attachments} onChange={setAttachments} />
+            </div>
+
+            <div className="step-card">
+              <div className="step-heading">4. Forma de pagamento</div>
+              <div className="payment-options">
+                {PAYMENTS.map((p) => {
+                  const sel = payment === p.id;
+                  return (
+                    <button key={p.id} className="payment-option" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border)", background: sel ? "#f4f6fc" : "#fff" }} onClick={() => setPayment(p.id)}>
+                      <div className="payment-option__icon">{p.emoji}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700 }}>{p.label}</div>
+                        <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{p.sub}</div>
+                      </div>
+                      <div className="payment-option__radio" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border-input)", background: sel ? "var(--color-primary)" : "#fff" }} />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="step-card">
-          <div className="step-heading">3. Observações <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span></div>
-          <textarea rows={3} value={observations} onChange={(e) => setObservations(e.target.value)} placeholder="Detalhes adicionais sobre o serviço solicitado" style={{ width: "100%" }} />
-        </div>
+          <div className="cart-panel">
+            <div className="cart-panel__header">
+              <div className="cart-panel__title">Seu pedido</div>
+              <button className="cart-panel__clear" onClick={clearAll}>
+                Limpar tudo
+              </button>
+            </div>
 
-        <div className="step-card">
-          <AttachmentsField value={attachments} onChange={setAttachments} />
-        </div>
+            {cartEmpty && (
+              <div className="empty-state">
+                Seu carrinho está vazio.
+                <br />
+                Adicione um ou mais serviços.
+              </div>
+            )}
 
-        <div className="step-card">
-          <div className="step-heading">4. Forma de pagamento</div>
-          <div className="payment-options">
-            {PAYMENTS.map((p) => {
-              const sel = payment === p.id;
-              return (
-                <button key={p.id} className="payment-option" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border)", background: sel ? "#f4f6fc" : "#fff" }} onClick={() => setPayment(p.id)}>
-                  <div className="payment-option__icon">{p.emoji}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700 }}>{p.label}</div>
-                    <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{p.sub}</div>
+            <div className="cart-items">
+              {cartItems.map((ci) => (
+                <div key={ci.id} className="cart-item">
+                  <div className="cart-item__body">
+                    <div className="cart-item__name">{ci.name}</div>
+                    <div className="cart-item__row">
+                      <div className="qty-stepper qty-stepper--sm">
+                        <button onClick={ci.dec}>&minus;</button>
+                        <span>{ci.qty}</span>
+                        <button onClick={ci.inc}>+</button>
+                      </div>
+                      <div className="cart-item__price">{money(ci.total)}</div>
+                    </div>
                   </div>
-                  <div className="payment-option__radio" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border-input)", background: sel ? "var(--color-primary)" : "#fff" }} />
-                </button>
-              );
-            })}
+                  <button className="cart-item__remove" onClick={ci.remove}>
+                    &times;
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="cart-totals">
+              <div className="cart-totals__final">
+                <span>Total estimado</span>
+                <span style={{ color: "var(--color-primary)" }}>{money(total)}</span>
+              </div>
+            </div>
+            <div className="cart-note">O valor final poderá ser ajustado conforme confirmação do pedido.</div>
+
+            {hasError && (
+              <div className="error-text" style={{ marginTop: 12 }}>
+                {errorMsg}
+              </div>
+            )}
+
+            <button className="btn btn--primary btn--full" style={{ marginTop: 16 }} disabled={cartEmpty} onClick={submitOrder}>
+              Confirmar pedido de serviços diversos
+            </button>
           </div>
         </div>
-
-        <div className="step-card sd-summary">
-          <div className="sd-summary__row">
-            <span>Itens selecionados</span>
-            <strong>{totalUnits}</strong>
-          </div>
-          <div className="sd-summary__row sd-summary__row--total">
-            <span>Valor total</span>
-            <strong>{money(total)}</strong>
-          </div>
-        </div>
-
-        {hasError && <div className="error-text" style={{ marginBottom: 12 }}>{errorMsg}</div>}
-
-        <button className="btn btn--primary btn--full" onClick={submitOrder}>
-          Confirmar pedido de serviços diversos
-        </button>
       </div>
     </Layout>
   );

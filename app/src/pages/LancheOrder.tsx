@@ -3,9 +3,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { AttachmentsField } from "../components/AttachmentsField";
+import { KitDetailsModal } from "../components/KitDetailsModal";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { computeKitPrice } from "../mock/pricing";
+import { kitContentsFromCatalog } from "../mock/kitContents";
 import type { Kit, OrderAttachment } from "../types";
 import "./OrderFlow.css";
 import "./Surpreenda.css";
@@ -18,7 +20,7 @@ const PAYMENTS = [
 ];
 
 export function LancheOrder() {
-  const { addOrder, showToast, costCenters, kits, products, orders } = useAppData();
+  const { addOrder, showToast, costCenters, kits, products, serviceCatalog, orders } = useAppData();
   const navigate = useNavigate();
   const routerLocation = useLocation();
   const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
@@ -32,6 +34,7 @@ export function LancheOrder() {
   };
 
   const [orderId] = useState(() => `#LA-${Math.floor(15200 + Math.random() * 800)}`);
+  const [detailsKitId, setDetailsKitId] = useState<string | null>(null);
   const [qtys, setQtys] = useState<Record<string, number>>({});
   const [pickupDate, setPickupDate] = useState("");
   const [pickupTime, setPickupTime] = useState("");
@@ -67,10 +70,10 @@ export function LancheOrder() {
         .map((k) => {
           const qty = qtys[k.id];
           const unitPrice = kitPrice(k);
-          return { id: k.id, name: k.name, qty, unitPrice, total: unitPrice * qty };
+          return { id: k.id, name: k.name, qty, unitPrice, total: unitPrice * qty, contents: kitContentsFromCatalog(k, products, serviceCatalog) };
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [qtys, lancheKits, products],
+    [qtys, lancheKits, products, serviceCatalog],
   );
 
   const totalUnits = cartItems.reduce((sum, ci) => sum + ci.qty, 0);
@@ -172,6 +175,15 @@ export function LancheOrder() {
                   <div style={{ fontWeight: 600 }}>{ci.name}</div>
                   <div style={{ color: "var(--color-text-secondary)" }}>{ci.qty}</div>
                   <div style={{ fontWeight: 700, textAlign: "right" }}>{money(ci.total)}</div>
+                  {ci.contents.length > 0 && (
+                    <ul className="cart-item__contents" style={{ gridColumn: "1 / -1" }}>
+                      {ci.contents.map((c, i) => (
+                        <li key={i}>
+                          {c.qty}x {c.label}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               ))}
 
@@ -204,9 +216,14 @@ export function LancheOrder() {
     );
   }
 
+  const clearAll = () => {
+    setQtys({});
+    showToast("Carrinho limpo.");
+  };
+
   return (
     <Layout>
-      <div className="page-container" style={{ paddingTop: 24, maxWidth: 1000 }}>
+      <div className="page-container" style={{ paddingTop: 24 }}>
         <button className="order-back-link" onClick={() => navigate("/")}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M15 18l-6-6 6-6" />
@@ -222,112 +239,173 @@ export function LancheOrder() {
           </div>
         </div>
 
-        <div className="catalog-heading">1. Escolha os kits de lanche</div>
-        <div className="kits-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-          {lancheKits.map((k) => {
-            const qty = qtys[k.id] || 0;
-            const price = kitPrice(k);
-            return (
-              <div key={k.id} className="kit-card" style={{ borderColor: qty > 0 ? "var(--color-primary)" : "var(--color-border)" }}>
-                {k.photoUrl ? (
-                  <img src={k.photoUrl} alt="" style={{ width: "100%", height: 130, objectFit: "cover" }} />
-                ) : (
-                  <ImagePlaceholder label="Foto do kit" style={{ width: "100%", height: 130, borderRadius: 0 }} />
-                )}
-                <div className="kit-card__body">
-                  <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 3 }}>{k.name}</div>
-                  {k.description && <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 6, minHeight: 32 }}>{k.description}</div>}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ fontSize: 15, fontWeight: 800 }}>{money(price)}</div>
-                    <div className="qty-stepper">
-                      <button onClick={() => setQty(k.id, qty - 1)}>&minus;</button>
-                      <span>{qty}</span>
-                      <button onClick={() => setQty(k.id, qty + 1)}>+</button>
+        <div className="step1-grid">
+          <div style={{ minWidth: 0 }}>
+            <div className="catalog-heading">1. Escolha os kits de lanche</div>
+            <div className="kits-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+              {lancheKits.map((k) => {
+                const qty = qtys[k.id] || 0;
+                const price = kitPrice(k);
+                return (
+                  <div key={k.id} className="kit-card" style={{ borderColor: qty > 0 ? "var(--color-primary)" : "var(--color-border)" }}>
+                    {k.photoUrl ? (
+                      <img src={k.photoUrl} alt="" style={{ width: "100%", height: 130, objectFit: "cover" }} />
+                    ) : (
+                      <ImagePlaceholder label="Foto do kit" style={{ width: "100%", height: 130, borderRadius: 0 }} />
+                    )}
+                    <div className="kit-card__body">
+                      <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 3 }}>{k.name}</div>
+                      {k.description && <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 6, minHeight: 32 }}>{k.description}</div>}
+                      <button className="link" style={{ fontSize: 12, marginBottom: 8 }} onClick={() => setDetailsKitId(k.id)}>
+                        Detalhes
+                      </button>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ fontSize: 15, fontWeight: 800 }}>{money(price)}</div>
+                        <div className="qty-stepper">
+                          <button onClick={() => setQty(k.id, qty - 1)}>&minus;</button>
+                          <span>{qty}</span>
+                          <button onClick={() => setQty(k.id, qty + 1)}>+</button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
-          {lancheKits.length === 0 && <div className="empty-state">Nenhum kit de lanche cadastrado ainda. Cadastre em Catálogos &rsaquo; Kits, marcando o serviço "Lanche".</div>}
-        </div>
+                );
+              })}
+              {lancheKits.length === 0 && <div className="empty-state">Nenhum kit de lanche cadastrado ainda. Cadastre em Catálogos &rsaquo; Kits, marcando o serviço "Lanche".</div>}
+            </div>
 
-        <div className="step-card">
-          <div className="step-heading">2. Data e horário de retirada</div>
-          <div className="lanche-fields-grid">
-            <label className="field-label">
-              Data de retirada
-              <input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} />
-            </label>
-            <label className="field-label">
-              Horário de retirada
-              <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} />
-            </label>
-            <div style={{ position: "relative" }}>
-              <label className="field-label" style={{ marginBottom: 6 }}>Centro de custo</label>
-              <div className="lanche-local-box" onClick={() => setCostCenterMenuOpen((v) => !v)} style={{ color: costCenter ? "var(--color-text)" : "var(--color-text-muted)" }}>
-                {costCenter ? `${costCenter} · ${activeCostCenters.find((c) => c.code === costCenter)?.name}` : "Selecionar centro de custo"}
-              </div>
-              {costCenterMenuOpen && (
-                <div className="location-dropdown">
-                  {activeCostCenters.map((c) => (
-                    <button
-                      key={c.code}
-                      onClick={() => {
-                        setCostCenter(c.code);
-                        setCostCenterMenuOpen(false);
-                      }}
-                    >
-                      {c.code} · {c.name}
-                    </button>
-                  ))}
+            <div className="step-card">
+              <div className="step-heading">2. Data e horário de retirada</div>
+              <div className="lanche-fields-grid">
+                <label className="field-label">
+                  Data de retirada
+                  <input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} />
+                </label>
+                <label className="field-label">
+                  Horário de retirada
+                  <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} />
+                </label>
+                <div style={{ position: "relative" }}>
+                  <label className="field-label" style={{ marginBottom: 6 }}>Centro de custo</label>
+                  <div className="lanche-local-box" onClick={() => setCostCenterMenuOpen((v) => !v)} style={{ color: costCenter ? "var(--color-text)" : "var(--color-text-muted)" }}>
+                    {costCenter ? `${costCenter} · ${activeCostCenters.find((c) => c.code === costCenter)?.name}` : "Selecionar centro de custo"}
+                  </div>
+                  {costCenterMenuOpen && (
+                    <div className="location-dropdown">
+                      {activeCostCenters.map((c) => (
+                        <button
+                          key={c.code}
+                          onClick={() => {
+                            setCostCenter(c.code);
+                            setCostCenterMenuOpen(false);
+                          }}
+                        >
+                          {c.code} · {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+            </div>
+
+            <div className="step-card">
+              <div className="step-heading">3. Forma de pagamento</div>
+              <div className="payment-options">
+                {PAYMENTS.map((p) => {
+                  const sel = payment === p.id;
+                  return (
+                    <button key={p.id} className="payment-option" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border)", background: sel ? "#f4f6fc" : "#fff" }} onClick={() => setPayment(p.id)}>
+                      <div className="payment-option__icon">{p.emoji}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700 }}>{p.label}</div>
+                        <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{p.sub}</div>
+                      </div>
+                      <div className="payment-option__radio" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border-input)", background: sel ? "var(--color-primary)" : "#fff" }} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="step-card">
+              <div className="step-heading">4. Anexo</div>
+              <AttachmentsField value={attachments} onChange={setAttachments} />
             </div>
           </div>
-        </div>
 
-        <div className="step-card">
-          <div className="step-heading">3. Forma de pagamento</div>
-          <div className="payment-options">
-            {PAYMENTS.map((p) => {
-              const sel = payment === p.id;
-              return (
-                <button key={p.id} className="payment-option" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border)", background: sel ? "#f4f6fc" : "#fff" }} onClick={() => setPayment(p.id)}>
-                  <div className="payment-option__icon">{p.emoji}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700 }}>{p.label}</div>
-                    <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{p.sub}</div>
+          <div className="cart-panel">
+            <div className="cart-panel__header">
+              <div className="cart-panel__title">Seu pedido</div>
+              <button className="cart-panel__clear" onClick={clearAll}>
+                Limpar tudo
+              </button>
+            </div>
+
+            {cartItems.length === 0 && (
+              <div className="empty-state">
+                Seu carrinho está vazio.
+                <br />
+                Adicione um ou mais kits.
+              </div>
+            )}
+
+            <div className="cart-items">
+              {cartItems.map((ci) => (
+                <div key={ci.id} className="cart-item">
+                  <div className="cart-item__body">
+                    <div className="cart-item__name">{ci.name}</div>
+                    {ci.contents.length > 0 && (
+                      <ul className="cart-item__contents">
+                        {ci.contents.map((c, i) => (
+                          <li key={i}>
+                            {c.qty}x {c.label}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <div className="cart-item__row">
+                      <div className="qty-stepper qty-stepper--sm">
+                        <button onClick={() => setQty(ci.id, ci.qty - 1)}>&minus;</button>
+                        <span>{ci.qty}</span>
+                        <button onClick={() => setQty(ci.id, ci.qty + 1)}>+</button>
+                      </div>
+                      <div className="cart-item__price">{money(ci.total)}</div>
+                    </div>
                   </div>
-                  <div className="payment-option__radio" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border-input)", background: sel ? "var(--color-primary)" : "#fff" }} />
-                </button>
-              );
-            })}
+                  <button className="cart-item__remove" onClick={() => setQty(ci.id, 0)}>
+                    &times;
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="cart-totals">
+              <div className="cart-totals__final">
+                <span>Total estimado</span>
+                <span style={{ color: "var(--color-primary)" }}>{money(total)}</span>
+              </div>
+            </div>
+            <div className="cart-note">O valor final poderá ser ajustado conforme confirmação do pedido.</div>
+
+            {hasError && (
+              <div className="error-text" style={{ marginTop: 12 }}>
+                {errorMsg}
+              </div>
+            )}
+
+            <button className="btn btn--primary btn--full" style={{ marginTop: 16 }} disabled={totalUnits === 0} onClick={submitOrder}>
+              Confirmar pedido de lanche
+            </button>
           </div>
         </div>
-
-        <div className="step-card">
-          <div className="step-heading">4. Anexo</div>
-          <AttachmentsField value={attachments} onChange={setAttachments} />
-        </div>
-
-        <div className="step-card lanche-summary">
-          <div className="lanche-summary__row">
-            <span>Itens selecionados</span>
-            <strong>{totalUnits}</strong>
-          </div>
-          <div className="lanche-summary__row lanche-summary__row--total">
-            <span>Valor total</span>
-            <strong>{money(total)}</strong>
-          </div>
-        </div>
-
-        {hasError && <div className="error-text" style={{ marginBottom: 12 }}>{errorMsg}</div>}
-
-        <button className="btn btn--primary btn--full" onClick={submitOrder}>
-          Confirmar pedido de lanche
-        </button>
       </div>
+
+      {detailsKitId &&
+        (() => {
+          const k = lancheKits.find((x) => x.id === detailsKitId)!;
+          return <KitDetailsModal name={k.name} description={k.description} contents={kitContentsFromCatalog(k, products, serviceCatalog)} onClose={() => setDetailsKitId(null)} />;
+        })()}
     </Layout>
   );
 }
