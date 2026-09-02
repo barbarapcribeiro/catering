@@ -12,7 +12,7 @@ type PickerTab = "produtos" | "kits" | "servicos";
 export function OrcamentoBuilder() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { quoteRequests, updateQuoteRequest, products, kits, serviceCatalog, addOrder, addNotification, showToast } = useAppData();
+  const { quoteRequests, updateQuoteRequest, products, kits, serviceCatalog, orders, addOrder, updateOrder, addNotification, showToast } = useAppData();
 
   const quote = quoteRequests.find((q) => q.id === id);
 
@@ -33,6 +33,42 @@ export function OrcamentoBuilder() {
       startedRef.current = true;
       updateQuoteRequest(quote.id, { status: "Em elaboração" });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quote?.id]);
+
+  // Reabrindo um orçamento já montado (revisão pedida pelo cliente): traz de volta os
+  // itens, taxa e observações enviados da última vez, em vez de começar do zero.
+  const prefilledRef = useRef(false);
+  useEffect(() => {
+    if (!quote || prefilledRef.current || !quote.items || quote.items.length === 0) return;
+    prefilledRef.current = true;
+    const nextProductQty: Record<string, number> = {};
+    const nextKitQty: Record<string, number> = {};
+    const nextServiceQty: Record<string, number> = {};
+    const nextCustom: QuoteItem[] = [];
+    quote.items.forEach((it) => {
+      if (it.productId) {
+        nextProductQty[it.productId] = it.qty;
+        return;
+      }
+      const kit = kits.find((k) => k.name === it.name);
+      if (kit) {
+        nextKitQty[kit.id] = it.qty;
+        return;
+      }
+      const svc = serviceCatalog.find((s) => s.name === it.name);
+      if (svc) {
+        nextServiceQty[svc.id] = it.qty;
+        return;
+      }
+      nextCustom.push(it);
+    });
+    setQtyByProduct(nextProductQty);
+    setQtyByKit(nextKitQty);
+    setQtyByService(nextServiceQty);
+    setCustomItems(nextCustom);
+    if (quote.serviceFeePercent !== undefined) setFeePercent(String(quote.serviceFeePercent));
+    if (quote.guNotes) setGuNotes(quote.guNotes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quote?.id]);
 
@@ -75,7 +111,7 @@ export function OrcamentoBuilder() {
     );
   }
 
-  if (quote.status === "Enviado para aprovação" || quote.status === "Aprovado" || quote.status === "Recusado") {
+  if (quote.status === "Enviado para aprovação" || quote.status === "Aprovado" || quote.status === "Rejeitado" || quote.status === "Cancelado") {
     return (
       <div className="orc-builder-page">
         <div className="empty-state">Esse orçamento já foi enviado ao cliente. Acompanhe pelo pedido {quote.orderId} em Gerenciar Pedidos.</div>
@@ -112,30 +148,51 @@ export function OrcamentoBuilder() {
 
   const send = () => {
     if (!canSend) return;
-    const created = addOrder({
-      category: quote.serviceType,
-      type: `${quote.serviceType} (Orçamento)`,
-      mono: "OR",
-      qty: `${quote.peopleCount} pessoas`,
-      peopleCount: quote.peopleCount,
-      datetime: `${new Date(`${quote.expectedDate}T00:00:00`).toLocaleDateString("pt-BR")}`,
-      status: "Orçamento enviado",
-      value: money(total),
-      valueNumber: total,
-      items: allItems,
-      notes: guNotes || undefined,
-      costCenters: quote.costCenterCode ? [{ code: quote.costCenterCode, percent: 100 }] : undefined,
-      quoteRequestId: quote.id,
-    });
+    const existingOrder = quote.orderId ? orders.find((o) => o.id === quote.orderId) : undefined;
+    const isRevision = quote.status === "Editado" && !!existingOrder;
+
+    let orderId: string;
+    if (isRevision && existingOrder) {
+      orderId = existingOrder.id;
+      updateOrder(existingOrder.id, {
+        value: money(total),
+        valueNumber: total,
+        items: allItems,
+        notes: guNotes || undefined,
+        history: [
+          ...(existingOrder.history ?? []),
+          { label: "Orçamento revisado e reenviado pela nossa equipe", time: new Date().toLocaleString("pt-BR") },
+        ],
+      });
+    } else {
+      const created = addOrder({
+        category: quote.serviceType,
+        type: `${quote.serviceType} (Orçamento)`,
+        mono: "OR",
+        qty: `${quote.peopleCount} pessoas`,
+        peopleCount: quote.peopleCount,
+        datetime: `${new Date(`${quote.expectedDate}T00:00:00`).toLocaleDateString("pt-BR")}`,
+        status: "Orçamento enviado",
+        value: money(total),
+        valueNumber: total,
+        items: allItems,
+        notes: guNotes || undefined,
+        costCenters: quote.costCenterCode ? [{ code: quote.costCenterCode, percent: 100 }] : undefined,
+        quoteRequestId: quote.id,
+      });
+      orderId = created.id;
+    }
+
     updateQuoteRequest(quote.id, {
       status: "Enviado para aprovação",
       items: allItems,
       serviceFeePercent: parsedFee,
       guNotes: guNotes || undefined,
       sentAt: new Date().toISOString(),
-      orderId: created.id,
+      orderId,
+      clientFeedback: undefined,
     });
-    addNotification(`Orçamento enviado para aprovação — pedido ${created.id}.`);
+    addNotification(`Orçamento enviado para aprovação — pedido ${orderId}.`);
     showToast("Orçamento enviado ao cliente!");
     navigate("/admin/orcamentos");
   };
@@ -153,6 +210,13 @@ export function OrcamentoBuilder() {
           Voltar
         </button>
       </div>
+
+      {quote.status === "Editado" && quote.clientFeedback && (
+        <div className="card orc-builder-feedback-card">
+          <div className="orc-builder-feedback-card__title">⚠️ Cliente pediu alterações</div>
+          <div>{quote.clientFeedback}</div>
+        </div>
+      )}
 
       <div className="card orc-builder-request-card">
         <div className="orc-builder-request-card__row">

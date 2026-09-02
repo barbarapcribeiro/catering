@@ -103,6 +103,8 @@ export function GerenciarPedidos() {
   const [reportDescription, setReportDescription] = useState("");
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({ date: "", time: "", location: "", peopleCount: "", notes: "" });
+  const [changeRequestOpen, setChangeRequestOpen] = useState(false);
+  const [changeRequestText, setChangeRequestText] = useState("");
 
   const selectOrder = (id: string) => {
     setSelectedId(id);
@@ -162,6 +164,10 @@ export function GerenciarPedidos() {
   };
   const cancel = () => {
     if (!selected) return;
+    if (selected.status === "Orçamento enviado") {
+      const q = quoteRequests.find((qr) => qr.orderId === selected.id);
+      if (q) updateQuoteRequest(q.id, { status: "Cancelado" });
+    }
     cancelOrder(selected.id);
     setQuickActionsOpen(false);
   };
@@ -183,9 +189,25 @@ export function GerenciarPedidos() {
     if (!selected) return;
     updateOrder(selected.id, { status: "Cancelado" });
     const q = quoteRequests.find((qr) => qr.orderId === selected.id);
-    if (q) updateQuoteRequest(q.id, { status: "Recusado" });
+    if (q) updateQuoteRequest(q.id, { status: "Rejeitado" });
     showToast("Orçamento recusado.");
     setQuickActionsOpen(false);
+  };
+  const openChangeRequest = () => {
+    setChangeRequestText("");
+    setChangeRequestOpen(true);
+    setQuickActionsOpen(false);
+  };
+  const submitChangeRequest = () => {
+    if (!selected || !changeRequestText.trim()) return;
+    const text = changeRequestText.trim();
+    const q = quoteRequests.find((qr) => qr.orderId === selected.id);
+    if (q) updateQuoteRequest(q.id, { status: "Editado", clientFeedback: text });
+    updateOrder(selected.id, {
+      history: [...(selected.history ?? []), { label: `Cliente solicitou alterações: "${text}"`, time: new Date().toLocaleString("pt-BR") }],
+    });
+    showToast("Solicitação de alterações enviada à nossa equipe.");
+    setChangeRequestOpen(false);
   };
   const printOrder = () => {
     setQuickActionsOpen(false);
@@ -394,6 +416,7 @@ export function GerenciarPedidos() {
                         {selected.status === "Orçamento enviado" && (
                           <>
                             <button onClick={approveQuote}>Aprovar orçamento</button>
+                            <button onClick={openChangeRequest}>Pedir alterações</button>
                             <button className="kebab-menu__danger" onClick={rejectQuote}>
                               Recusar orçamento
                             </button>
@@ -477,7 +500,7 @@ export function GerenciarPedidos() {
                   <>
                     {selected.status === "Orçamento enviado" && (
                       <div className="gp-quote-banner">
-                        🧾 Esse é o orçamento montado pela nossa equipe para sua solicitação — confira os itens e valores abaixo e aprove para entrar em produção.
+                        🧾 Esse é o orçamento montado pela nossa equipe para sua solicitação — confira os itens e valores abaixo. Aprove para entrar em produção, peça alterações ou recuse.
                       </div>
                     )}
                     <div className="gp-resumo-items">
@@ -763,6 +786,9 @@ export function GerenciarPedidos() {
                 <button className="btn btn--primary" onClick={approveQuote}>
                   ✓ Aprovar orçamento
                 </button>
+                <button className="btn btn--outline" onClick={openChangeRequest}>
+                  ✎ Pedir alterações
+                </button>
                 <button className="btn btn--outline gp-action-bar__danger-outline" onClick={rejectQuote}>
                   ✕ Recusar orçamento
                 </button>
@@ -846,6 +872,33 @@ export function GerenciarPedidos() {
             </button>
             <button className="btn btn--primary" onClick={saveEdit}>
               Salvar alterações
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {changeRequestOpen && selected && (
+        <Modal onClose={() => setChangeRequestOpen(false)} width={440}>
+          <div className="modal-title" style={{ marginBottom: 18 }}>
+            Pedir alterações — {selected.id}
+          </div>
+          <div className="modal-form">
+            <label className="field-label">
+              O que você gostaria de mudar nesse orçamento?
+              <textarea
+                rows={4}
+                value={changeRequestText}
+                onChange={(e) => setChangeRequestText(e.target.value)}
+                placeholder="Ex.: reduzir a quantidade de salgados, trocar o kit por uma opção mais econômica..."
+              />
+            </label>
+          </div>
+          <div className="modal-actions">
+            <button className="btn btn--outline" onClick={() => setChangeRequestOpen(false)}>
+              Cancelar
+            </button>
+            <button className="btn btn--primary" disabled={!changeRequestText.trim()} onClick={submitChangeRequest}>
+              Enviar solicitação
             </button>
           </div>
         </Modal>

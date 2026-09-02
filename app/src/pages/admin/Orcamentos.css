@@ -114,3 +114,14 @@
   font-size: 13.5px;
   line-height: 1.5;
 }
+
+.orcamentos-feedback-banner {
+  background: var(--color-warning-soft);
+  border: 1px solid var(--color-warning);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.orcamentos-feedback-banner .orcamentos-open-text__label {
+  color: var(--color-warning-dark);
+}

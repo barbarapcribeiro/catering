@@ -7,9 +7,11 @@ import "./Orcamentos.css";
 const STATUS_STYLE: Record<QuoteStatus, { bg: string; color: string }> = {
   Solicitado: { bg: "var(--color-info-soft)", color: "var(--color-info)" },
   "Em elaboração": { bg: "var(--color-warning-soft)", color: "var(--color-warning-dark)" },
+  Editado: { bg: "var(--color-warning-soft)", color: "var(--color-warning-dark)" },
   "Enviado para aprovação": { bg: "var(--color-primary-soft)", color: "var(--color-primary)" },
   Aprovado: { bg: "var(--color-success-soft)", color: "var(--color-success)" },
-  Recusado: { bg: "var(--color-danger-soft, #fbe4e4)", color: "var(--color-danger)" },
+  Rejeitado: { bg: "var(--color-danger-soft, #fbe4e4)", color: "var(--color-danger)" },
+  Cancelado: { bg: "var(--color-danger-soft, #fbe4e4)", color: "var(--color-danger)" },
 };
 
 type Tab = "pendentes" | "enviados" | "finalizados";
@@ -23,9 +25,9 @@ export function Orcamentos() {
   const ccByCode = Object.fromEntries(costCenters.map((c) => [c.code, c]));
 
   const inTab = (q: QuoteRequest) => {
-    if (tab === "pendentes") return q.status === "Solicitado" || q.status === "Em elaboração";
+    if (tab === "pendentes") return q.status === "Solicitado" || q.status === "Em elaboração" || q.status === "Editado";
     if (tab === "enviados") return q.status === "Enviado para aprovação";
-    return q.status === "Aprovado" || q.status === "Recusado";
+    return q.status === "Aprovado" || q.status === "Rejeitado" || q.status === "Cancelado";
   };
 
   const sorted = [...quoteRequests].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -33,9 +35,9 @@ export function Orcamentos() {
   const selected = quoteRequests.find((q) => q.id === selectedId) ?? null;
 
   const counts = {
-    pendentes: quoteRequests.filter((q) => q.status === "Solicitado" || q.status === "Em elaboração").length,
+    pendentes: quoteRequests.filter((q) => q.status === "Solicitado" || q.status === "Em elaboração" || q.status === "Editado").length,
     enviados: quoteRequests.filter((q) => q.status === "Enviado para aprovação").length,
-    finalizados: quoteRequests.filter((q) => q.status === "Aprovado" || q.status === "Recusado").length,
+    finalizados: quoteRequests.filter((q) => q.status === "Aprovado" || q.status === "Rejeitado" || q.status === "Cancelado").length,
   };
 
   const startBuilding = (q: QuoteRequest) => {
@@ -134,13 +136,20 @@ export function Orcamentos() {
                 <div className="orcamentos-open-text__value">{selected.decorationNotes || "—"}</div>
               </div>
 
-              {(selected.status === "Solicitado" || selected.status === "Em elaboração") && (
+              {selected.status === "Editado" && selected.clientFeedback && (
+                <div className="orcamentos-feedback-banner">
+                  <div className="orcamentos-open-text__label">⚠️ Cliente pediu alterações</div>
+                  <div className="orcamentos-open-text__value">{selected.clientFeedback}</div>
+                </div>
+              )}
+
+              {(selected.status === "Solicitado" || selected.status === "Em elaboração" || selected.status === "Editado") && (
                 <button className="btn btn--primary btn--full" style={{ marginTop: 16 }} onClick={() => startBuilding(selected)}>
-                  {selected.status === "Em elaboração" ? "Continuar montagem" : "Montar orçamento"}
+                  {selected.status === "Solicitado" ? "Montar orçamento" : selected.status === "Editado" ? "Revisar orçamento" : "Continuar montagem"}
                 </button>
               )}
-              {selected.status !== "Solicitado" && selected.status !== "Em elaboração" && selected.orderId && (
-                <button className="btn btn--outline btn--full" style={{ marginTop: 16 }} onClick={() => copyLink(selected)}>
+              {selected.orderId && (
+                <button className="btn btn--outline btn--full" style={{ marginTop: 12 }} onClick={() => copyLink(selected)}>
                   Ver pedido gerado ({selected.orderId})
                 </button>
               )}

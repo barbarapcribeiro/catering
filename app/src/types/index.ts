@@ -105,7 +105,7 @@ export const ORDER_STATUS_LIST: OrderStatus[] = [
   "Recebido",
 ];
 
-export const QUOTE_STATUSES = ["Solicitado", "Em elaboração", "Enviado para aprovação", "Aprovado", "Recusado"] as const;
+export const QUOTE_STATUSES = ["Solicitado", "Em elaboração", "Editado", "Enviado para aprovação", "Aprovado", "Rejeitado", "Cancelado"] as const;
 export type QuoteStatus = (typeof QUOTE_STATUSES)[number];
 
 export const QUOTE_EXPERIENCE_OPTIONS = ["Descontraída", "Corporativa", "Sofisticada", "Divertida", "Outro"] as const;
@@ -140,6 +140,8 @@ export interface QuoteRequest {
   items?: QuoteItem[];
   serviceFeePercent?: number;
   guNotes?: string;
+  /** Última solicitação de alterações feita pelo cliente sobre o orçamento enviado. */
+  clientFeedback?: string;
   createdAt: string;
   sentAt?: string;
   /** Preenchido quando a GU envia o orçamento — id do Order criado como fatura para aprovação do cliente. */

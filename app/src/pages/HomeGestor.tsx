@@ -78,38 +78,6 @@ export function HomeGestor() {
           </div>
         </div>
 
-        <RecentOrdersCard orders={orders} />
-        <OpenOrdersCard orders={orders} />
-        <PromosSection />
-
-        <div className="persona-home__panel">
-          <div className="persona-home__panel-header">
-            <div className="persona-home__panel-title">Resumo do centro de custo</div>
-            {userCostCenters.length > 0 && (
-              <div className="persona-home__panel-caption">{userCostCenters.map((c) => `${c.code} · ${c.name}`).join(" · ")}</div>
-            )}
-          </div>
-
-          {costCenterCodes.length === 0 && (
-            <div className="empty-state">Nenhum centro de custo associado ao seu usuário. Peça para o administrador configurar em Usuários.</div>
-          )}
-
-          {costCenterCodes.length > 0 && (
-            <div className="persona-home__cc-kpis">
-              {ccKpis.map((k) => (
-                <div className="card persona-home__cc-kpi" key={k.label}>
-                  <div className="persona-home__cc-kpi-head">
-                    <div className="persona-home__cc-kpi-label">{k.label}</div>
-                    <span>{k.glyph}</span>
-                  </div>
-                  <div className="persona-home__cc-kpi-value">{k.value}</div>
-                  <Sparkline seed={k.seed} color={k.sparkColor} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
         <div className="persona-home__kpis">
           <div className="card persona-home__kpi">
             <div className="persona-home__kpi-label">Aguardando sua aprovação</div>
@@ -153,6 +121,38 @@ export function HomeGestor() {
                       Recusar
                     </button>
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <RecentOrdersCard orders={orders} />
+        <OpenOrdersCard orders={orders} />
+        <PromosSection />
+
+        <div className="persona-home__panel">
+          <div className="persona-home__panel-header">
+            <div className="persona-home__panel-title">Resumo do centro de custo</div>
+            {userCostCenters.length > 0 && (
+              <div className="persona-home__panel-caption">{userCostCenters.map((c) => `${c.code} · ${c.name}`).join(" · ")}</div>
+            )}
+          </div>
+
+          {costCenterCodes.length === 0 && (
+            <div className="empty-state">Nenhum centro de custo associado ao seu usuário. Peça para o administrador configurar em Usuários.</div>
+          )}
+
+          {costCenterCodes.length > 0 && (
+            <div className="persona-home__cc-kpis">
+              {ccKpis.map((k) => (
+                <div className="card persona-home__cc-kpi" key={k.label}>
+                  <div className="persona-home__cc-kpi-head">
+                    <div className="persona-home__cc-kpi-label">{k.label}</div>
+                    <span>{k.glyph}</span>
+                  </div>
+                  <div className="persona-home__cc-kpi-value">{k.value}</div>
+                  <Sparkline seed={k.seed} color={k.sparkColor} />
                 </div>
               ))}
             </div>
