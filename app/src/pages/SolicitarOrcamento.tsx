@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { useAppData } from "../mock/AppDataContext";
-import { ORDER_CATEGORIES, QUOTE_EXPERIENCE_OPTIONS, type OrderCategoryName, type QuoteExperience } from "../types";
+import { QUOTE_SERVICE_TYPES, QUOTE_EXPERIENCE_OPTIONS, type QuoteServiceType, type QuoteExperience } from "../types";
 import "./SolicitarOrcamento.css";
 
 type StepId =
@@ -42,7 +42,7 @@ export function SolicitarOrcamento() {
 
   const [step, setStep] = useState<StepId>("serviceType");
   const [messages, setMessages] = useState<ChatMsg[]>([{ from: "bot", text: STEP_QUESTIONS.serviceType }]);
-  const [serviceType, setServiceType] = useState<OrderCategoryName | null>(null);
+  const [serviceType, setServiceType] = useState<QuoteServiceType | null>(null);
   const [expectedDate, setExpectedDate] = useState("");
   const [peopleCount, setPeopleCount] = useState("");
   const [experience, setExperience] = useState<QuoteExperience | null>(null);
@@ -67,7 +67,7 @@ export function SolicitarOrcamento() {
     }
   };
 
-  const pickServiceType = (v: OrderCategoryName) => {
+  const pickServiceType = (v: QuoteServiceType) => {
     setServiceType(v);
     advanceTo("expectedDate", v);
   };
@@ -157,7 +157,7 @@ export function SolicitarOrcamento() {
           <div className="orc-chat-input">
             {step === "serviceType" && (
               <div className="orc-chip-row">
-                {ORDER_CATEGORIES.map((c) => (
+                {QUOTE_SERVICE_TYPES.map((c) => (
                   <button key={c} className="orc-chip" onClick={() => pickServiceType(c)}>
                     {c}
                   </button>
