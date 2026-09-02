@@ -158,10 +158,44 @@ const initialProducts: Product[] = [
   product({ id: "prod20", name: "Biscoitos Simples", type: "Salgado", unit: "pacote", costPrice: 4, marginPercent: 50, description: "Pacotes individuais, sabores variados.", supplierId: "sup1", pages: ["Abastecimento Simples"], active: true }),
   product({ id: "prod21", name: "Balas", type: "Doce", unit: "pacote", costPrice: 4.5, marginPercent: 56, description: "Pacote sortido.", supplierId: "sup1", pages: ["Abastecimento Simples"], active: true }),
   product({ id: "prod22", name: "Bombons", type: "Doce", unit: "un", costPrice: 1.2, marginPercent: 67, description: "Unidade, sabores variados.", supplierId: "sup1", pages: ["Abastecimento Simples"], active: true }),
+  product({ id: "prod23", name: "Chá Gelado 1L", type: "Bebida", unit: "un", costPrice: 8, marginPercent: 60, description: "Sabores variados, servido gelado.", supplierId: "sup1", pages: ["Coffee Break"], active: true }),
+  product({ id: "prod24", name: "Refrigerante Lata Zero 350ml", type: "Bebida", unit: "un", costPrice: 6, marginPercent: 67, description: "Sem açúcar.", supplierId: "sup1", pages: ["Coffee Break"], active: true }),
+  product({ id: "prod25", name: "Coxinha de Frango (50 unidades)", type: "Salgado", unit: "pacote", costPrice: 55, marginPercent: 45, description: "Massa crocante, recheio cremoso.", supplierId: "sup1", pages: ["Coffee Break"], active: true }),
+  product({ id: "prod26", name: "Empada de Palmito (50 unidades)", type: "Salgado", unit: "pacote", costPrice: 58, marginPercent: 45, description: "Massa amanteigada, recheio de palmito.", supplierId: "sup1", pages: ["Coffee Break"], active: true }),
+  product({ id: "prod27", name: "Brigadeiro Gourmet (30 unidades)", type: "Doce", unit: "pacote", costPrice: 42, marginPercent: 50, description: "Chocolate belga, granulado especial.", supplierId: "sup1", pages: ["Coffee Break"], active: true }),
+  product({ id: "prod28", name: "Bolo de Cenoura com Chocolate (fatias)", type: "Pão e Bolo", unit: "pacote", costPrice: 48, marginPercent: 50, description: "Cobertura cremosa de chocolate.", supplierId: "sup1", pages: ["Coffee Break"], active: true }),
+  product({ id: "prod29", name: "Croissant Misto (20 unidades)", type: "Pão e Bolo", unit: "pacote", costPrice: 50, marginPercent: 48, description: "Presunto e queijo.", supplierId: "sup1", pages: ["Coffee Break"], active: true }),
+  product({ id: "prod30", name: "Salada de Frutas (porção 300g)", type: "Fruta", unit: "un", costPrice: 3, marginPercent: 50, description: "Frutas frescas da estação.", supplierId: "sup1", pages: ["Coffee Break"], active: true }),
+  product({ id: "prod31", name: "Guardanapos Descartáveis (pacote 100un)", type: "Descartável", unit: "pacote", costPrice: 5, marginPercent: 60, description: "Pacote com 100 unidades.", supplierId: "sup2", pages: ["Coffee Break", "Abastecimento Simples"], active: true }),
+  product({ id: "prod32", name: "Sanduíche Natural de Frango", type: "Salgado", unit: "un", costPrice: 9, marginPercent: 56, description: "Pão integral, frango desfiado e salada.", supplierId: "sup1", active: true }),
+  product({ id: "prod33", name: "Wrap Vegetariano", type: "Salgado", unit: "un", costPrice: 8, marginPercent: 50, description: "Legumes grelhados e homus.", supplierId: "sup1", active: true }),
+  product({ id: "prod34", name: "Suco Detox 300ml", type: "Bebida", unit: "un", costPrice: 6, marginPercent: 50, description: "Couve, gengibre e maçã.", supplierId: "sup1", active: true }),
+  product({ id: "prod35", name: "Barra de Cereal", type: "Doce", unit: "un", costPrice: 3, marginPercent: 67, description: "Cereais e frutas secas.", supplierId: "sup1", active: true }),
+  product({ id: "prod36", name: "Prato Executivo de Frango", type: "Salgado", unit: "un", costPrice: 18, marginPercent: 44, description: "Arroz, feijão, frango grelhado e legumes.", supplierId: "sup1", active: true }),
+  product({ id: "prod37", name: "Prato Executivo de Carne", type: "Salgado", unit: "un", costPrice: 22, marginPercent: 45, description: "Arroz, feijão, carne assada e legumes.", supplierId: "sup1", active: true }),
+  product({ id: "prod38", name: "Prato Vegetariano", type: "Salgado", unit: "un", costPrice: 16, marginPercent: 44, description: "Grão-de-bico, legumes e arroz integral.", supplierId: "sup1", active: true }),
+  product({ id: "prod39", name: "Sobremesa do Dia", type: "Doce", unit: "un", costPrice: 6, marginPercent: 50, description: "Opção variável conforme o dia.", supplierId: "sup1", active: true }),
+  product({ id: "prod40", name: "Sopa do Dia", type: "Salgado", unit: "un", costPrice: 12, marginPercent: 42, description: "Servida quente, ideal para a janta.", supplierId: "sup1", active: true }),
+  product({ id: "prod41", name: "Mingau / Vitamina", type: "Bebida", unit: "un", costPrice: 7, marginPercent: 43, description: "Opção leve para a ceia.", supplierId: "sup1", active: true }),
+  product({ id: "prod42", name: "Pão na Chapa com Café", type: "Pão e Bolo", unit: "un", costPrice: 8, marginPercent: 50, description: "Para o café da manhã.", supplierId: "sup1", active: true }),
+  product({ id: "prod43", name: "Tapioca Recheada", type: "Pão e Bolo", unit: "un", costPrice: 9, marginPercent: 44, description: "Recheio à escolha.", supplierId: "sup1", active: true }),
 ];
 
 const initialKits: Kit[] = [
   { id: "kit1", name: "Combo Reunião Rápida", description: "Água e salgados para reuniões curtas.", items: [{ productId: "prod2", qty: 10 }, { productId: "prod3", qty: 1 }], serviceFeePercent: 10, pages: ["Coffee Break"], active: true },
+  { id: "kit2", name: "Combo Sanduíche Natural", description: "Sanduíche natural de frango com suco detox.", items: [{ productId: "prod32", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, pages: ["Lanche"], active: true },
+  { id: "kit3", name: "Combo Wrap Vegetariano", description: "Wrap vegetariano com suco detox.", items: [{ productId: "prod33", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, pages: ["Lanche"], active: true },
+  { id: "kit4", name: "Combo Fit", description: "Sanduíche natural, barra de cereal e suco detox.", items: [{ productId: "prod32", qty: 1 }, { productId: "prod35", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, pages: ["Lanche"], active: true },
+  { id: "kit5", name: "Combo Tradicional", description: "Croissant misto com refrigerante.", items: [{ productId: "prod29", qty: 1 }, { productId: "prod1", qty: 1 }], serviceFeePercent: 10, pages: ["Lanche"], active: true },
+  { id: "kit6", name: "Combo Doce", description: "Brigadeiro gourmet com suco detox.", items: [{ productId: "prod27", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, pages: ["Lanche"], active: true },
+  { id: "kit7", name: "Marmita Executiva Frango", description: "Arroz, feijão, frango grelhado e legumes.", items: [{ productId: "prod36", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca"], active: true },
+  { id: "kit8", name: "Marmita Executiva Carne", description: "Arroz, feijão, carne assada e legumes.", items: [{ productId: "prod37", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca"], active: true },
+  { id: "kit9", name: "Opção Vegetariana", description: "Grão-de-bico, legumes e arroz integral.", items: [{ productId: "prod38", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca"], active: true },
+  { id: "kit10", name: "Café da Manhã Completo", description: "Pão na chapa com café e salada de frutas.", items: [{ productId: "prod42", qty: 1 }, { productId: "prod30", qty: 1 }], serviceFeePercent: 10, mealServices: ["Café da manhã"], pages: ["Consumo Catraca"], active: true },
+  { id: "kit11", name: "Tapioca e Suco", description: "Tapioca recheada com suco detox.", items: [{ productId: "prod43", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, mealServices: ["Café da manhã"], pages: ["Consumo Catraca"], active: true },
+  { id: "kit12", name: "Lanche da Tarde", description: "Sanduíche natural com sobremesa do dia.", items: [{ productId: "prod32", qty: 1 }, { productId: "prod39", qty: 1 }], serviceFeePercent: 10, mealServices: ["Lanche"], pages: ["Consumo Catraca"], active: true },
+  { id: "kit13", name: "Sopa da Noite", description: "Sopa quente do dia.", items: [{ productId: "prod40", qty: 1 }], serviceFeePercent: 10, mealServices: ["Janta", "Ceia"], pages: ["Consumo Catraca"], active: true },
+  { id: "kit14", name: "Vitamina e Pão", description: "Mingau/vitamina com pão na chapa.", items: [{ productId: "prod41", qty: 1 }, { productId: "prod42", qty: 1 }], serviceFeePercent: 10, mealServices: ["Ceia"], pages: ["Consumo Catraca"], active: true },
 ];
 
 const initialServiceCatalog: ServiceCatalogItem[] = [
@@ -169,6 +203,12 @@ const initialServiceCatalog: ServiceCatalogItem[] = [
   { id: "svc2", name: "Retirada de itens", description: "Recolhimento de utensílios e equipamentos.", category: "Logística", price: 120, active: true },
   { id: "svc3", name: "Organização de eventos", description: "Apoio completo na montagem e organização.", category: "Organização de Eventos", price: 450, active: true },
   { id: "svc4", name: "Recepção de convidados", description: "Equipe de recepção na entrada do evento.", category: "Recepção", price: 220, active: true },
+  { id: "svc5", name: "Montagem de palco", description: "Estrutura e montagem de palco para o evento.", category: "Organização de Eventos", price: 800, active: true },
+  { id: "svc6", name: "Segurança do evento", description: "Equipe de segurança durante o evento.", category: "Outros", price: 350, active: true },
+  { id: "svc7", name: "Cerimonial completo", description: "Coordenação completa do cerimonial do evento.", category: "Organização de Eventos", price: 900, active: true },
+  { id: "svc8", name: "DJ e sonorização", description: "Equipamento de som e DJ para o evento.", category: "Outros", price: 650, active: true },
+  { id: "svc9", name: "Fotografia do evento", description: "Cobertura fotográfica profissional.", category: "Outros", price: 700, active: true },
+  { id: "svc10", name: "Manobrista", description: "Equipe de manobristas para os convidados.", category: "Recepção", price: 280, active: true },
 ];
 
 const initialDecorations: Decoration[] = [
@@ -176,6 +216,10 @@ const initialDecorations: Decoration[] = [
   { id: "dec2", name: "Backdrop personalizado", description: "Painel com identidade visual do evento.", category: "Painéis e Backdrop", price: 650, active: true },
   { id: "dec3", name: "Iluminação de ambiente", description: "Kit de iluminação decorativa para o espaço do evento.", category: "Iluminação", price: 380, active: true },
   { id: "dec4", name: "Toalhas e sousplat premium", description: "Ambientação de mesa para eventos especiais.", category: "Mesa e Ambientação", price: 140, active: true },
+  { id: "dec5", name: "Letreiro luminoso personalizado", description: "Letreiro com o nome ou tema do evento.", category: "Painéis e Backdrop", price: 420, active: true },
+  { id: "dec6", name: "Balões personalizados (conjunto)", description: "Conjunto de balões nas cores do evento.", category: "Balões", price: 180, active: true },
+  { id: "dec7", name: "Mesa de doces temática", description: "Mesa decorada com doces e docinhos temáticos.", category: "Mesa e Ambientação", price: 550, active: true },
+  { id: "dec8", name: "Centro de mesa com velas", description: "Arranjo com velas para ambientação das mesas.", category: "Flores e Arranjos", price: 70, active: true },
 ];
 
 const initialAppSurveyQuestions: AppSurveyQuestion[] = [
