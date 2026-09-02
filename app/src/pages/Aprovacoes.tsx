@@ -1,11 +1,35 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
+import { Modal } from "../components/Modal";
 import { formatSize } from "../components/AttachmentsField";
 import { WhatsAppButton } from "../components/WhatsAppButton";
 import { useAppData } from "../mock/AppDataContext";
 import { STATUS_STYLE } from "../mock/services";
+import { money } from "../mock/money";
 import type { Order } from "../types";
+import "./OrderFlow.css";
 import "./Aprovacoes.css";
+
+interface DisplayItem {
+  key: string;
+  name: string;
+  qty: number;
+  unit: number;
+  total: number;
+}
+
+// Mirrors GerenciarPedidos' item display: real order flows store a granular items[]
+// (qty/price pre-tax); orders that predate that only carry a final value, so a single
+// line item is synthesized from it, backing the pre-tax price out of the total.
+function getDisplayItems(o: Order): DisplayItem[] {
+  if (o.items && o.items.length > 0) {
+    return o.items.map((it, i) => ({ key: `${it.name}-${i}`, name: it.name, qty: it.qty, unit: it.price, total: it.qty * it.price }));
+  }
+  const total = o.valueNumber ?? 0;
+  const unit = total / 1.1;
+  return [{ key: "single", name: o.type, qty: 1, unit, total: unit }];
+}
 
 // The prototype's mock orders each carry a fixed "gestor" (client manager) name.
 // The shared Order model has no such field yet, so approver names are derived
@@ -35,7 +59,8 @@ function eventDateOf(order: Order) {
 
 export function Aprovacoes() {
   const navigate = useNavigate();
-  const { orders, updateOrder, showToast, operatingParameters } = useAppData();
+  const { orders, updateOrder, showToast, operatingParameters, serviceParameters } = useAppData();
+  const [viewOrder, setViewOrder] = useState<Order | null>(null);
 
   // "Pendente" here means the order still needs approval — once the GU step is
   // granted the status moves away from "Aguardando aprovação" and the order
@@ -143,6 +168,10 @@ export function Aprovacoes() {
                     </div>
                   </div>
 
+                  <button className="btn btn--outline btn--full" style={{ marginBottom: 16 }} onClick={() => setViewOrder(o)}>
+                    👁 Ver pedido
+                  </button>
+
                   <div className="apr-card__approvals">
                     <div className="apr-card__approvals-title">Aprovações</div>
 
@@ -229,6 +258,82 @@ export function Aprovacoes() {
           </div>
         </div>
       </div>
+
+      {viewOrder &&
+        (() => {
+          const items = getDisplayItems(viewOrder);
+          const subtotal = items.reduce((sum, it) => sum + it.total, 0);
+          const feePercent = serviceParameters.find((sp) => sp.category === viewOrder.category)?.adminFeePercent ?? 10;
+          const fee = subtotal * (feePercent / 100);
+          const total = subtotal + fee;
+          return (
+            <Modal onClose={() => setViewOrder(null)} width={560}>
+              <div className="invoice-card" style={{ margin: 0, border: "none", padding: 0 }}>
+                <div className="invoice-header">
+                  <div>
+                    <div className="invoice-header-title">{viewOrder.eventName || viewOrder.type}</div>
+                    <div className="invoice-header-id">Pedido #{orderCode(viewOrder)}</div>
+                  </div>
+                  <div className="invoice-header-date">
+                    {eventDateOf(viewOrder)}
+                    <br />
+                    <strong style={{ color: "var(--color-text)" }}>{viewOrder.eventTime || "—"}</strong>
+                  </div>
+                </div>
+
+                <div className="event-summary-grid" style={{ borderBottom: "1px solid var(--color-border-soft)", paddingBottom: 14, marginBottom: 14 }}>
+                  <div>
+                    <div className="event-summary-item-label">Local</div>
+                    <div className="event-summary-item-value">{viewOrder.location || "A definir"}</div>
+                  </div>
+                  <div>
+                    <div className="event-summary-item-label">Pessoas</div>
+                    <div className="event-summary-item-value">{viewOrder.peopleCount ?? "—"} pessoas</div>
+                  </div>
+                  <div>
+                    <div className="event-summary-item-label">Centro de custo</div>
+                    <div className="event-summary-item-value">{(viewOrder.costCenters ?? []).map((c) => c.code).join(", ") || "—"}</div>
+                  </div>
+                </div>
+
+                <div className="invoice-table-head">
+                  <div>Item</div>
+                  <div>Qtd.</div>
+                  <div>Unit.</div>
+                  <div>Total</div>
+                </div>
+                {items.map((it) => (
+                  <div key={it.key} className="invoice-row">
+                    <div className="invoice-row__name">{it.name}</div>
+                    <div className="invoice-row__muted">{it.qty}</div>
+                    <div className="invoice-row__muted">{money(it.unit)}</div>
+                    <div className="invoice-row__total">{money(it.total)}</div>
+                  </div>
+                ))}
+
+                <div className="invoice-totals">
+                  <div className="invoice-totals__row">
+                    <span>Subtotal</span>
+                    <span>{money(subtotal)}</span>
+                  </div>
+                  <div className="invoice-totals__row">
+                    <span>Taxa de serviço ({feePercent}%)</span>
+                    <span>{money(fee)}</span>
+                  </div>
+                  <div className="invoice-totals__final">
+                    <span>Total</span>
+                    <span style={{ color: "var(--color-primary)" }}>{money(total)}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-actions" style={{ marginTop: 16 }}>
+                <button className="btn btn--outline" onClick={() => setViewOrder(null)}>
+                  Fechar
+                </button>
+              </div>
+            </Modal>
+          );
+        })()}
     </Layout>
   );
 }
