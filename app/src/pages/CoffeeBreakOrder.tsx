@@ -6,6 +6,7 @@ import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { QrPlaceholder } from "../components/QrPlaceholder";
 import { PathIcon } from "../components/Icon";
 import { AttachmentsField } from "../components/AttachmentsField";
+import { KitDetailsModal } from "../components/KitDetailsModal";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
@@ -34,9 +35,56 @@ const TYPE_TO_CATEGORY: Record<ProductType, string> = {
 };
 
 const KITS = [
-  { id: "exec", name: "Coffee Executivo", serves: "Serve até 20 pessoas", desc: "Seleção clássica com bebidas quentes, frias e acompanhamentos.", price: 240, badge: "MAIS VENDIDO", badgeBg: "#1a7a4f" },
-  { id: "premium", name: "Coffee Premium", serves: "Serve até 20 pessoas", desc: "Opção sofisticada com mais variedades e itens especiais.", price: 320, badge: "RECOMENDADO", badgeBg: "var(--color-primary)" },
-  { id: "economico", name: "Coffee Econômico", serves: "Serve até 20 pessoas", desc: "Ideal para eventos rápidos com ótimo custo-benefício.", price: 180, badge: "MELHOR CUSTO", badgeBg: "#b5690f" },
+  {
+    id: "exec",
+    name: "Coffee Executivo",
+    serves: "Serve até 20 pessoas",
+    desc: "Seleção clássica com bebidas quentes, frias e acompanhamentos.",
+    price: 240,
+    badge: "MAIS VENDIDO",
+    badgeBg: "#1a7a4f",
+    items: [
+      { label: "Café e chá (garrafas térmicas)", qty: 2 },
+      { label: "Suco de frutas (jarras)", qty: 2 },
+      { label: "Água mineral", qty: 20 },
+      { label: "Mini sanduíches variados", qty: 20 },
+      { label: "Bolo caseiro (fatias)", qty: 20 },
+      { label: "Frutas da estação", qty: 10 },
+    ],
+  },
+  {
+    id: "premium",
+    name: "Coffee Premium",
+    serves: "Serve até 20 pessoas",
+    desc: "Opção sofisticada com mais variedades e itens especiais.",
+    price: 320,
+    badge: "RECOMENDADO",
+    badgeBg: "var(--color-primary)",
+    items: [
+      { label: "Café espresso e cappuccino", qty: 2 },
+      { label: "Suco natural (jarras)", qty: 2 },
+      { label: "Água mineral", qty: 20 },
+      { label: "Salgados finos variados", qty: 24 },
+      { label: "Doces gourmet", qty: 20 },
+      { label: "Tábua de frios e queijos", qty: 1 },
+      { label: "Frutas selecionadas", qty: 12 },
+    ],
+  },
+  {
+    id: "economico",
+    name: "Coffee Econômico",
+    serves: "Serve até 20 pessoas",
+    desc: "Ideal para eventos rápidos com ótimo custo-benefício.",
+    price: 180,
+    badge: "MELHOR CUSTO",
+    badgeBg: "#b5690f",
+    items: [
+      { label: "Café e água (garrafas térmicas)", qty: 2 },
+      { label: "Suco em caixinha", qty: 20 },
+      { label: "Salgados assados", qty: 20 },
+      { label: "Bolo simples (fatias)", qty: 20 },
+    ],
+  },
 ];
 
 const CC_NAMES: Record<string, string> = { CC001: "Administrativo", CC002: "Comercial", CC003: "Operações" };
@@ -61,6 +109,7 @@ export function CoffeeBreakOrder() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("kits");
   const [selectedKit, setSelectedKit] = useState<string | null>("exec");
+  const [detailsKitId, setDetailsKitId] = useState<string | null>(null);
   const [qtys, setQtys] = useState<Record<string, number>>({});
   const [people, setPeople] = useState(15);
   const [eventName, setEventName] = useState("");
@@ -147,10 +196,10 @@ export function CoffeeBreakOrder() {
   if (q) avulsosList = avulsosList.filter((p) => p.name.toLowerCase().includes(q));
 
   const cartItems = useMemo(() => {
-    const items: { id: string; name: string; sub: string; qty: number; unitPrice: number; total: number; productId?: string; dec: () => void; inc: () => void; remove: () => void }[] = [];
+    const items: { id: string; name: string; sub: string; qty: number; unitPrice: number; total: number; productId?: string; contents?: { label: string; qty: number }[]; dec: () => void; inc: () => void; remove: () => void }[] = [];
     if (selectedKit) {
       const k = KITS.find((x) => x.id === selectedKit)!;
-      items.push({ id: "kit-" + k.id, name: k.name, sub: k.serves, qty: 1, unitPrice: k.price, total: k.price, dec: () => toggleKit(k.id), inc: () => {}, remove: () => toggleKit(k.id) });
+      items.push({ id: "kit-" + k.id, name: k.name, sub: k.serves, qty: 1, unitPrice: k.price, total: k.price, contents: k.items, dec: () => toggleKit(k.id), inc: () => {}, remove: () => toggleKit(k.id) });
     }
     avulsoProducts.forEach((p) => {
       const qty = qtys[p.id] || 0;
@@ -301,6 +350,9 @@ export function CoffeeBreakOrder() {
                               {k.serves}
                             </div>
                             <div className="kit-card__desc">{k.desc}</div>
+                            <button className="link" style={{ fontSize: 12, marginBottom: 8 }} onClick={() => setDetailsKitId(k.id)}>
+                              Detalhes
+                            </button>
                             <div className="kit-card__price">{money(k.price)}</div>
                             <button
                               className="kit-card__btn"
@@ -447,6 +499,15 @@ export function CoffeeBreakOrder() {
                     <div className="cart-item__body">
                       <div className="cart-item__name">{ci.name}</div>
                       <div className="cart-item__sub">{ci.sub}</div>
+                      {ci.contents && (
+                        <ul className="cart-item__contents">
+                          {ci.contents.map((c, i) => (
+                            <li key={i}>
+                              {c.qty}x {c.label}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       <div className="cart-item__row">
                         <div className="qty-stepper qty-stepper--sm">
                           <button onClick={ci.dec}>&minus;</button>
@@ -787,6 +848,12 @@ export function CoffeeBreakOrder() {
           </div>
         )}
       </div>
+
+      {detailsKitId &&
+        (() => {
+          const k = KITS.find((x) => x.id === detailsKitId)!;
+          return <KitDetailsModal name={k.name} description={k.desc} contents={k.items} onClose={() => setDetailsKitId(null)} />;
+        })()}
     </Layout>
   );
 }

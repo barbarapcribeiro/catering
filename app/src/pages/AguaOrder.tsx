@@ -59,6 +59,12 @@ export function AguaOrder() {
 
   const totalUnits = Object.values(qty).reduce((sum, v) => sum + v, 0);
   const total = items.reduce((sum, p) => sum + (qty[p.id] ?? 0) * p.price, 0);
+  const cartItems = items.filter((p) => (qty[p.id] ?? 0) > 0);
+  const cartEmpty = cartItems.length === 0;
+  const clearAll = () => {
+    setQty({});
+    showToast("Carrinho limpo.");
+  };
 
   const submitOrder = () => {
     if (totalUnits === 0) {
@@ -101,7 +107,7 @@ export function AguaOrder() {
 
   return (
     <Layout>
-      <div className="page-container" style={{ paddingTop: 24, maxWidth: 1000 }}>
+      <div className="page-container" style={{ paddingTop: 24 }}>
         <button className="order-back-link" onClick={() => navigate("/")}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M15 18l-6-6 6-6" />
@@ -117,109 +123,166 @@ export function AguaOrder() {
           </div>
         </div>
 
-        <div className="catalog-heading">1. Escolha os itens e quantidades</div>
-        <div className="agua-items-grid">
-          {items.map((p) => (
-            <div key={p.id} className="kit-card">
-              {p.photoUrl ? (
-                <img src={p.photoUrl} alt="" style={{ width: "100%", height: 140, objectFit: "cover" }} />
-              ) : (
-                <ImagePlaceholder label="Foto do produto" style={{ width: "100%", height: 140, borderRadius: 0 }} />
-              )}
-              <div className="kit-card__body">
-                <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 3 }}>{p.name}</div>
-                <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 6 }}>{p.description}</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-primary)", marginBottom: 12 }}>{money(p.price)}</div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>Quantidade</span>
-                  <div className="qty-stepper">
-                    <button onClick={() => change(p.id, -1)}>&minus;</button>
-                    <span>{qty[p.id] ?? 0}</span>
-                    <button onClick={() => change(p.id, 1)}>+</button>
+        <div className="step1-grid">
+          <div style={{ minWidth: 0 }}>
+            <div className="catalog-heading">1. Escolha os itens e quantidades</div>
+            <div className="agua-items-grid">
+              {items.map((p) => (
+                <div key={p.id} className="kit-card">
+                  {p.photoUrl ? (
+                    <img src={p.photoUrl} alt="" style={{ width: "100%", height: 140, objectFit: "cover" }} />
+                  ) : (
+                    <ImagePlaceholder label="Foto do produto" style={{ width: "100%", height: 140, borderRadius: 0 }} />
+                  )}
+                  <div className="kit-card__body">
+                    <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 3 }}>{p.name}</div>
+                    <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 6 }}>{p.description}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-primary)", marginBottom: 12 }}>{money(p.price)}</div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>Quantidade</span>
+                      <div className="qty-stepper">
+                        <button onClick={() => change(p.id, -1)}>&minus;</button>
+                        <span>{qty[p.id] ?? 0}</span>
+                        <button onClick={() => change(p.id, 1)}>+</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
+              {items.length === 0 && <div className="empty-state">Nenhum produto de água ativo no catálogo.</div>}
             </div>
-          ))}
-          {items.length === 0 && <div className="empty-state">Nenhum produto de água ativo no catálogo.</div>}
-        </div>
 
-        <div className="step-card">
-          <div className="step-heading">2. Data, horário e entrega</div>
-          <div className="agua-fields-grid">
-            <label className="field-label">
-              Data de entrega
-              <input type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} />
-            </label>
-            <label className="field-label">
-              Horário de entrega
-              <input type="time" value={deliveryTime} onChange={(e) => setDeliveryTime(e.target.value)} />
-            </label>
-            <div style={{ position: "relative" }}>
-              <label className="field-label" style={{ marginBottom: 6 }}>Local</label>
-              <div className="agua-local-box" onClick={() => setLocalMenuOpen((v) => !v)} style={{ color: local ? "var(--color-text)" : "var(--color-text-muted)" }}>
-                {local || "Selecionar local"}
-              </div>
-              {localMenuOpen && (
-                <div className="location-dropdown">
-                  {LOCATIONS.map((name) => (
-                    <button
-                      key={name}
-                      onClick={() => {
-                        setLocal(name);
-                        setLocalMenuOpen(false);
-                      }}
-                    >
-                      {name}
-                    </button>
-                  ))}
+            <div className="step-card">
+              <div className="step-heading">2. Data, horário e entrega</div>
+              <div className="agua-fields-grid">
+                <label className="field-label">
+                  Data de entrega
+                  <input type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} />
+                </label>
+                <label className="field-label">
+                  Horário de entrega
+                  <input type="time" value={deliveryTime} onChange={(e) => setDeliveryTime(e.target.value)} />
+                </label>
+                <div style={{ position: "relative" }}>
+                  <label className="field-label" style={{ marginBottom: 6 }}>Local</label>
+                  <div className="agua-local-box" onClick={() => setLocalMenuOpen((v) => !v)} style={{ color: local ? "var(--color-text)" : "var(--color-text-muted)" }}>
+                    {local || "Selecionar local"}
+                  </div>
+                  {localMenuOpen && (
+                    <div className="location-dropdown">
+                      {LOCATIONS.map((name) => (
+                        <button
+                          key={name}
+                          onClick={() => {
+                            setLocal(name);
+                            setLocalMenuOpen(false);
+                          }}
+                        >
+                          {name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <label className="field-label">
-              Entregar para
-              <input value={deliverTo} onChange={(e) => setDeliverTo(e.target.value)} placeholder="Nome, setor ou sala" />
-            </label>
-            <div style={{ position: "relative" }}>
-              <label className="field-label" style={{ marginBottom: 6 }}>Centro de custo</label>
-              <div className="agua-local-box" onClick={() => setCostCenterMenuOpen((v) => !v)} style={{ color: costCenter ? "var(--color-text)" : "var(--color-text-muted)" }}>
-                {costCenter ? `${costCenter} · ${activeCostCenters.find((c) => c.code === costCenter)?.name}` : "Selecionar centro de custo"}
-              </div>
-              {costCenterMenuOpen && (
-                <div className="location-dropdown">
-                  {activeCostCenters.map((c) => (
-                    <button
-                      key={c.code}
-                      onClick={() => {
-                        setCostCenter(c.code);
-                        setCostCenterMenuOpen(false);
-                      }}
-                    >
-                      {c.code} · {c.name}
-                    </button>
-                  ))}
+                <label className="field-label">
+                  Entregar para
+                  <input value={deliverTo} onChange={(e) => setDeliverTo(e.target.value)} placeholder="Nome, setor ou sala" />
+                </label>
+                <div style={{ position: "relative" }}>
+                  <label className="field-label" style={{ marginBottom: 6 }}>Centro de custo</label>
+                  <div className="agua-local-box" onClick={() => setCostCenterMenuOpen((v) => !v)} style={{ color: costCenter ? "var(--color-text)" : "var(--color-text-muted)" }}>
+                    {costCenter ? `${costCenter} · ${activeCostCenters.find((c) => c.code === costCenter)?.name}` : "Selecionar centro de custo"}
+                  </div>
+                  {costCenterMenuOpen && (
+                    <div className="location-dropdown">
+                      {activeCostCenters.map((c) => (
+                        <button
+                          key={c.code}
+                          onClick={() => {
+                            setCostCenter(c.code);
+                            setCostCenterMenuOpen(false);
+                          }}
+                        >
+                          {c.code} · {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+              <label className="field-label" style={{ marginTop: 18 }}>
+                Observações
+                <textarea rows={3} placeholder="Alguma informação adicional sobre a entrega..." value={observations} onChange={(e) => setObservations(e.target.value)} style={{ resize: "vertical" }} />
+              </label>
+              <div style={{ marginTop: 18 }}>
+                <AttachmentsField value={attachments} onChange={setAttachments} />
+              </div>
             </div>
           </div>
-          <label className="field-label" style={{ marginTop: 18 }}>
-            Observações
-            <textarea rows={3} placeholder="Alguma informação adicional sobre a entrega..." value={observations} onChange={(e) => setObservations(e.target.value)} style={{ resize: "vertical" }} />
-          </label>
-          <div style={{ marginTop: 18 }}>
-            <AttachmentsField value={attachments} onChange={setAttachments} />
-          </div>
-        </div>
 
-        {hasError && <div className="agua-error">{errorMsg}</div>}
+          <div className="cart-panel">
+            <div className="cart-panel__header">
+              <div className="cart-panel__title">Seu pedido</div>
+              <button className="cart-panel__clear" onClick={clearAll}>
+                Limpar tudo
+              </button>
+            </div>
 
-        <div className="agua-submit-bar">
-          <div style={{ fontSize: 13, color: "var(--color-text-muted)" }}>
-            {totalUnits > 0 ? `${totalUnits} item(ns) selecionado(s) · ${money(total)}` : "Nenhum item selecionado ainda"}
+            {cartEmpty && (
+              <div className="empty-state">
+                Seu carrinho está vazio.
+                <br />
+                Adicione itens ao lado.
+              </div>
+            )}
+
+            <div className="cart-items">
+              {cartItems.map((p) => (
+                <div key={p.id} className="cart-item">
+                  {p.photoUrl ? (
+                    <img src={p.photoUrl} alt="" style={{ width: 44, height: 44, objectFit: "cover", borderRadius: 8 }} className="cart-item__img" />
+                  ) : (
+                    <ImagePlaceholder label="" style={{ width: 44, height: 44 }} className="cart-item__img" />
+                  )}
+                  <div className="cart-item__body">
+                    <div className="cart-item__name">{p.name}</div>
+                    <div className="cart-item__sub">
+                      {qty[p.id]} {p.unit}
+                    </div>
+                    <div className="cart-item__row">
+                      <div className="qty-stepper qty-stepper--sm">
+                        <button onClick={() => change(p.id, -1)}>&minus;</button>
+                        <span>{qty[p.id]}</span>
+                        <button onClick={() => change(p.id, 1)}>+</button>
+                      </div>
+                      <div className="cart-item__price">{money((qty[p.id] ?? 0) * p.price)}</div>
+                    </div>
+                  </div>
+                  <button className="cart-item__remove" onClick={() => setQty((s) => ({ ...s, [p.id]: 0 }))}>
+                    &times;
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="cart-totals">
+              <div className="cart-totals__final">
+                <span>Total estimado</span>
+                <span style={{ color: "var(--color-primary)" }}>{money(total)}</span>
+              </div>
+            </div>
+            <div className="cart-note">O valor final poderá ser ajustado conforme confirmação do pedido.</div>
+
+            {hasError && (
+              <div className="agua-error" style={{ marginTop: 12 }}>
+                {errorMsg}
+              </div>
+            )}
+
+            <button className="btn btn--primary btn--full" style={{ marginTop: 16 }} disabled={cartEmpty} onClick={submitOrder}>
+              Confirmar pedido
+            </button>
           </div>
-          <button className="btn btn--primary" onClick={submitOrder}>
-            Confirmar pedido
-          </button>
         </div>
       </div>
     </Layout>

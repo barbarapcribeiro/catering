@@ -507,6 +507,16 @@
   font-size: 11px;
   color: var(--color-text-muted);
 }
+.cart-item__contents {
+  margin: 6px 0 0;
+  padding-left: 14px;
+  list-style: disc;
+}
+.cart-item__contents li {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
 .cart-item__row {
   display: flex;
   justify-content: space-between;

@@ -5,6 +5,7 @@ import { Stepper } from "../components/Stepper";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { QrPlaceholder } from "../components/QrPlaceholder";
 import { AttachmentsField } from "../components/AttachmentsField";
+import { KitDetailsModal } from "../components/KitDetailsModal";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { LOCATIONS } from "../mock/services";
@@ -30,11 +31,81 @@ const OCCASIONS = [
 ];
 
 const KITS = [
-  { id: "happyhour", name: "Kit Happy Hour", serves: "Serve até 20 pessoas", desc: "Petiscos, cervejas e drinks sem álcool para uma confraternização descontraída.", price: 300, badge: "HAPPY HOUR", badgeBg: "#b5690f" },
-  { id: "aniversariantes", name: "Kit Aniversariantes do Mês", serves: "Serve até 20 pessoas", desc: "Bolo confeitado, salgadinhos, sucos e kit de decoração para comemorar os aniversariantes do mês.", price: 250, badge: "ANIVERSARIANTES", badgeBg: "var(--color-primary)" },
-  { id: "pais", name: "Kit Dia dos Pais", serves: "Serve até 20 pessoas", desc: "Petiscos, cervejas sem álcool e sobremesas para homenagear os pais.", price: 280, badge: "DIA DOS PAIS", badgeBg: "#1a7a4f" },
-  { id: "junina", name: "Kit Festa Junina", serves: "Serve até 20 pessoas", desc: "Quentão, pipoca, canjica, pé-de-moleque e milho cozido.", price: 260, badge: "FESTA JUNINA", badgeBg: "#b5690f" },
-  { id: "natal", name: "Kit Natal", serves: "Serve até 20 pessoas", desc: "Panetone, ceia leve, espumante sem álcool e decoração natalina.", price: 340, badge: "NATAL", badgeBg: "#c0392b" },
+  {
+    id: "happyhour",
+    name: "Kit Happy Hour",
+    serves: "Serve até 20 pessoas",
+    desc: "Petiscos, cervejas e drinks sem álcool para uma confraternização descontraída.",
+    price: 300,
+    badge: "HAPPY HOUR",
+    badgeBg: "#b5690f",
+    items: [
+      { label: "Cerveja sem álcool (garrafas)", qty: 20 },
+      { label: "Petiscos variados", qty: 30 },
+      { label: "Drinks sem álcool", qty: 20 },
+      { label: "Guardanapos e descartáveis (conjunto)", qty: 1 },
+    ],
+  },
+  {
+    id: "aniversariantes",
+    name: "Kit Aniversariantes do Mês",
+    serves: "Serve até 20 pessoas",
+    desc: "Bolo confeitado, salgadinhos, sucos e kit de decoração para comemorar os aniversariantes do mês.",
+    price: 250,
+    badge: "ANIVERSARIANTES",
+    badgeBg: "var(--color-primary)",
+    items: [
+      { label: "Bolo confeitado (fatias)", qty: 20 },
+      { label: "Salgadinhos variados", qty: 40 },
+      { label: "Suco (jarras)", qty: 2 },
+      { label: "Kit de decoração de mesa", qty: 1 },
+    ],
+  },
+  {
+    id: "pais",
+    name: "Kit Dia dos Pais",
+    serves: "Serve até 20 pessoas",
+    desc: "Petiscos, cervejas sem álcool e sobremesas para homenagear os pais.",
+    price: 280,
+    badge: "DIA DOS PAIS",
+    badgeBg: "#1a7a4f",
+    items: [
+      { label: "Petiscos variados", qty: 30 },
+      { label: "Cerveja sem álcool (garrafas)", qty: 20 },
+      { label: "Sobremesas variadas", qty: 20 },
+    ],
+  },
+  {
+    id: "junina",
+    name: "Kit Festa Junina",
+    serves: "Serve até 20 pessoas",
+    desc: "Quentão, pipoca, canjica, pé-de-moleque e milho cozido.",
+    price: 260,
+    badge: "FESTA JUNINA",
+    badgeBg: "#b5690f",
+    items: [
+      { label: "Quentão (térmico 1L, sem álcool)", qty: 2 },
+      { label: "Pipoca (porções)", qty: 20 },
+      { label: "Canjica (copos)", qty: 20 },
+      { label: "Pé-de-moleque", qty: 20 },
+      { label: "Milho cozido (unidades)", qty: 20 },
+    ],
+  },
+  {
+    id: "natal",
+    name: "Kit Natal",
+    serves: "Serve até 20 pessoas",
+    desc: "Panetone, ceia leve, espumante sem álcool e decoração natalina.",
+    price: 340,
+    badge: "NATAL",
+    badgeBg: "#c0392b",
+    items: [
+      { label: "Mini panetone", qty: 20 },
+      { label: "Ceia leve (porções)", qty: 20 },
+      { label: "Espumante sem álcool (garrafas)", qty: 4 },
+      { label: "Decoração natalina (conjunto)", qty: 1 },
+    ],
+  },
 ];
 
 const AVULSOS = [
@@ -70,6 +141,7 @@ export function EventoEspecialOrder() {
   const [activeCategory, setActiveCategory] = useState("kits");
   const [occasion, setOccasion] = useState("aniversariantes");
   const [selectedKit, setSelectedKit] = useState<string | null>(null);
+  const [detailsKitId, setDetailsKitId] = useState<string | null>(null);
   const [qtys, setQtys] = useState<Record<string, number>>({});
   const [people, setPeople] = useState(15);
   const [eventName, setEventName] = useState("");
@@ -171,10 +243,10 @@ export function EventoEspecialOrder() {
   if (q) avulsosList = avulsosList.filter((a) => a.name.toLowerCase().includes(q));
 
   const cartItems = useMemo(() => {
-    const items: { id: string; name: string; sub: string; qty: number; unitPrice: number; total: number; dec: () => void; inc: () => void; remove: () => void }[] = [];
+    const items: { id: string; name: string; sub: string; qty: number; unitPrice: number; total: number; contents?: { label: string; qty: number }[]; dec: () => void; inc: () => void; remove: () => void }[] = [];
     if (selectedKit) {
       const k = KITS.find((x) => x.id === selectedKit)!;
-      items.push({ id: "kit-" + k.id, name: k.name, sub: k.serves, qty: 1, unitPrice: k.price, total: k.price, dec: () => toggleKit(k.id), inc: () => {}, remove: () => toggleKit(k.id) });
+      items.push({ id: "kit-" + k.id, name: k.name, sub: k.serves, qty: 1, unitPrice: k.price, total: k.price, contents: k.items, dec: () => toggleKit(k.id), inc: () => {}, remove: () => toggleKit(k.id) });
     }
     AVULSOS.forEach((a) => {
       const qty = qtys[a.id] || 0;
@@ -353,6 +425,9 @@ export function EventoEspecialOrder() {
                               {k.serves}
                             </div>
                             <div className="kit-card__desc">{k.desc}</div>
+                            <button className="link" style={{ fontSize: 12, marginBottom: 8 }} onClick={() => setDetailsKitId(k.id)}>
+                              Detalhes
+                            </button>
                             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                               <div className="kit-card__price">{money(k.price)}</div>
                               <button
@@ -501,6 +576,15 @@ export function EventoEspecialOrder() {
                     <div className="cart-item__body">
                       <div className="cart-item__name">{ci.name}</div>
                       <div className="cart-item__sub">{ci.sub}</div>
+                      {ci.contents && (
+                        <ul className="cart-item__contents">
+                          {ci.contents.map((c, i) => (
+                            <li key={i}>
+                              {c.qty}x {c.label}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       <div className="cart-item__row">
                         <div className="qty-stepper qty-stepper--sm">
                           <button onClick={ci.dec}>&minus;</button>
@@ -849,6 +933,12 @@ export function EventoEspecialOrder() {
           </div>
         )}
       </div>
+
+      {detailsKitId &&
+        (() => {
+          const k = KITS.find((x) => x.id === detailsKitId)!;
+          return <KitDetailsModal name={k.name} description={k.desc} contents={k.items} onClose={() => setDetailsKitId(null)} />;
+        })()}
     </Layout>
   );
 }

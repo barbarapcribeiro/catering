@@ -111,6 +111,10 @@ export type QuoteStatus = (typeof QUOTE_STATUSES)[number];
 export const QUOTE_EXPERIENCE_OPTIONS = ["Descontraída", "Corporativa", "Sofisticada", "Divertida", "Outro"] as const;
 export type QuoteExperience = (typeof QUOTE_EXPERIENCE_OPTIONS)[number];
 
+/** Serviços disponíveis para solicitação de orçamento via chat. */
+export const QUOTE_SERVICE_TYPES = ["Coffee Break", "Evento Especial", "Serviços Diversos"] as const;
+export type QuoteServiceType = (typeof QUOTE_SERVICE_TYPES)[number];
+
 /** Item montado pela GU na resposta ao orçamento — vira Order.items quando o orçamento é enviado. */
 export interface QuoteItem {
   name: string;
@@ -122,7 +126,7 @@ export interface QuoteItem {
 /** Solicitação de orçamento feita pelo cliente via chat guiado, respondida pela GU com um pedido montado. */
 export interface QuoteRequest {
   id: string;
-  serviceType: OrderCategoryName;
+  serviceType: QuoteServiceType;
   expectedDate: string;
   peopleCount: number;
   experience: QuoteExperience;
