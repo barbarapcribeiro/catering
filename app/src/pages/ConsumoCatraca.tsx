@@ -2,10 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
 import { Layout } from "../components/Layout";
+import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { catracaEffectiveStatus, catracaCheckInDeadline } from "../mock/catraca";
-import { MEAL_SERVICES, type CatracaEffectiveStatus, type CatracaRedemption, type MealServiceName, type OrderAttachment } from "../types";
+import { money } from "../mock/money";
+import { computeKitPrice } from "../mock/pricing";
+import { MEAL_SERVICES, type CatracaEffectiveStatus, type CatracaRedemption, type Kit, type MealServiceName, type OrderAttachment } from "../types";
 import "./OrderFlow.css";
 import "./ConsumoCatraca.css";
 
@@ -24,7 +27,7 @@ function todayISO() {
 
 export function ConsumoCatraca() {
   const navigate = useNavigate();
-  const { kits, costCenters, currentUser, addCatracaRedemption, checkOutCatraca, catracaRedemptions, showToast } = useAppData();
+  const { kits, products, costCenters, currentUser, addCatracaRedemption, checkOutCatraca, catracaRedemptions, showToast } = useAppData();
 
   const [topTab, setTopTab] = useState<TopTab>("novo");
   const [meal, setMeal] = useState<MealServiceName>(MEAL_SERVICES[0]);
@@ -45,6 +48,12 @@ export function ConsumoCatraca() {
   );
   const kitById = useMemo(() => Object.fromEntries(kits.map((k) => [k.id, k])), [kits]);
   const selectedKit = selectedKitId ? kitById[selectedKitId] : undefined;
+
+  const kitPrice = (k: Kit) => {
+    const itemsTotal = k.items.reduce((sum, it) => sum + (products.find((p) => p.id === it.productId)?.price ?? 0) * it.qty, 0);
+    return computeKitPrice(itemsTotal, k.serviceFeePercent);
+  };
+  const total = selectedKit ? kitPrice(selectedKit) : 0;
 
   useEffect(() => {
     setSelectedKitId(null);
@@ -169,63 +178,120 @@ export function ConsumoCatraca() {
         </div>
 
         {topTab === "novo" && (
-          <>
-            <div className="catalog-heading">1. Escolha a refeição</div>
-            <div className="tab-row" style={{ marginBottom: 18 }}>
-              {MEAL_SERVICES.map((m) => (
-                <button key={m} className={meal === m ? "is-active" : ""} onClick={() => setMeal(m)}>
-                  {m}
-                </button>
-              ))}
-            </div>
+          <div className="step1-grid">
+            <div style={{ minWidth: 0 }}>
+              <div className="catalog-heading">1. Escolha a refeição</div>
+              <div className="tab-row" style={{ marginBottom: 18 }}>
+                {MEAL_SERVICES.map((m) => (
+                  <button key={m} className={meal === m ? "is-active" : ""} onClick={() => setMeal(m)}>
+                    {m}
+                  </button>
+                ))}
+              </div>
 
-            <div className="catalog-heading">2. Escolha o kit</div>
-            <div className="catraca-kit-grid">
-              {mealKits.map((k) => (
-                <div key={k.id} className={`kit-card catraca-kit-card ${selectedKitId === k.id ? "is-selected" : ""}`} onClick={() => setSelectedKitId(k.id)}>
-                  {k.photoUrl && <img src={k.photoUrl} alt="" style={{ width: "100%", height: 130, objectFit: "cover" }} />}
-                  <div className="kit-card__body">
-                    <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 3 }}>{k.name}</div>
-                    {k.description && <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 6 }}>{k.description}</div>}
+              <div className="catalog-heading">2. Escolha o kit</div>
+              <div className="catraca-kit-grid">
+                {mealKits.map((k) => (
+                  <div key={k.id} className={`kit-card catraca-kit-card ${selectedKitId === k.id ? "is-selected" : ""}`} onClick={() => setSelectedKitId(k.id)}>
+                    {k.photoUrl ? (
+                      <img src={k.photoUrl} alt="" style={{ width: "100%", height: 130, objectFit: "cover" }} />
+                    ) : (
+                      <ImagePlaceholder label="Foto do kit" style={{ width: "100%", height: 130, borderRadius: 0 }} />
+                    )}
+                    <div className="kit-card__body">
+                      <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 3 }}>{k.name}</div>
+                      {k.description && <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 6 }}>{k.description}</div>}
+                      <div style={{ fontSize: 14, fontWeight: 800 }}>{money(kitPrice(k))}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
-              {mealKits.length === 0 && <div className="empty-state">Nenhum kit cadastrado para {meal} ainda. Cadastre em Catálogos › Kits.</div>}
-            </div>
+                ))}
+                {mealKits.length === 0 && <div className="empty-state">Nenhum kit cadastrado para {meal} ainda. Cadastre em Catálogos › Kits.</div>}
+              </div>
 
-            <div className="step-card">
-              <div className="step-heading">3. Data e horário de retirada</div>
-              <div className="catraca-fields-grid">
-                <label className="field-label">
-                  Data
-                  <input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} />
-                </label>
-                <label className="field-label">
-                  Horário de retirada
-                  <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} />
-                </label>
-                <label className="field-label">
-                  Centro de custo
-                  <select value={costCenter} onChange={(e) => setCostCenter(e.target.value)}>
-                    <option value="">Selecione o centro de custo</option>
-                    {activeCostCenters.map((c) => (
-                      <option key={c.id} value={c.code}>
-                        {c.code} · {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+              <div className="step-card">
+                <div className="step-heading">3. Data e horário de retirada</div>
+                <div className="catraca-fields-grid">
+                  <label className="field-label">
+                    Data
+                    <input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} />
+                  </label>
+                  <label className="field-label">
+                    Horário de retirada
+                    <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} />
+                  </label>
+                  <label className="field-label">
+                    Centro de custo
+                    <select value={costCenter} onChange={(e) => setCostCenter(e.target.value)}>
+                      <option value="">Selecione o centro de custo</option>
+                      {activeCostCenters.map((c) => (
+                        <option key={c.id} value={c.code}>
+                          {c.code} · {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <div className="step-card">
+                <AttachmentsField value={attachments} onChange={setAttachments} />
               </div>
             </div>
 
-            <div className="step-card">
-              <AttachmentsField value={attachments} onChange={setAttachments} />
-            </div>
+            <div className="cart-panel">
+              <div className="cart-panel__header">
+                <div className="cart-panel__title">Seu pedido</div>
+                {selectedKit && (
+                  <button className="cart-panel__clear" onClick={() => setSelectedKitId(null)}>
+                    Limpar
+                  </button>
+                )}
+              </div>
 
-            <button className="btn btn--primary btn--full" style={{ marginTop: 16 }} disabled={!canConfirm} onClick={confirm}>
-              Confirmar retirada e gerar QR code
-            </button>
-          </>
+              {!selectedKit && (
+                <div className="empty-state">
+                  Nenhum kit selecionado.
+                  <br />
+                  Escolha um kit ao lado.
+                </div>
+              )}
+
+              {selectedKit && (
+                <div className="cart-items">
+                  <div className="cart-item">
+                    {selectedKit.photoUrl ? (
+                      <img src={selectedKit.photoUrl} alt="" style={{ width: 44, height: 44, objectFit: "cover", borderRadius: 8 }} className="cart-item__img" />
+                    ) : (
+                      <ImagePlaceholder label="" style={{ width: 44, height: 44 }} className="cart-item__img" />
+                    )}
+                    <div className="cart-item__body">
+                      <div className="cart-item__name">{selectedKit.name}</div>
+                      <div className="cart-item__sub">{meal}</div>
+                      <div className="cart-item__row">
+                        <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>1 kit</span>
+                        <div className="cart-item__price">{money(kitPrice(selectedKit))}</div>
+                      </div>
+                    </div>
+                    <button className="cart-item__remove" onClick={() => setSelectedKitId(null)}>
+                      &times;
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="cart-totals">
+                <div className="cart-totals__final">
+                  <span>Total estimado</span>
+                  <span style={{ color: "var(--color-primary)" }}>{money(total)}</span>
+                </div>
+              </div>
+              <div className="cart-note">O valor final poderá ser ajustado conforme confirmação do pedido.</div>
+
+              <button className="btn btn--primary btn--full" style={{ marginTop: 16 }} disabled={!canConfirm} onClick={confirm}>
+                Confirmar retirada e gerar QR code
+              </button>
+            </div>
+          </div>
         )}
 
         {topTab === "meus" && (
