@@ -23,7 +23,7 @@ const PROMO_ICON: Record<string, string> = { combo: "☕", coffee: "☕", lanche
 type Modal_ = { type: "service"; service: (typeof SERVICES)[number] } | { type: "order"; order: Order } | null;
 
 export function HomeCliente() {
-  const { orders, addOrder, cancelOrder, duplicateOrder, favorites, toggleFavorite, showToast, currentUser, branches } = useAppData();
+  const { orders, addOrder, cancelOrder, duplicateOrder, favorites, toggleFavorite, showToast, currentUser, branches, surveyResponses } = useAppData();
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,6 +54,14 @@ export function HomeCliente() {
   const recentOrders = useMemo(
     () => [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 3),
     [orders],
+  );
+  const surveyedOrderIds = useMemo(
+    () => new Set(surveyResponses.filter((r) => r.kind === "pedido" && r.orderId).map((r) => r.orderId)),
+    [surveyResponses],
+  );
+  const pendingSurveyOrders = useMemo(
+    () => orders.filter((o) => o.status === "Finalizado" && !surveyedOrderIds.has(o.id)),
+    [orders, surveyedOrderIds],
   );
 
   const openService = (svc: (typeof SERVICES)[number]) => {
@@ -279,6 +287,36 @@ export function HomeCliente() {
             )}
           </div>
         </div>
+
+        {pendingSurveyOrders.length > 0 && (
+          <div className="card home-open-compact" style={{ marginBottom: 20 }}>
+            <div className="home-compact-card__header">
+              <div className="home-compact-card__title-row">
+                <span className="home-compact-card__title">⭐ Pesquisas de satisfação pendentes</span>
+                <span className="pill-count">{pendingSurveyOrders.length}</span>
+              </div>
+            </div>
+            <div className="home-compact-card__subtitle">Seus pedidos finalizados estão esperando sua avaliação.</div>
+            <div className="home-open-compact__list">
+              {pendingSurveyOrders.map((o) => (
+                <div key={o.id} className="home-open-row">
+                  <div className="home-open-row__left">
+                    <div className="avatar-circle avatar-circle--sm">{o.mono}</div>
+                    <div>
+                      <div className="home-open-row__id">{o.id} &bull; {o.type}</div>
+                      <div className="home-open-row__sub">Pedido finalizado</div>
+                    </div>
+                  </div>
+                  <div className="home-open-row__right">
+                    <button className="btn btn--primary btn--sm" onClick={() => navigate(`/pesquisa-pedido/${o.id.replace(/^#/, "")}`)}>
+                      Avaliar agora
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {visibleServices.some((sv) => favorites.has(sv.id)) && (
           <div className="home-favorites">

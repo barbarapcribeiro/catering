@@ -139,7 +139,16 @@ export function Header() {
             <div className="app-header__dropdown">
               <div className="app-header__dropdown-title">Notificações</div>
               {notifications.map((n) => (
-                <div key={n.id} className="app-header__dropdown-item">
+                <div
+                  key={n.id}
+                  className="app-header__dropdown-item"
+                  style={n.link ? { cursor: "pointer" } : undefined}
+                  onClick={() => {
+                    if (!n.link) return;
+                    setNotifOpen(false);
+                    navigate(n.link);
+                  }}
+                >
                   <div className="app-header__dropdown-item-title">{n.title}</div>
                   <div className="app-header__dropdown-item-time">{n.time}</div>
                 </div>

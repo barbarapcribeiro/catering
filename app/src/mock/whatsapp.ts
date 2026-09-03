@@ -39,7 +39,7 @@ const STATUS_META: Record<Order["status"], StatusMeta> = {
   "Em preparação": { emoji: "🟠", headline: "Boa notícia! 🚀", body: "tá saindo do forno agora!", footer: "Falta pouco! ⏱️" },
   "Pronto para entrega": { emoji: "🟢", headline: "Prontinho! 🎉", body: "tá pronto e a caminho até você.", footer: "Já já chega aí!" },
   Entregue: { emoji: "✅", headline: "Chegou! 📬", body: "foi entregue.", footer: "Bom apetite! 😋" },
-  Finalizado: { emoji: "🏁", headline: "Tudo certo! ✅", body: "foi finalizado.", footer: "Valeu por pedir com a gente!" },
+  Finalizado: { emoji: "🏁", headline: "Terminou! 🎉", body: "foi finalizado.", footer: "Conta pra gente como foi? Responde a pesquisa de satisfação rapidinho! ⭐" },
   Cancelado: { emoji: "🔴", headline: "Aviso 😕", body: "foi cancelado.", footer: "Qualquer dúvida, é só chamar a gente." },
   Recebido: { emoji: "📥", headline: "Recebido! 📥", body: "chegou por aqui.", footer: "Já vamos dar sequência." },
   "Orçamento enviado": { emoji: "🧾", headline: "Orçamento pronto! 🧾", body: "já tem um orçamento esperando por você.", footer: "Dá uma olhada e nos diga o que achou!" },

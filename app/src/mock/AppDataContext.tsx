@@ -1046,7 +1046,7 @@ interface AppDataValue {
 
   notifications: Notification[];
   markAllNotificationsRead: () => void;
-  addNotification: (title: string) => void;
+  addNotification: (title: string, link?: string) => void;
 
   favorites: Set<string>;
   toggleFavorite: (id: string) => void;
@@ -1254,6 +1254,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   };
 
   const updateOrder: AppDataValue["updateOrder"] = (id, patch) => {
+    const current = state.orders.find((o) => o.id === id);
+    const willFinalize = !!current && patch.status === "Finalizado" && current.status !== "Finalizado";
     setState((s) => ({
       ...s,
       orders: s.orders.map((o) => {
@@ -1265,6 +1267,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         return next;
       }),
     }));
+    if (willFinalize && current) {
+      const merged = { ...current, ...patch };
+      const code = merged.id.replace(/^#/, "");
+      addNotification(`Pedido ${merged.id} (${merged.type}) finalizado! Conta pra gente como foi na pesquisa de satisfação. ⭐`, `/pesquisa-pedido/${code}`);
+    }
   };
 
   const cancelOrder = (id: string) => {
@@ -1296,10 +1303,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     showToast("Pedido duplicado.");
   };
 
-  const addNotification: AppDataValue["addNotification"] = (title) => {
+  const addNotification: AppDataValue["addNotification"] = (title, link) => {
     setState((s) => ({
       ...s,
-      notifications: [{ id: `notif${Date.now()}`, title, time: new Date().toLocaleString("pt-BR"), read: false }, ...s.notifications],
+      notifications: [{ id: `notif${Date.now()}`, title, time: new Date().toLocaleString("pt-BR"), read: false, link }, ...s.notifications],
     }));
   };
 

@@ -87,6 +87,8 @@ export interface Notification {
   title: string;
   time: string;
   read: boolean;
+  /** Rota para onde a notificação leva ao ser clicada (opcional). */
+  link?: string;
 }
 
 /** Tipos de pedido do cliente — cada um tem seu próprio conjunto de perguntas de satisfação. */
