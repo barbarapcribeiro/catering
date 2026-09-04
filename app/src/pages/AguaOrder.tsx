@@ -5,17 +5,16 @@ import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
-import { LOCATIONS } from "../mock/services";
+import { CopaLocationFields } from "../components/CopaLocationFields";
 import type { OrderAttachment } from "../types";
 import "../pages/OrderFlow.css";
 import "./AguaOrder.css";
 
 export function AguaOrder() {
-  const { addOrder, showToast, costCenters, products, serviceParameters, orders } = useAppData();
+  const { addOrder, showToast, costCenters, products, serviceParameters, orders, currentUser, locations } = useAppData();
   const navigate = useNavigate();
   const routerLocation = useLocation();
   const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
-  const activeCostCenters = costCenters.filter((c) => c.active);
   const items = products.filter((p) => p.active && (p.pages ?? []).includes("Solicitação de Água"));
   const linkedCostCenterCode = serviceParameters.find((s) => s.category === "Solicitação de Água")?.linkedCostCenterCode;
 
@@ -24,9 +23,14 @@ export function AguaOrder() {
   const [deliveryDate, setDeliveryDate] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
   const [deliverTo, setDeliverTo] = useState("");
-  const [local, setLocal] = useState("");
-  const [localMenuOpen, setLocalMenuOpen] = useState(false);
+  const [branchId, setBranchId] = useState("");
+  const [locationId, setLocationId] = useState("");
+  const [copaId, setCopaId] = useState("");
+  const [routingBlocked, setRoutingBlocked] = useState(false);
   const [costCenter, setCostCenter] = useState("");
+  const activeCostCenters = costCenters.filter(
+    (c) => c.active && (!currentUser?.costCenterCodes?.length || currentUser.costCenterCodes.includes(c.code)) && (!branchId || !c.branchId || c.branchId === branchId),
+  );
 
   useEffect(() => {
     if (!costCenter && linkedCostCenterCode) setCostCenter(linkedCostCenterCode);
@@ -51,7 +55,9 @@ export function AguaOrder() {
       if (it.productId) nextQty[it.productId] = it.qty;
     });
     setQty(nextQty);
-    if (source.location) setLocal(source.location);
+    if (source.branchId) setBranchId(source.branchId);
+    if (source.locationId) setLocationId(source.locationId);
+    if (source.copaId) setCopaId(source.copaId);
     if (source.costCenters && source.costCenters.length > 0) setCostCenter(source.costCenters[0].code);
     showToast("Carrinho preenchido com os itens do pedido anterior. Revise e confirme.");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -72,14 +78,19 @@ export function AguaOrder() {
       setErrorMsg("Selecione ao menos um item de água.");
       return;
     }
-    if (!deliveryDate || !deliveryTime || !local || !deliverTo) {
+    if (!deliveryDate || !deliveryTime || !locationId || !copaId || !deliverTo) {
       setHasError(true);
-      setErrorMsg("Preencha data, horário e destino da entrega.");
+      setErrorMsg("Preencha data, horário, localização, copa e destino da entrega.");
       return;
     }
     if (!costCenter) {
       setHasError(true);
       setErrorMsg("Selecione o centro de custo.");
+      return;
+    }
+    if (routingBlocked) {
+      setHasError(true);
+      setErrorMsg("A copa selecionada está sem capacidade nesse horário. Use o horário sugerido ou escolha outro.");
       return;
     }
     setHasError(false);
@@ -96,7 +107,10 @@ export function AguaOrder() {
       value: money(total),
       valueNumber: total,
       items: items.filter((p) => (qty[p.id] ?? 0) > 0).map((p) => ({ name: p.name, qty: qty[p.id], price: p.price, productId: p.id })),
-      location: local,
+      location: locations.find((l) => l.id === locationId)?.name,
+      branchId,
+      locationId,
+      copaId,
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Entregar para: ${deliverTo}${observations ? " • " + observations : ""}`,
       attachments: attachments.length ? attachments : undefined,
@@ -163,31 +177,25 @@ export function AguaOrder() {
                   Horário de entrega
                   <input type="time" value={deliveryTime} onChange={(e) => setDeliveryTime(e.target.value)} />
                 </label>
-                <div style={{ position: "relative" }}>
-                  <label className="field-label" style={{ marginBottom: 6 }}>Local</label>
-                  <div className="agua-local-box" onClick={() => setLocalMenuOpen((v) => !v)} style={{ color: local ? "var(--color-text)" : "var(--color-text-muted)" }}>
-                    {local || "Selecionar local"}
-                  </div>
-                  {localMenuOpen && (
-                    <div className="location-dropdown">
-                      {LOCATIONS.map((name) => (
-                        <button
-                          key={name}
-                          onClick={() => {
-                            setLocal(name);
-                            setLocalMenuOpen(false);
-                          }}
-                        >
-                          {name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
                 <label className="field-label">
                   Entregar para
                   <input value={deliverTo} onChange={(e) => setDeliverTo(e.target.value)} placeholder="Nome, setor ou sala" />
                 </label>
+                <CopaLocationFields
+                  date={deliveryDate}
+                  time={deliveryTime}
+                  onSuggestTime={(d, t) => {
+                    setDeliveryDate(d);
+                    setDeliveryTime(t);
+                  }}
+                  branchId={branchId}
+                  onBranchChange={setBranchId}
+                  locationId={locationId}
+                  onLocationChange={setLocationId}
+                  copaId={copaId}
+                  onCopaChange={setCopaId}
+                  onBlockedChange={setRoutingBlocked}
+                />
                 <div style={{ position: "relative" }}>
                   <label className="field-label" style={{ marginBottom: 6 }}>Centro de custo</label>
                   <div className="agua-local-box" onClick={() => setCostCenterMenuOpen((v) => !v)} style={{ color: costCenter ? "var(--color-text)" : "var(--color-text-muted)" }}>

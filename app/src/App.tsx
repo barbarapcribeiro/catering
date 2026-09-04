@@ -50,6 +50,7 @@ import { Marcas } from "./pages/admin/Marcas";
 import { Empresas } from "./pages/admin/Empresas";
 import { Filiais } from "./pages/admin/Filiais";
 import { Copas } from "./pages/admin/Copas";
+import { Localizacoes } from "./pages/admin/Localizacoes";
 
 export default function App() {
   return (
@@ -100,6 +101,7 @@ export default function App() {
             <Route path="empresas" element={<Empresas />} />
             <Route path="filiais" element={<Filiais />} />
             <Route path="copas" element={<Copas />} />
+            <Route path="localizacoes" element={<Localizacoes />} />
             <Route path="contratos" element={<Contratos />} />
             <Route path="parametros" element={<Parametros />} />
             <Route path="servicos-filial" element={<ServicosPorFilial />} />

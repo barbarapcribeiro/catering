@@ -14,6 +14,7 @@ const EMPTY_FORM = {
   companyId: "",
   branchId: "",
   physicalLocation: "",
+  locationIds: [] as string[],
   costCenterCodes: [] as string[],
   responsibleUserIds: [] as string[],
   slaHours: 2,
@@ -24,7 +25,7 @@ const EMPTY_FORM = {
 };
 
 export function Copas() {
-  const { copas, companies, branches, costCenters, users, addCopa, updateCopa, removeCopa, showToast } = useAppData();
+  const { copas, companies, branches, costCenters, locations, users, addCopa, updateCopa, removeCopa, showToast } = useAppData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -33,7 +34,9 @@ export function Copas() {
   const activeCompanies = companies.filter((c) => c.active);
   const branchesForCompany = branches.filter((b) => b.active && b.companyId === form.companyId);
   const costCentersForBranch = costCenters.filter((cc) => cc.active && cc.branchId === form.branchId);
+  const locationsForBranch = locations.filter((l) => l.active && l.branchId === form.branchId);
   const activeUsers = users.filter((u) => u.active);
+  const locationName = (id: string) => locations.find((l) => l.id === id)?.name ?? "—";
 
   const companyName = (id: string) => companies.find((c) => c.id === id)?.name ?? "—";
   const branchName = (id: string) => branches.find((b) => b.id === id)?.name ?? "—";
@@ -53,6 +56,7 @@ export function Copas() {
       companyId: c.companyId,
       branchId: c.branchId,
       physicalLocation: c.physicalLocation,
+      locationIds: c.locationIds ?? [],
       costCenterCodes: c.costCenterCodes,
       responsibleUserIds: c.responsibleUserIds,
       slaHours: c.slaHours,
@@ -66,14 +70,17 @@ export function Copas() {
   };
 
   const setCompany = (companyId: string) => {
-    setForm((f) => ({ ...f, companyId, branchId: "", costCenterCodes: [] }));
+    setForm((f) => ({ ...f, companyId, branchId: "", costCenterCodes: [], locationIds: [] }));
   };
   const setBranch = (branchId: string) => {
-    setForm((f) => ({ ...f, branchId, costCenterCodes: [] }));
+    setForm((f) => ({ ...f, branchId, costCenterCodes: [], locationIds: [] }));
   };
 
   const toggleCostCenter = (code: string) => {
     setForm((f) => ({ ...f, costCenterCodes: f.costCenterCodes.includes(code) ? f.costCenterCodes.filter((x) => x !== code) : [...f.costCenterCodes, code] }));
+  };
+  const toggleLocation = (id: string) => {
+    setForm((f) => ({ ...f, locationIds: f.locationIds.includes(id) ? f.locationIds.filter((x) => x !== id) : [...f.locationIds, id] }));
   };
   const toggleResponsible = (id: string) => {
     setForm((f) => ({ ...f, responsibleUserIds: f.responsibleUserIds.includes(id) ? f.responsibleUserIds.filter((x) => x !== id) : [...f.responsibleUserIds, id] }));
@@ -163,6 +170,10 @@ export function Copas() {
                 <strong>{c.nonBusinessDays.length}</strong>
               </div>
               <div>
+                <span>Localizações atendidas</span>
+                <strong>{(c.locationIds ?? []).length > 0 ? c.locationIds.map(locationName).join(", ") : "—"}</strong>
+              </div>
+              <div>
                 <span>Centros de custo atendidos</span>
                 <strong>{c.costCenterCodes.length > 0 ? c.costCenterCodes.join(", ") : "—"}</strong>
               </div>
@@ -223,6 +234,25 @@ export function Copas() {
             <label className="field-label">
               Local físico <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(onde fica o restaurante)</span>
               <input value={form.physicalLocation} onChange={(e) => setForm({ ...form, physicalLocation: e.target.value })} placeholder="Ex.: Térreo, ala leste" />
+            </label>
+
+            <label className="field-label">
+              Localizações atendidas <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(o cliente só vê esta copa se escolher uma dessas localizações no pedido)</span>
+              {form.branchId ? (
+                locationsForBranch.length > 0 ? (
+                  <div className="copas-chip-row">
+                    {locationsForBranch.map((l) => (
+                      <button key={l.id} type="button" className={form.locationIds.includes(l.id) ? "is-active" : ""} onClick={() => toggleLocation(l.id)}>
+                        {l.name}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="field-hint">Nenhuma localização ativa nesta filial ainda. Cadastre em Cadastros › Localizações.</span>
+                )
+              ) : (
+                <span className="field-hint">Selecione a filial para listar as localizações.</span>
+              )}
             </label>
 
             <label className="field-label">

@@ -9,7 +9,7 @@ import { AttachmentsField } from "../components/AttachmentsField";
 import { KitDetailsModal } from "../components/KitDetailsModal";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
-import { LOCATIONS } from "../mock/services";
+import { CopaLocationFields } from "../components/CopaLocationFields";
 import type { OrderAttachment, ProductType } from "../types";
 import "./OrderFlow.css";
 
@@ -87,8 +87,6 @@ const KITS = [
   },
 ];
 
-const CC_NAMES: Record<string, string> = { CC001: "Administrativo", CC002: "Comercial", CC003: "Operações" };
-
 const STEP_DEFS = [
   { title: "Produtos", sub: "Escolha e monte seu pedido" },
   { title: "Informações", sub: "Detalhes do evento" },
@@ -97,7 +95,7 @@ const STEP_DEFS = [
 ];
 
 export function CoffeeBreakOrder() {
-  const { addOrder, showToast, products, serviceParameters, orders } = useAppData();
+  const { addOrder, showToast, products, serviceParameters, orders, currentUser, costCenters, locations, copas } = useAppData();
   const svcParams = serviceParameters.find((s) => s.category === "Coffee Break");
   const navigate = useNavigate();
   const routerLocation = useLocation();
@@ -115,9 +113,11 @@ export function CoffeeBreakOrder() {
   const [eventName, setEventName] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
-  const [eventLocal, setEventLocal] = useState("");
+  const [branchId, setBranchId] = useState("");
+  const [locationId, setLocationId] = useState("");
+  const [copaId, setCopaId] = useState("");
+  const [routingBlocked, setRoutingBlocked] = useState(false);
   const [needsApproval, setNeedsApproval] = useState(false);
-  const [localMenuOpen, setLocalMenuOpen] = useState(false);
   const [pickupDate, setPickupDate] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [coffeeInstructions, setCoffeeInstructions] = useState("");
@@ -125,7 +125,10 @@ export function CoffeeBreakOrder() {
   const [dietaryDetails, setDietaryDetails] = useState("");
   const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [costCenterSel, setCostCenterSel] = useState<Record<string, boolean>>({});
-  const [costCenterPct, setCostCenterPct] = useState<Record<string, number>>({ CC001: 100, CC002: 100, CC003: 100 });
+  const [costCenterPct, setCostCenterPct] = useState<Record<string, number>>({});
+  const allowedCostCenters = costCenters.filter(
+    (c) => c.active && (!currentUser?.costCenterCodes?.length || currentUser.costCenterCodes.includes(c.code)) && (!branchId || !c.branchId || c.branchId === branchId),
+  );
 
   const redistributePct = (sel: Record<string, boolean>) => {
     const codes = Object.keys(sel).filter((k) => sel[k]);
@@ -174,7 +177,9 @@ export function CoffeeBreakOrder() {
     setQtys(nextQtys);
     setSelectedKit(matchedKit);
     if (source.eventName) setEventName(source.eventName);
-    if (source.location) setEventLocal(source.location);
+    if (source.branchId) setBranchId(source.branchId);
+    if (source.locationId) setLocationId(source.locationId);
+    if (source.copaId) setCopaId(source.copaId);
     if (source.peopleCount) setPeople(source.peopleCount);
     if (source.costCenters && source.costCenters.length > 0) {
       const sel: Record<string, boolean> = {};
@@ -233,9 +238,12 @@ export function CoffeeBreakOrder() {
   const noCostCenter = selCodes.length === 0;
   const step3Invalid = noCostCenter || pctTotalInvalid;
   const pickupMissing = !!svcParams?.requireScheduledPickup && (!pickupDate || !pickupTime);
-  const step2Invalid = pickupMissing;
+  const step2Invalid = pickupMissing || !locationId || !copaId || routingBlocked;
 
   const todayLabel = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+  const locationName = locations.find((l) => l.id === locationId)?.name;
+  const copaName = copas.find((c) => c.id === copaId)?.name;
+  const costCenterLabel = (code: string) => costCenters.find((c) => c.code === code)?.name ?? code;
 
   const continueOrder = () => {
     setStep(2);
@@ -259,7 +267,10 @@ export function CoffeeBreakOrder() {
       valueNumber: total,
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice, productId: ci.productId })),
       eventName,
-      location: eventLocal,
+      location: locations.find((l) => l.id === locationId)?.name,
+      branchId,
+      locationId,
+      copaId,
       eventTime,
       pickupDate,
       pickupTime,
@@ -430,34 +441,26 @@ export function CoffeeBreakOrder() {
                     </span>
                     <input type="time" value={eventTime} onChange={(e) => setEventTime(e.target.value)} />
                   </label>
-                  <div style={{ position: "relative" }}>
-                    <label className="field-boxed" style={{ cursor: "pointer" }} onClick={() => setLocalMenuOpen((v) => !v)}>
-                      Local de entrega
-                      <div className="field-boxed-value" style={{ color: eventLocal ? "var(--color-text)" : "var(--color-text-muted)" }}>
-                        {eventLocal || "Selecionar local"}
-                      </div>
-                    </label>
-                    {localMenuOpen && (
-                      <div className="location-dropdown">
-                        {LOCATIONS.map((name) => (
-                          <button
-                            key={name}
-                            onClick={() => {
-                              setEventLocal(name);
-                              setLocalMenuOpen(false);
-                            }}
-                          >
-                            {name}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                   <label className="field-boxed">
                     Nº de pessoas
                     <input type="number" min={1} value={people} onChange={(e) => setPeople(Math.max(1, parseInt(e.target.value) || 1))} />
                   </label>
                 </div>
+                <CopaLocationFields
+                  date={eventDate}
+                  time={eventTime}
+                  onSuggestTime={(d, t) => {
+                    setEventDate(d);
+                    setEventTime(t);
+                  }}
+                  branchId={branchId}
+                  onBranchChange={setBranchId}
+                  locationId={locationId}
+                  onLocationChange={setLocationId}
+                  copaId={copaId}
+                  onCopaChange={setCopaId}
+                  onBlockedChange={setRoutingBlocked}
+                />
                 <div className="info-note">
                   <span>&#8505;</span>
                   <div>Você poderá revisar todos os detalhes na próxima etapa.</div>
@@ -561,30 +564,22 @@ export function CoffeeBreakOrder() {
                   Data do evento
                   <input type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
                 </label>
-                <div style={{ position: "relative" }}>
-                  <label className="field-label" style={{ cursor: "pointer" }} onClick={() => setLocalMenuOpen((v) => !v)}>
-                    Local de entrega
-                    <div style={{ marginTop: 6, padding: "10px 12px", borderRadius: 8, border: "1px solid var(--color-border-input)", fontSize: 13, fontWeight: 600, color: eventLocal ? "var(--color-text)" : "var(--color-text-muted)", boxSizing: "border-box" }}>
-                      {eventLocal || "Selecionar local"}
-                    </div>
-                  </label>
-                  {localMenuOpen && (
-                    <div className="location-dropdown">
-                      {LOCATIONS.map((name) => (
-                        <button
-                          key={name}
-                          onClick={() => {
-                            setEventLocal(name);
-                            setLocalMenuOpen(false);
-                          }}
-                        >
-                          {name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </div>
+              <CopaLocationFields
+                date={eventDate}
+                time={eventTime}
+                onSuggestTime={(d, t) => {
+                  setEventDate(d);
+                  setEventTime(t);
+                }}
+                branchId={branchId}
+                onBranchChange={setBranchId}
+                locationId={locationId}
+                onLocationChange={setLocationId}
+                copaId={copaId}
+                onCopaChange={setCopaId}
+                onBlockedChange={setRoutingBlocked}
+              />
             </div>
 
             <div className="step-card step-card-flex">
@@ -713,7 +708,11 @@ export function CoffeeBreakOrder() {
                 </div>
                 <div>
                   <div className="event-summary-item-label">Local de entrega</div>
-                  <div className="event-summary-item-value">{eventLocal || "Não informado"}</div>
+                  <div className="event-summary-item-value">{locationName || "Não informado"}</div>
+                </div>
+                <div>
+                  <div className="event-summary-item-label">Copa responsável</div>
+                  <div className="event-summary-item-value">{copaName || "Não informado"}</div>
                 </div>
                 <div>
                   <div className="event-summary-item-label">Nº de pessoas</div>
@@ -743,24 +742,26 @@ export function CoffeeBreakOrder() {
               <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Dados de faturamento</div>
               <div style={{ fontSize: 12.5, color: "var(--color-text-muted)", marginBottom: 14 }}>Selecione um ou mais centros de custo. Ao selecionar mais de um, informe o percentual de cada um.</div>
               <div className="cost-center-list">
-                {Object.keys(CC_NAMES).map((code) => {
+                {allowedCostCenters.map((cc) => {
+                  const code = cc.code;
                   const checked = !!costCenterSel[code];
                   return (
                     <div key={code} className="cost-center-item" style={{ borderColor: checked ? "var(--color-primary)" : "var(--color-border)", background: checked ? "#f4f6fc" : "#fff" }}>
                       <input type="checkbox" checked={checked} onChange={() => toggleCostCenter(code)} />
                       <div style={{ flex: 1 }}>
                         <div className="cost-center-item__code">{code}</div>
-                        <div className="cost-center-item__name">{CC_NAMES[code]}</div>
+                        <div className="cost-center-item__name">{cc.name}</div>
                       </div>
                       {checked && multiSel && (
                         <div className="cost-center-pct">
-                          <input type="number" min={0} max={100} value={costCenterPct[code]} onChange={(e) => setCostCenterPct((s) => ({ ...s, [code]: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) }))} />
+                          <input type="number" min={0} max={100} value={costCenterPct[code] ?? 0} onChange={(e) => setCostCenterPct((s) => ({ ...s, [code]: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) }))} />
                           <span>%</span>
                         </div>
                       )}
                     </div>
                   );
                 })}
+                {allowedCostCenters.length === 0 && <div className="empty-state">Nenhum centro de custo disponível para o seu usuário.</div>}
               </div>
               {multiSel && (
                 <div className="pct-total-row" style={{ color: pctTotalInvalid ? "var(--color-danger)" : "var(--color-success)" }}>
@@ -802,7 +803,7 @@ export function CoffeeBreakOrder() {
                 </div>
                 <div>
                   <div className="event-summary-item-label">Local de entrega</div>
-                  <div className="event-summary-item-value">{eventLocal || "Não informado"}</div>
+                  <div className="event-summary-item-value">{locationName || "Não informado"}{copaName ? ` · ${copaName}` : ""}</div>
                 </div>
                 <div>
                   <div className="event-summary-item-label">Nº de pessoas</div>
@@ -820,7 +821,7 @@ export function CoffeeBreakOrder() {
                 {selCodes.map((code) => (
                   <div key={code} className="confirmation-cost-center-row">
                     <span style={{ fontWeight: 600 }}>
-                      {code} &bull; {CC_NAMES[code]}
+                      {code} &bull; {costCenterLabel(code)}
                     </span>
                     <span style={{ color: "var(--color-text-secondary)" }}>{multiSel ? `${costCenterPct[code]}%` : "100%"}</span>
                   </div>

@@ -54,6 +54,12 @@ export interface Order {
   items?: OrderItem[];
   eventName?: string;
   location?: string;
+  /** Filial escolhida para o pedido (quando o solicitante tem acesso a mais de uma). */
+  branchId?: string;
+  /** Localização de entrega escolhida — referencia DeliveryLocation. */
+  locationId?: string;
+  /** Copa responsável por atender o pedido, definida pela localização de entrega. */
+  copaId?: string;
   eventTime?: string;
   pickupDate?: string;
   pickupTime?: string;
@@ -397,6 +403,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-empresas", label: "Cadastros · Empresas", group: "Painel Administrativo" },
   { id: "admin-filiais", label: "Cadastros · Filiais", group: "Painel Administrativo" },
   { id: "admin-copas", label: "Cadastros · Copas", group: "Painel Administrativo" },
+  { id: "admin-localizacoes", label: "Cadastros · Localizações", group: "Painel Administrativo" },
   { id: "admin-ocorrencias", label: "Ocorrências", group: "Painel Administrativo" },
   { id: "admin-popups", label: "Pop-ups", group: "Painel Administrativo" },
   { id: "admin-parametros", label: "Parâmetros", group: "Painel Administrativo" },
@@ -480,6 +487,8 @@ export interface AppUser {
   branchIds?: string[];
   /** Centros de custo associados — filtrados pelas filiais selecionadas. */
   costCenterCodes?: string[];
+  /** Copas associadas — filtradas pelas filiais selecionadas. */
+  copaIds?: string[];
   active: boolean;
   createdAt: string;
   lastPasswordResetAt?: string;
@@ -557,6 +566,14 @@ export interface CostCenter {
   active: boolean;
 }
 
+/** Localização de entrega dentro de uma Filial (ex.: Sala 1, Recepção, Auditório). */
+export interface DeliveryLocation {
+  id: string;
+  name: string;
+  branchId: string;
+  active: boolean;
+}
+
 export const WEEKDAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"] as const;
 export type Weekday = (typeof WEEKDAYS)[number];
 
@@ -573,6 +590,8 @@ export interface Copa {
   companyId: string;
   branchId: string;
   physicalLocation: string;
+  /** Localizações de entrega atendidas por esta copa — precisam pertencer à mesma filial. */
+  locationIds: string[];
   /** Códigos dos centros de custo atendidos por esta copa. */
   costCenterCodes: string[];
   /** Usuários Sodexo responsáveis — precisam estar cadastrados em Usuários. */

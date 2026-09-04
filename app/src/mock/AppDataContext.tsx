@@ -16,6 +16,7 @@ import {
   type BusinessUnit,
   type Contract,
   type Copa,
+  type DeliveryLocation,
   type Segment,
   type CostCenter,
   type Decoration,
@@ -70,6 +71,7 @@ interface StoredState {
   branches: Branch[];
   costCenters: CostCenter[];
   copas: Copa[];
+  locations: DeliveryLocation[];
   occurrences: Occurrence[];
   popups: Popup[];
   dismissedPopupIds: string[];
@@ -809,6 +811,7 @@ const initialProfiles: Profile[] = [
       "admin-filiais": { ver: true },
       "admin-centros-custo": { ver: true },
       "admin-copas": { ver: true, criarEditar: true },
+      "admin-localizacoes": { ver: true, criarEditar: true },
       "admin-contratos": { ver: true, criarEditar: true },
       "admin-ocorrencias": { ver: true, criarEditar: true },
       "admin-parametros": { ver: true, criarEditar: true },
@@ -881,7 +884,7 @@ const initialUsers: AppUser[] = [
   { id: "user2", name: "Marina Silva", email: "marina.silva@sparkxp.com", profileId: "prof-gu", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-02-03T09:00:00Z" },
   { id: "user3", name: "Carlos Santos", email: "carlos.santos@clienteempresa.com", profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC001"], active: true, createdAt: "2026-02-10T09:00:00Z" },
   { id: "user4", name: "Paula Costa", email: "paula.costa@clienteempresa.com", profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC002"], active: true, createdAt: "2026-02-10T09:00:00Z" },
-  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", profileId: "prof-cliente", companyId: "comp1", branchIds: ["branch1", "branch2"], costCenterCodes: ["CC001", "CC003"], active: true, createdAt: "2026-03-01T09:00:00Z" },
+  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", profileId: "prof-cliente", companyId: "comp1", branchIds: ["branch1", "branch2"], costCenterCodes: ["CC001", "CC003"], copaIds: ["copa1", "copa2"], active: true, createdAt: "2026-03-01T09:00:00Z" },
   { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sparkxp.com", profileId: "prof-producao", companyId: "comp1", branchIds: ["branch2"], active: true, createdAt: "2026-03-05T09:00:00Z" },
   { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sparkxp.com", profileId: "prof-faturamento", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-08T09:00:00Z" },
   { id: "user8", name: "Administrador do Sistema", email: "admin@sparkxp.com", profileId: "prof-admin", companyId: "comp1", branchIds: ["branch1", "branch2"], active: true, createdAt: "2026-01-01T09:00:00Z" },
@@ -921,6 +924,15 @@ const initialCostCenters: CostCenter[] = [
   { id: "cc3", code: "CC003", name: "Operações", companyId: "comp1", branchId: "branch2", areaName: "Operações", physicalLocation: "Galpão 2", active: true },
 ];
 
+const initialLocations: DeliveryLocation[] = [
+  { id: "loc1", name: "Sala 1", branchId: "branch1", active: true },
+  { id: "loc2", name: "Sala 2", branchId: "branch1", active: true },
+  { id: "loc3", name: "Sala 3", branchId: "branch1", active: true },
+  { id: "loc4", name: "Auditório Térreo", branchId: "branch1", active: true },
+  { id: "loc5", name: "Recepção", branchId: "branch2", active: true },
+  { id: "loc6", name: "Sala de Treinamento", branchId: "branch2", active: true },
+];
+
 const initialCopas: Copa[] = [
   {
     id: "copa1",
@@ -928,12 +940,28 @@ const initialCopas: Copa[] = [
     companyId: "comp1",
     branchId: "branch1",
     physicalLocation: "Térreo, ala leste",
+    locationIds: ["loc1", "loc2", "loc3", "loc4"],
     costCenterCodes: ["CC001", "CC002"],
     responsibleUserIds: ["user1", "user2", "user9"],
     slaHours: 2,
     operatingHours: WEEKDAYS.map((weekday) => ({ weekday, enabled: !["Sábado", "Domingo"].includes(weekday), start: "07:00", end: "19:00" })),
     nonBusinessDays: [],
     capacityPer30min: 20,
+    active: true,
+  },
+  {
+    id: "copa2",
+    name: "Copa Campinas",
+    companyId: "comp1",
+    branchId: "branch2",
+    physicalLocation: "1º andar, ala norte",
+    locationIds: ["loc5", "loc6"],
+    costCenterCodes: ["CC003"],
+    responsibleUserIds: ["user1", "user9"],
+    slaHours: 3,
+    operatingHours: WEEKDAYS.map((weekday) => ({ weekday, enabled: !["Sábado", "Domingo"].includes(weekday), start: "08:00", end: "18:00" })),
+    nonBusinessDays: [],
+    capacityPer30min: 8,
     active: true,
   },
 ];
@@ -1004,6 +1032,7 @@ const defaultState: StoredState = {
   branches: initialBranches,
   costCenters: initialCostCenters,
   copas: initialCopas,
+  locations: initialLocations,
   occurrences: initialOccurrences,
   popups: initialPopups,
   dismissedPopupIds: [],
@@ -1156,6 +1185,11 @@ interface AppDataValue {
   addCopa: (copa: Omit<Copa, "id">) => void;
   updateCopa: (id: string, patch: Partial<Copa>) => void;
   removeCopa: (id: string) => void;
+
+  locations: DeliveryLocation[];
+  addLocation: (location: Omit<DeliveryLocation, "id">) => void;
+  updateLocation: (id: string, patch: Partial<DeliveryLocation>) => void;
+  removeLocation: (id: string) => void;
 
   occurrences: Occurrence[];
   addOccurrence: (occurrence: Omit<Occurrence, "id" | "createdAt">) => void;
@@ -1589,6 +1623,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, copas: s.copas.filter((c) => c.id !== id) }));
   };
 
+  const addLocation: AppDataValue["addLocation"] = (location) => {
+    setState((s) => ({ ...s, locations: [{ ...location, id: `loc${Date.now()}` }, ...s.locations] }));
+  };
+  const updateLocation: AppDataValue["updateLocation"] = (id, patch) => {
+    setState((s) => ({ ...s, locations: s.locations.map((l) => (l.id === id ? { ...l, ...patch } : l)) }));
+  };
+  const removeLocation = (id: string) => {
+    setState((s) => ({ ...s, locations: s.locations.filter((l) => l.id !== id) }));
+  };
+
   const addOccurrence: AppDataValue["addOccurrence"] = (occurrence) => {
     setState((s) => ({
       ...s,
@@ -1796,6 +1840,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       addCopa,
       updateCopa,
       removeCopa,
+      locations: state.locations,
+      addLocation,
+      updateLocation,
+      removeLocation,
       occurrences: state.occurrences,
       addOccurrence,
       updateOccurrence,

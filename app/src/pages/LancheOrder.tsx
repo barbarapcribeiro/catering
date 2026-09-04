@@ -8,6 +8,7 @@ import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { computeKitPrice } from "../mock/pricing";
 import { kitContentsFromCatalog } from "../mock/kitContents";
+import { CopaLocationFields } from "../components/CopaLocationFields";
 import type { Kit, OrderAttachment } from "../types";
 import "./OrderFlow.css";
 import "./Surpreenda.css";
@@ -20,12 +21,11 @@ const PAYMENTS = [
 ];
 
 export function LancheOrder() {
-  const { addOrder, showToast, costCenters, kits, products, serviceCatalog, orders } = useAppData();
+  const { addOrder, showToast, costCenters, kits, products, serviceCatalog, orders, currentUser, locations } = useAppData();
   const navigate = useNavigate();
   const routerLocation = useLocation();
   const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
 
-  const activeCostCenters = costCenters.filter((c) => c.active);
   const lancheKits = kits.filter((k) => k.active && (k.pages ?? []).includes("Lanche"));
 
   const kitPrice = (k: Kit) => {
@@ -38,7 +38,14 @@ export function LancheOrder() {
   const [qtys, setQtys] = useState<Record<string, number>>({});
   const [pickupDate, setPickupDate] = useState("");
   const [pickupTime, setPickupTime] = useState("");
+  const [branchId, setBranchId] = useState("");
+  const [locationId, setLocationId] = useState("");
+  const [copaId, setCopaId] = useState("");
+  const [routingBlocked, setRoutingBlocked] = useState(false);
   const [costCenter, setCostCenter] = useState("");
+  const activeCostCenters = costCenters.filter(
+    (c) => c.active && (!currentUser?.costCenterCodes?.length || currentUser.costCenterCodes.includes(c.code)) && (!branchId || !c.branchId || c.branchId === branchId),
+  );
   const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
   const [payment, setPayment] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
@@ -58,6 +65,9 @@ export function LancheOrder() {
       if (kit) nextQtys[kit.id] = it.qty;
     });
     setQtys(nextQtys);
+    if (source.branchId) setBranchId(source.branchId);
+    if (source.locationId) setLocationId(source.locationId);
+    if (source.copaId) setCopaId(source.copaId);
     if (source.costCenters && source.costCenters.length > 0) setCostCenter(source.costCenters[0].code);
     showToast("Carrinho preenchido com os itens do pedido anterior. Revise e confirme.");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -92,6 +102,11 @@ export function LancheOrder() {
       setErrorMsg("Preencha a data e o horário de retirada.");
       return;
     }
+    if (!locationId || !copaId) {
+      setHasError(true);
+      setErrorMsg("Selecione a localização e a copa de retirada.");
+      return;
+    }
     if (!costCenter) {
       setHasError(true);
       setErrorMsg("Selecione o centro de custo.");
@@ -100,6 +115,11 @@ export function LancheOrder() {
     if (!payment) {
       setHasError(true);
       setErrorMsg("Selecione a forma de pagamento.");
+      return;
+    }
+    if (routingBlocked) {
+      setHasError(true);
+      setErrorMsg("A copa selecionada está sem capacidade nesse horário. Use o horário sugerido ou escolha outro.");
       return;
     }
     setHasError(false);
@@ -118,6 +138,10 @@ export function LancheOrder() {
       value: money(total),
       valueNumber: total,
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
+      location: locations.find((l) => l.id === locationId)?.name,
+      branchId,
+      locationId,
+      copaId,
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Forma de pagamento: ${paymentDef?.label ?? "—"}`,
       attachments: attachments.length ? attachments : undefined,
@@ -285,6 +309,21 @@ export function LancheOrder() {
                   Horário de retirada
                   <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} />
                 </label>
+                <CopaLocationFields
+                  date={pickupDate}
+                  time={pickupTime}
+                  onSuggestTime={(d, t) => {
+                    setPickupDate(d);
+                    setPickupTime(t);
+                  }}
+                  branchId={branchId}
+                  onBranchChange={setBranchId}
+                  locationId={locationId}
+                  onLocationChange={setLocationId}
+                  copaId={copaId}
+                  onCopaChange={setCopaId}
+                  onBlockedChange={setRoutingBlocked}
+                />
                 <div style={{ position: "relative" }}>
                   <label className="field-label" style={{ marginBottom: 6 }}>Centro de custo</label>
                   <div className="lanche-local-box" onClick={() => setCostCenterMenuOpen((v) => !v)} style={{ color: costCenter ? "var(--color-text)" : "var(--color-text-muted)" }}>

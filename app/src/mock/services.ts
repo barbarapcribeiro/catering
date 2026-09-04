@@ -110,6 +110,3 @@ export const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
 export function isOpenOrder(order: Order): boolean {
   return order.status !== "Entregue" && order.status !== "Finalizado" && order.status !== "Cancelado";
 }
-
-export const COST_CENTERS = ["CC001", "CC002", "CC003", "CC004", "CC005"];
-export const LOCATIONS = ["Sala 1", "Sala 2", "Sala 3"];
