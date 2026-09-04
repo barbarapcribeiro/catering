@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { PhoneNumberField } from "../components/PhoneNumberField";
 import { useAppData } from "../mock/AppDataContext";
@@ -9,13 +9,14 @@ import "./Autocadastro.css";
 
 const EMPTY_PHONE: PhoneNumber = { country: "+55", ddd: "", number: "" };
 
-const EMPTY_FORM = { name: "", email: "", cargo: "", phone: EMPTY_PHONE, companyId: "", branchIds: [] as string[], costCenterCodes: [] as string[], copaIds: [] as string[] };
+const EMPTY_FORM = { name: "", email: "", cargo: "", phone: EMPTY_PHONE, password: "", confirmPassword: "", companyId: "", branchIds: [] as string[], costCenterCodes: [] as string[], copaIds: [] as string[] };
 
 export function Autocadastro() {
   const navigate = useNavigate();
-  const { companies, branches, costCenters, copas, addUser, setCurrentProfileId } = useAppData();
+  const { companies, branches, costCenters, copas, users, registerAndLogin } = useAppData();
   const [form, setForm] = useState(EMPTY_FORM);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
 
   const activeCompanies = companies.filter((c) => c.active);
   const branchesForCompany = branches.filter((b) => b.active && b.companyId === form.companyId);
@@ -48,6 +49,8 @@ export function Autocadastro() {
     form.cargo.trim() &&
     form.phone.ddd.trim() &&
     form.phone.number.trim() &&
+    form.password.trim().length >= 6 &&
+    form.confirmPassword.trim() &&
     form.companyId &&
     form.branchIds.length > 0 &&
     form.costCenterCodes.length > 0 &&
@@ -55,11 +58,21 @@ export function Autocadastro() {
 
   const submit = () => {
     if (!canSubmit) return;
-    addUser({
+    if (users.some((u) => u.email.trim().toLowerCase() === form.email.trim().toLowerCase())) {
+      setError("Já existe uma conta com esse e-mail. Tente entrar em vez de se cadastrar de novo.");
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setError("As senhas não coincidem.");
+      return;
+    }
+    setError("");
+    registerAndLogin({
       name: form.name,
       email: form.email,
       cargo: form.cargo,
       phone: form.phone,
+      password: form.password,
       profileId: "prof-cliente",
       companyId: form.companyId,
       branchIds: form.branchIds,
@@ -67,7 +80,6 @@ export function Autocadastro() {
       copaIds: form.copaIds,
       active: true,
     });
-    setCurrentProfileId("prof-cliente");
     setDone(true);
   };
 
@@ -78,8 +90,8 @@ export function Autocadastro() {
           <div className="autocadastro-confirm-card card">
             <div className="autocadastro-confirm-card__title">Cadastro concluído!</div>
             <div className="autocadastro-confirm-card__sub">
-              Sua conta foi criada com o perfil <strong>Cliente solicitante</strong>. Você já pode começar a fazer pedidos.
-              Sua senha será enviada no e-mail informado.
+              Sua conta foi criada com o perfil <strong>Cliente solicitante</strong> e você já está conectado. Use o e-mail e a senha
+              que definiu agora para entrar da próxima vez.
             </div>
             <button className="btn btn--primary" onClick={() => navigate("/")}>
               Ir para o início
@@ -128,6 +140,14 @@ export function Autocadastro() {
                 <label className="field-label">
                   Cargo
                   <input value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} placeholder="Ex.: Analista de Compras" />
+                </label>
+                <label className="field-label">
+                  Senha <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(mín. 6 caracteres)</span>
+                  <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Defina uma senha" />
+                </label>
+                <label className="field-label">
+                  Confirmar senha
+                  <input type="password" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} placeholder="Repita a senha" />
                 </label>
               </div>
               <PhoneNumberField value={form.phone} onChange={(phone) => setForm({ ...form, phone })} />
@@ -205,9 +225,14 @@ export function Autocadastro() {
               )}
             </div>
 
-            <button className="btn btn--primary btn--full" style={{ marginTop: 16 }} disabled={!canSubmit} onClick={submit}>
+            {error && <div className="error-text" style={{ marginBottom: 12 }}>{error}</div>}
+
+            <button className="btn btn--primary btn--full" onClick={submit} disabled={!canSubmit}>
               Criar minha conta
             </button>
+            <div style={{ textAlign: "center", marginTop: 12, fontSize: 13, color: "var(--color-text-muted)" }}>
+              Já tem conta? <Link to="/login">Entrar</Link>
+            </div>
           </>
         )}
       </div>

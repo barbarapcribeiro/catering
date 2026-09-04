@@ -76,6 +76,8 @@ interface StoredState {
   popups: Popup[];
   dismissedPopupIds: string[];
   currentProfileId: string;
+  /** Usuário efetivamente autenticado (login real). null = ninguém logado. */
+  currentUserId: string | null;
   nextOrderNum: number;
   operatingParameters: OperatingParameters;
   serviceParameters: ServiceParameters[];
@@ -879,16 +881,19 @@ const initialProfiles: Profile[] = [
   },
 ];
 
+/** Todos os usuários de demonstração usam a mesma senha para facilitar os testes de login. */
+const DEMO_PASSWORD = "123456";
+
 const initialUsers: AppUser[] = [
-  { id: "user1", name: "Bárbara C. Ribeiro", email: "barbara.ribeiro@sparkxp.com", profileId: "prof-gu", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-01-12T09:00:00Z" },
-  { id: "user2", name: "Marina Silva", email: "marina.silva@sparkxp.com", profileId: "prof-gu", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-02-03T09:00:00Z" },
-  { id: "user3", name: "Carlos Santos", email: "carlos.santos@clienteempresa.com", profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC001"], active: true, createdAt: "2026-02-10T09:00:00Z" },
-  { id: "user4", name: "Paula Costa", email: "paula.costa@clienteempresa.com", profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC002"], active: true, createdAt: "2026-02-10T09:00:00Z" },
-  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", profileId: "prof-cliente", companyId: "comp1", branchIds: ["branch1", "branch2"], costCenterCodes: ["CC001", "CC003"], copaIds: ["copa1", "copa2"], active: true, createdAt: "2026-03-01T09:00:00Z" },
-  { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sparkxp.com", profileId: "prof-producao", companyId: "comp1", branchIds: ["branch2"], active: true, createdAt: "2026-03-05T09:00:00Z" },
-  { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sparkxp.com", profileId: "prof-faturamento", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-08T09:00:00Z" },
-  { id: "user8", name: "Administrador do Sistema", email: "admin@sparkxp.com", profileId: "prof-admin", companyId: "comp1", branchIds: ["branch1", "branch2"], active: true, createdAt: "2026-01-01T09:00:00Z" },
-  { id: "user9", name: "Rosana Alves", email: "rosana.alves@sparkxp.com", profileId: "prof-copeira", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-10T09:00:00Z" },
+  { id: "user1", name: "Bárbara C. Ribeiro", email: "barbara.ribeiro@sparkxp.com", password: DEMO_PASSWORD, profileId: "prof-gu", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-01-12T09:00:00Z" },
+  { id: "user2", name: "Marina Silva", email: "marina.silva@sparkxp.com", password: DEMO_PASSWORD, profileId: "prof-gu", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-02-03T09:00:00Z" },
+  { id: "user3", name: "Carlos Santos", email: "carlos.santos@clienteempresa.com", password: DEMO_PASSWORD, profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC001"], active: true, createdAt: "2026-02-10T09:00:00Z" },
+  { id: "user4", name: "Paula Costa", email: "paula.costa@clienteempresa.com", password: DEMO_PASSWORD, profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC002"], active: true, createdAt: "2026-02-10T09:00:00Z" },
+  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", password: DEMO_PASSWORD, profileId: "prof-cliente", companyId: "comp1", branchIds: ["branch1", "branch2"], costCenterCodes: ["CC001", "CC003"], copaIds: ["copa1", "copa2"], active: true, createdAt: "2026-03-01T09:00:00Z" },
+  { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sparkxp.com", password: DEMO_PASSWORD, profileId: "prof-producao", companyId: "comp1", branchIds: ["branch2"], active: true, createdAt: "2026-03-05T09:00:00Z" },
+  { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sparkxp.com", password: DEMO_PASSWORD, profileId: "prof-faturamento", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-08T09:00:00Z" },
+  { id: "user8", name: "Administrador do Sistema", email: "admin@sparkxp.com", password: DEMO_PASSWORD, profileId: "prof-admin", companyId: "comp1", branchIds: ["branch1", "branch2"], active: true, createdAt: "2026-01-01T09:00:00Z" },
+  { id: "user9", name: "Rosana Alves", email: "rosana.alves@sparkxp.com", password: DEMO_PASSWORD, profileId: "prof-copeira", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-10T09:00:00Z" },
 ];
 
 const initialSegments: Segment[] = [
@@ -1037,6 +1042,7 @@ const defaultState: StoredState = {
   popups: initialPopups,
   dismissedPopupIds: [],
   currentProfileId: "prof-cliente",
+  currentUserId: null,
   nextOrderNum: 0,
   operatingParameters: initialOperatingParameters,
   serviceParameters: initialServiceParameters,
@@ -1062,10 +1068,17 @@ function loadState(): StoredState {
 
 interface AppDataValue {
   currentProfileId: string;
+  /** Só deve ser chamado pelo Administrador (recurso "Ver como" — pré-visualiza outro perfil sem trocar de usuário). */
   setCurrentProfileId: (id: string) => void;
   currentProfile: Profile | null;
+  /** Usuário efetivamente autenticado (login real) — não muda com "Ver como". */
   currentUser: AppUser | null;
   hasPageAccess: (pageId: string, action?: keyof PagePermission) => boolean;
+  /** Tenta autenticar por e-mail+senha; retorna true em caso de sucesso. */
+  login: (email: string, password: string) => boolean;
+  logout: () => void;
+  /** Usado só pelo Autocadastro: cria o usuário e já autentica na mesma operação. */
+  registerAndLogin: (user: Omit<AppUser, "id" | "createdAt">) => void;
 
   orders: Order[];
   addOrder: (order: Partial<Order> & { category: string; type: string; mono: string }) => Order;
@@ -1256,10 +1269,32 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [state]);
 
   const currentProfile = state.profiles.find((p) => p.id === state.currentProfileId) ?? null;
-  const currentUser = state.users.find((u) => u.profileId === state.currentProfileId && u.active) ?? null;
+  const currentUser = state.users.find((u) => u.id === state.currentUserId && u.active) ?? null;
 
   const setCurrentProfileId = (id: string) => {
     setState((s) => ({ ...s, currentProfileId: id }));
+  };
+
+  const login: AppDataValue["login"] = (email, password) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const match = state.users.find((u) => u.active && u.email.trim().toLowerCase() === normalizedEmail && !!u.password && u.password === password);
+    if (!match) return false;
+    setState((s) => ({ ...s, currentUserId: match.id, currentProfileId: match.profileId ?? s.currentProfileId }));
+    return true;
+  };
+
+  const logout = () => {
+    setState((s) => ({ ...s, currentUserId: null }));
+  };
+
+  const registerAndLogin: AppDataValue["registerAndLogin"] = (user) => {
+    const id = `user${Date.now()}`;
+    setState((s) => ({
+      ...s,
+      users: [{ ...user, id, createdAt: new Date().toISOString() }, ...s.users],
+      currentUserId: id,
+      currentProfileId: user.profileId ?? s.currentProfileId,
+    }));
   };
 
   const hasPageAccess: AppDataValue["hasPageAccess"] = (pageId, action = "ver") => {
@@ -1549,8 +1584,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, users: s.users.filter((u) => u.id !== id) }));
   };
   const resetUserPassword = (id: string) => {
-    setState((s) => ({ ...s, users: s.users.map((u) => (u.id === id ? { ...u, lastPasswordResetAt: new Date().toISOString() } : u)) }));
-    showToast("Senha redefinida. Um e-mail com instruções foi enviado ao usuário.");
+    const tempPassword = Math.random().toString(36).slice(-8);
+    setState((s) => ({ ...s, users: s.users.map((u) => (u.id === id ? { ...u, password: tempPassword, lastPasswordResetAt: new Date().toISOString() } : u)) }));
+    showToast(`Senha redefinida para: ${tempPassword} (repasse ao usuário — normalmente isso iria por e-mail).`);
   };
 
   const addSegment: AppDataValue["addSegment"] = (segment) => {
@@ -1745,6 +1781,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       currentProfile,
       currentUser,
       hasPageAccess,
+      login,
+      logout,
+      registerAndLogin,
       orders: state.orders,
       addOrder,
       updateOrder,

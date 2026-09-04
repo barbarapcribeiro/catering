@@ -1,6 +1,7 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { AppDataProvider } from "./mock/AppDataContext";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { AppDataProvider, useAppData } from "./mock/AppDataContext";
 import { Home } from "./pages/Home";
+import { Login } from "./pages/Login";
 import { Autocadastro } from "./pages/Autocadastro";
 import { CoffeeBreakOrder } from "./pages/CoffeeBreakOrder";
 import { AbastecimentoOrder } from "./pages/AbastecimentoOrder";
@@ -52,65 +53,75 @@ import { Filiais } from "./pages/admin/Filiais";
 import { Copas } from "./pages/admin/Copas";
 import { Localizacoes } from "./pages/admin/Localizacoes";
 
+function RequireAuth() {
+  const { currentUser } = useAppData();
+  if (!currentUser) return <Navigate to="/login" replace />;
+  return <Outlet />;
+}
+
 export default function App() {
   return (
     <AppDataProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/autocadastro" element={<Autocadastro />} />
-          <Route path="/pedido/coffee-break" element={<CoffeeBreakOrder />} />
-          <Route path="/pedido/evento-especial" element={<EventoEspecialOrder />} />
-          <Route path="/pedido/agua" element={<AguaOrder />} />
-          <Route path="/pedido/abastecimento-simples" element={<AbastecimentoOrder />} />
-          <Route path="/surpreenda" element={<Surpreenda />} />
-          <Route path="/pedido/lanche" element={<LancheOrder />} />
-          <Route path="/pedido/servicos-diversos" element={<ServicosDiversosOrder />} />
-          <Route path="/consumo-catraca" element={<ConsumoCatraca />} />
-          <Route path="/reserva-refeicao" element={<ReservaRefeicao />} />
-          <Route path="/solicitar-orcamento" element={<SolicitarOrcamento />} />
-          <Route path="/pedidos" element={<GerenciarPedidos />} />
-          <Route path="/producao" element={<Producao />} />
-          <Route path="/fique-por-dentro" element={<FiquePorDentro />} />
-          <Route path="/aprovacoes" element={<Aprovacoes />} />
-          <Route path="/eventos-premium" element={<EventosPremium />} />
-          <Route path="/pesquisa-pedido/:orderId" element={<PesquisaPedido />} />
-          <Route path="/pesquisa-pedido" element={<PesquisaPedido />} />
-          <Route path="/pesquisa-app" element={<PesquisaAppForm />} />
 
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminOperacao />} />
-            <Route path="relatorios" element={<Relatorios />} />
-            <Route path="relatorios/:dash" element={<Relatorios />} />
-            <Route path="pesquisa-satisfacao" element={<ConfigurarPesquisa />} />
-            <Route path="pesquisa-aplicacao" element={<PesquisaAplicacao />} />
-            <Route path="ocorrencias" element={<Ocorrencias />} />
-            <Route path="produtos" element={<Produtos />} />
-            <Route path="kits" element={<Kits />} />
-            <Route path="servicos" element={<Servicos />} />
-            <Route path="decoracoes" element={<Decoracoes />} />
-            <Route path="popups" element={<Popups />} />
-            <Route path="fornecedores" element={<Fornecedores />} />
-            <Route path="usuarios" element={<Usuarios />} />
-            <Route path="permissoes" element={<Permissoes />} />
-            <Route path="faturamento" element={<Faturamento />} />
-            <Route path="centros-custo" element={<CentrosCusto />} />
-            <Route path="segmentos" element={<Segmentos />} />
-            <Route path="unidades" element={<Unidades />} />
-            <Route path="marcas" element={<Marcas />} />
-            <Route path="empresas" element={<Empresas />} />
-            <Route path="filiais" element={<Filiais />} />
-            <Route path="copas" element={<Copas />} />
-            <Route path="localizacoes" element={<Localizacoes />} />
-            <Route path="contratos" element={<Contratos />} />
-            <Route path="parametros" element={<Parametros />} />
-            <Route path="servicos-filial" element={<ServicosPorFilial />} />
-            <Route path="ativos" element={<Ativos />} />
-            <Route path="tipos-ativo" element={<TiposAtivo />} />
-            <Route path="ativos/checkin" element={<AtivoCheckInOut />} />
-            <Route path="catraca-checkin" element={<CatracaCheckIn />} />
-            <Route path="orcamentos" element={<Orcamentos />} />
-            <Route path="orcamentos/:id/montar" element={<OrcamentoBuilder />} />
+          <Route element={<RequireAuth />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/pedido/coffee-break" element={<CoffeeBreakOrder />} />
+            <Route path="/pedido/evento-especial" element={<EventoEspecialOrder />} />
+            <Route path="/pedido/agua" element={<AguaOrder />} />
+            <Route path="/pedido/abastecimento-simples" element={<AbastecimentoOrder />} />
+            <Route path="/surpreenda" element={<Surpreenda />} />
+            <Route path="/pedido/lanche" element={<LancheOrder />} />
+            <Route path="/pedido/servicos-diversos" element={<ServicosDiversosOrder />} />
+            <Route path="/consumo-catraca" element={<ConsumoCatraca />} />
+            <Route path="/reserva-refeicao" element={<ReservaRefeicao />} />
+            <Route path="/solicitar-orcamento" element={<SolicitarOrcamento />} />
+            <Route path="/pedidos" element={<GerenciarPedidos />} />
+            <Route path="/producao" element={<Producao />} />
+            <Route path="/fique-por-dentro" element={<FiquePorDentro />} />
+            <Route path="/aprovacoes" element={<Aprovacoes />} />
+            <Route path="/eventos-premium" element={<EventosPremium />} />
+            <Route path="/pesquisa-pedido/:orderId" element={<PesquisaPedido />} />
+            <Route path="/pesquisa-pedido" element={<PesquisaPedido />} />
+            <Route path="/pesquisa-app" element={<PesquisaAppForm />} />
+
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminOperacao />} />
+              <Route path="relatorios" element={<Relatorios />} />
+              <Route path="relatorios/:dash" element={<Relatorios />} />
+              <Route path="pesquisa-satisfacao" element={<ConfigurarPesquisa />} />
+              <Route path="pesquisa-aplicacao" element={<PesquisaAplicacao />} />
+              <Route path="ocorrencias" element={<Ocorrencias />} />
+              <Route path="produtos" element={<Produtos />} />
+              <Route path="kits" element={<Kits />} />
+              <Route path="servicos" element={<Servicos />} />
+              <Route path="decoracoes" element={<Decoracoes />} />
+              <Route path="popups" element={<Popups />} />
+              <Route path="fornecedores" element={<Fornecedores />} />
+              <Route path="usuarios" element={<Usuarios />} />
+              <Route path="permissoes" element={<Permissoes />} />
+              <Route path="faturamento" element={<Faturamento />} />
+              <Route path="centros-custo" element={<CentrosCusto />} />
+              <Route path="segmentos" element={<Segmentos />} />
+              <Route path="unidades" element={<Unidades />} />
+              <Route path="marcas" element={<Marcas />} />
+              <Route path="empresas" element={<Empresas />} />
+              <Route path="filiais" element={<Filiais />} />
+              <Route path="copas" element={<Copas />} />
+              <Route path="localizacoes" element={<Localizacoes />} />
+              <Route path="contratos" element={<Contratos />} />
+              <Route path="parametros" element={<Parametros />} />
+              <Route path="servicos-filial" element={<ServicosPorFilial />} />
+              <Route path="ativos" element={<Ativos />} />
+              <Route path="tipos-ativo" element={<TiposAtivo />} />
+              <Route path="ativos/checkin" element={<AtivoCheckInOut />} />
+              <Route path="catraca-checkin" element={<CatracaCheckIn />} />
+              <Route path="orcamentos" element={<Orcamentos />} />
+              <Route path="orcamentos/:id/montar" element={<OrcamentoBuilder />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

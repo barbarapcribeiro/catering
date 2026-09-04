@@ -149,14 +149,21 @@
   flex-wrap: wrap;
 }
 
-.app-header__nav a {
+.app-header__nav a,
+.app-header__nav button {
   font-size: 13.5px;
   color: var(--color-text-secondary);
   text-decoration: none;
   white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
 }
 
-.app-header__nav a:hover {
+.app-header__nav a:hover,
+.app-header__nav button:hover {
   color: var(--color-menu-accent);
 }
 
