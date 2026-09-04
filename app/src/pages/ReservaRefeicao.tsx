@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { AttachmentsField } from "../components/AttachmentsField";
@@ -8,46 +8,42 @@ import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
 import { computeKitPrice } from "../mock/pricing";
 import { kitContentsFromCatalog } from "../mock/kitContents";
-import { CopaLocationFields } from "../components/CopaLocationFields";
-import type { Kit, OrderAttachment } from "../types";
+import { MEAL_SERVICES, type Kit, type MealServiceName, type OrderAttachment } from "../types";
 import "./OrderFlow.css";
 import "./Surpreenda.css";
 import "./LancheOrder.css";
 
-const PAYMENTS = [
+type MealType = "Refeição Normal" | "Refeição Marmitex";
+const MEAL_TYPES: MealType[] = ["Refeição Normal", "Refeição Marmitex"];
+
+const MANUAL_PAYMENTS = [
   { id: "credito", label: "Cartão de crédito", sub: "Pagamento na retirada, com maquininha", emoji: "💳" },
   { id: "debito", label: "Cartão de débito", sub: "Pagamento na retirada, com maquininha", emoji: "💳" },
   { id: "pix", label: "Pix", sub: "QR Code exibido no recibo", emoji: "⚡" },
 ];
 
-export function LancheOrder() {
-  const { addOrder, showToast, costCenters, kits, products, serviceCatalog, orders, currentUser, locations } = useAppData();
+export function ReservaRefeicao() {
+  const { addOrder, showToast, costCenters, kits, products, serviceCatalog } = useAppData();
   const navigate = useNavigate();
-  const routerLocation = useLocation();
-  const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
 
-  const lancheKits = kits.filter((k) => k.active && (k.pages ?? []).includes("Lanche"));
+  const activeCostCenters = costCenters.filter((c) => c.active);
+  const reservaKits = kits.filter((k) => k.active && (k.pages ?? []).includes("Reserva de Refeição"));
 
   const kitPrice = (k: Kit) => {
     const itemsTotal = k.items.reduce((sum, it) => sum + (products.find((p) => p.id === it.productId)?.price ?? 0) * it.qty, 0);
     return computeKitPrice(itemsTotal, k.serviceFeePercent);
   };
 
-  const [orderId] = useState(() => `#LA-${Math.floor(15200 + Math.random() * 800)}`);
+  const [orderId] = useState(() => `#RR-${Math.floor(15200 + Math.random() * 800)}`);
   const [detailsKitId, setDetailsKitId] = useState<string | null>(null);
+  const [mealType, setMealType] = useState<MealType>(MEAL_TYPES[0]);
+  const [meal, setMeal] = useState<MealServiceName>(MEAL_SERVICES[0]);
   const [qtys, setQtys] = useState<Record<string, number>>({});
-  const [pickupDate, setPickupDate] = useState("");
-  const [pickupTime, setPickupTime] = useState("");
-  const [branchId, setBranchId] = useState("");
-  const [locationId, setLocationId] = useState("");
-  const [copaId, setCopaId] = useState("");
-  const [routingBlocked, setRoutingBlocked] = useState(false);
+  const [consumeDate, setConsumeDate] = useState("");
+  const [consumeTime, setConsumeTime] = useState("");
+  const [paymentMode, setPaymentMode] = useState<"centro" | "manual" | null>(null);
   const [costCenter, setCostCenter] = useState("");
-  const activeCostCenters = costCenters.filter(
-    (c) => c.active && (!currentUser?.costCenterCodes?.length || currentUser.costCenterCodes.includes(c.code)) && (!branchId || !c.branchId || c.branchId === branchId),
-  );
-  const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
-  const [payment, setPayment] = useState<string | null>(null);
+  const [manualPayment, setManualPayment] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [confirmed, setConfirmed] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -55,27 +51,15 @@ export function LancheOrder() {
 
   const setQty = (id: string, v: number) => setQtys((s) => ({ ...s, [id]: Math.max(0, v) }));
 
-  useEffect(() => {
-    if (!repeatOrderId) return;
-    const source = orders.find((o) => o.id === repeatOrderId);
-    if (!source) return;
-    const nextQtys: Record<string, number> = {};
-    (source.items ?? []).forEach((it) => {
-      const kit = lancheKits.find((k) => k.name === it.name);
-      if (kit) nextQtys[kit.id] = it.qty;
-    });
-    setQtys(nextQtys);
-    if (source.branchId) setBranchId(source.branchId);
-    if (source.locationId) setLocationId(source.locationId);
-    if (source.copaId) setCopaId(source.copaId);
-    if (source.costCenters && source.costCenters.length > 0) setCostCenter(source.costCenters[0].code);
-    showToast("Carrinho preenchido com os itens do pedido anterior. Revise e confirme.");
+  const visibleKits = useMemo(
+    () => reservaKits.filter((k) => (k.pages ?? []).includes(mealType) && (k.mealServices ?? []).includes(meal)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [repeatOrderId]);
+    [reservaKits, mealType, meal],
+  );
 
   const cartItems = useMemo(
     () =>
-      lancheKits
+      reservaKits
         .filter((k) => (qtys[k.id] || 0) > 0)
         .map((k) => {
           const qty = qtys[k.id];
@@ -83,43 +67,39 @@ export function LancheOrder() {
           return { id: k.id, name: k.name, qty, unitPrice, total: unitPrice * qty, contents: kitContentsFromCatalog(k, products, serviceCatalog) };
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [qtys, lancheKits, products, serviceCatalog],
+    [qtys, reservaKits, products, serviceCatalog],
   );
 
   const totalUnits = cartItems.reduce((sum, ci) => sum + ci.qty, 0);
   const total = cartItems.reduce((sum, ci) => sum + ci.total, 0);
-  const paymentDef = PAYMENTS.find((p) => p.id === payment);
+  const manualPaymentDef = MANUAL_PAYMENTS.find((p) => p.id === manualPayment);
+  const paymentLabel = paymentMode === "centro" ? `Centro de custo (${costCenter})` : paymentMode === "manual" ? manualPaymentDef?.label ?? "—" : "—";
   const todayLabel = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 
   const submitOrder = () => {
     if (totalUnits === 0) {
       setHasError(true);
-      setErrorMsg("Selecione ao menos um kit de lanche.");
+      setErrorMsg("Selecione ao menos uma refeição.");
       return;
     }
-    if (!pickupDate || !pickupTime) {
+    if (!consumeDate || !consumeTime) {
       setHasError(true);
-      setErrorMsg("Preencha a data e o horário de retirada.");
+      setErrorMsg("Preencha a data e o horário da reserva.");
       return;
     }
-    if (!locationId || !copaId) {
-      setHasError(true);
-      setErrorMsg("Selecione a localização e a copa de retirada.");
-      return;
-    }
-    if (!costCenter) {
-      setHasError(true);
-      setErrorMsg("Selecione o centro de custo.");
-      return;
-    }
-    if (!payment) {
+    if (!paymentMode) {
       setHasError(true);
       setErrorMsg("Selecione a forma de pagamento.");
       return;
     }
-    if (routingBlocked) {
+    if (paymentMode === "centro" && !costCenter) {
       setHasError(true);
-      setErrorMsg("A copa selecionada está sem capacidade nesse horário. Use o horário sugerido ou escolha outro.");
+      setErrorMsg("Selecione o centro de custo.");
+      return;
+    }
+    if (paymentMode === "manual" && !manualPayment) {
+      setHasError(true);
+      setErrorMsg("Selecione a forma de pagamento manual.");
       return;
     }
     setHasError(false);
@@ -127,26 +107,22 @@ export function LancheOrder() {
 
     addOrder({
       id: orderId,
-      category: "Lanche",
-      type: "Lanche",
-      mono: "LA",
-      qty: `${totalUnits} kit(s)`,
-      pickupDate,
-      pickupTime,
-      datetime: `${pickupDate} ${pickupTime}`.trim(),
+      category: "Reserva de Refeição",
+      type: "Reserva de Refeição",
+      mono: "RR",
+      qty: `${totalUnits} refeição(ões)`,
+      pickupDate: consumeDate,
+      pickupTime: consumeTime,
+      datetime: `${consumeDate} ${consumeTime}`.trim(),
       status: "Solicitado",
       value: money(total),
       valueNumber: total,
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
-      location: locations.find((l) => l.id === locationId)?.name,
-      branchId,
-      locationId,
-      copaId,
-      costCenters: [{ code: costCenter, percent: 100 }],
-      notes: `Forma de pagamento: ${paymentDef?.label ?? "—"}`,
+      costCenters: paymentMode === "centro" ? [{ code: costCenter, percent: 100 }] : undefined,
+      notes: `Forma de pagamento: ${paymentLabel}`,
       attachments: attachments.length ? attachments : undefined,
     });
-    showToast("Pedido de lanche solicitado com sucesso!");
+    showToast("Reserva de refeição solicitada com sucesso!");
     setConfirmed(true);
   };
 
@@ -158,7 +134,7 @@ export function LancheOrder() {
             <div className="confirmation-header" style={{ marginBottom: 20 }}>
               <div className="confirmation-icon">✓</div>
               <div>
-                <div className="confirmation-title">Pedido confirmado!</div>
+                <div className="confirmation-title">Reserva confirmada!</div>
                 <div className="confirmation-meta">
                   Pedido {orderId} &bull; enviado em {todayLabel}
                 </div>
@@ -168,7 +144,7 @@ export function LancheOrder() {
             <div className="receipt-card">
               <div className="receipt-card__header">
                 <div className="receipt-card__eyebrow">Recibo</div>
-                <div className="receipt-card__title">Lanche &bull; Direct Eventos</div>
+                <div className="receipt-card__title">Reserva de Refeição &bull; Direct Eventos</div>
                 <div className="receipt-card__meta">
                   Pedido {orderId} &bull; {todayLabel}
                 </div>
@@ -176,16 +152,16 @@ export function LancheOrder() {
 
               <div className="event-summary-grid" style={{ borderBottom: "1px solid var(--color-border-soft)", paddingBottom: 14, marginBottom: 14 }}>
                 <div>
-                  <div className="event-summary-item-label">Data de retirada</div>
-                  <div className="event-summary-item-value">{pickupDate || "Não informado"}</div>
+                  <div className="event-summary-item-label">Data da reserva</div>
+                  <div className="event-summary-item-value">{consumeDate || "Não informado"}</div>
                 </div>
                 <div>
-                  <div className="event-summary-item-label">Horário de retirada</div>
-                  <div className="event-summary-item-value">{pickupTime || "Não informado"}</div>
+                  <div className="event-summary-item-label">Horário</div>
+                  <div className="event-summary-item-value">{consumeTime || "Não informado"}</div>
                 </div>
                 <div>
-                  <div className="event-summary-item-label">Centro de custo</div>
-                  <div className="event-summary-item-value">{costCenter}</div>
+                  <div className="event-summary-item-label">Tipo</div>
+                  <div className="event-summary-item-value">{mealType}</div>
                 </div>
               </div>
 
@@ -220,7 +196,7 @@ export function LancheOrder() {
 
               <div className="receipt-payment-row">
                 <span style={{ color: "var(--color-text-muted)" }}>Forma de pagamento</span>
-                <span style={{ fontWeight: 700 }}>{paymentDef ? paymentDef.label : "—"}</span>
+                <span style={{ fontWeight: 700 }}>{paymentLabel}</span>
               </div>
 
               <div className="receipt-disclaimer">Este recibo é uma demonstração e não possui valor fiscal.</div>
@@ -256,18 +232,36 @@ export function LancheOrder() {
         </button>
 
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 26 }}>
-          <div className="order-header-icon">LA</div>
+          <div className="order-header-icon">RR</div>
           <div>
-            <h1 className="order-title">Lanche</h1>
-            <div className="order-subtitle">Escolha os kits de lanche, o horário de retirada e a forma de pagamento.</div>
+            <h1 className="order-title">Reserva de Refeição</h1>
+            <div className="order-subtitle">Escolha o tipo de refeição, os kits, o horário e a forma de pagamento.</div>
           </div>
         </div>
 
         <div className="step1-grid">
           <div style={{ minWidth: 0 }}>
-            <div className="catalog-heading">1. Escolha os kits de lanche</div>
+            <div className="catalog-heading">1. Tipo de refeição</div>
+            <div className="tab-row" style={{ marginBottom: 18 }}>
+              {MEAL_TYPES.map((t) => (
+                <button key={t} className={mealType === t ? "is-active" : ""} onClick={() => setMealType(t)}>
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            <div className="catalog-heading">2. Escolha a refeição</div>
+            <div className="tab-row" style={{ marginBottom: 18 }}>
+              {MEAL_SERVICES.map((m) => (
+                <button key={m} className={meal === m ? "is-active" : ""} onClick={() => setMeal(m)}>
+                  {m}
+                </button>
+              ))}
+            </div>
+
+            <div className="catalog-heading">3. Escolha os kits</div>
             <div className="kits-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
-              {lancheKits.map((k) => {
+              {visibleKits.map((k) => {
                 const qty = qtys[k.id] || 0;
                 const price = kitPrice(k);
                 return (
@@ -295,80 +289,89 @@ export function LancheOrder() {
                   </div>
                 );
               })}
-              {lancheKits.length === 0 && <div className="empty-state">Nenhum kit de lanche cadastrado ainda. Cadastre em Catálogos &rsaquo; Kits, marcando o serviço "Lanche".</div>}
+              {visibleKits.length === 0 && (
+                <div className="empty-state">Nenhum kit cadastrado para {mealType.toLowerCase()} em {meal} ainda. Cadastre em Catálogos &rsaquo; Kits.</div>
+              )}
             </div>
 
             <div className="step-card">
-              <div className="step-heading">2. Data e horário de retirada</div>
+              <div className="step-heading">4. Data e horário</div>
               <div className="lanche-fields-grid">
                 <label className="field-label">
-                  Data de retirada
-                  <input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} />
+                  Data
+                  <input type="date" value={consumeDate} onChange={(e) => setConsumeDate(e.target.value)} />
                 </label>
                 <label className="field-label">
-                  Horário de retirada
-                  <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} />
+                  Horário
+                  <input type="time" value={consumeTime} onChange={(e) => setConsumeTime(e.target.value)} />
                 </label>
-                <CopaLocationFields
-                  date={pickupDate}
-                  time={pickupTime}
-                  onSuggestTime={(d, t) => {
-                    setPickupDate(d);
-                    setPickupTime(t);
-                  }}
-                  branchId={branchId}
-                  onBranchChange={setBranchId}
-                  locationId={locationId}
-                  onLocationChange={setLocationId}
-                  copaId={copaId}
-                  onCopaChange={setCopaId}
-                  onBlockedChange={setRoutingBlocked}
-                />
-                <div style={{ position: "relative" }}>
-                  <label className="field-label" style={{ marginBottom: 6 }}>Centro de custo</label>
-                  <div className="lanche-local-box" onClick={() => setCostCenterMenuOpen((v) => !v)} style={{ color: costCenter ? "var(--color-text)" : "var(--color-text-muted)" }}>
-                    {costCenter ? `${costCenter} · ${activeCostCenters.find((c) => c.code === costCenter)?.name}` : "Selecionar centro de custo"}
-                  </div>
-                  {costCenterMenuOpen && (
-                    <div className="location-dropdown">
-                      {activeCostCenters.map((c) => (
-                        <button
-                          key={c.code}
-                          onClick={() => {
-                            setCostCenter(c.code);
-                            setCostCenterMenuOpen(false);
-                          }}
-                        >
-                          {c.code} · {c.name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
 
             <div className="step-card">
-              <div className="step-heading">3. Forma de pagamento</div>
+              <div className="step-heading">5. Forma de pagamento</div>
               <div className="payment-options">
-                {PAYMENTS.map((p) => {
-                  const sel = payment === p.id;
-                  return (
-                    <button key={p.id} className="payment-option" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border)", background: sel ? "#f4f6fc" : "#fff" }} onClick={() => setPayment(p.id)}>
-                      <div className="payment-option__icon">{p.emoji}</div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 14, fontWeight: 700 }}>{p.label}</div>
-                        <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{p.sub}</div>
-                      </div>
-                      <div className="payment-option__radio" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border-input)", background: sel ? "var(--color-primary)" : "#fff" }} />
-                    </button>
-                  );
-                })}
+                <button
+                  className="payment-option"
+                  style={{ borderColor: paymentMode === "centro" ? "var(--color-primary)" : "var(--color-border)", background: paymentMode === "centro" ? "#f4f6fc" : "#fff" }}
+                  onClick={() => setPaymentMode("centro")}
+                >
+                  <div className="payment-option__icon">💼</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700 }}>Centro de custo</div>
+                    <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>Lançado direto no centro de custo do solicitante</div>
+                  </div>
+                  <div className="payment-option__radio" style={{ borderColor: paymentMode === "centro" ? "var(--color-primary)" : "var(--color-border-input)", background: paymentMode === "centro" ? "var(--color-primary)" : "#fff" }} />
+                </button>
+                <button
+                  className="payment-option"
+                  style={{ borderColor: paymentMode === "manual" ? "var(--color-primary)" : "var(--color-border)", background: paymentMode === "manual" ? "#f4f6fc" : "#fff" }}
+                  onClick={() => setPaymentMode("manual")}
+                >
+                  <div className="payment-option__icon">💳</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700 }}>Pagamento manual</div>
+                    <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>Você escolhe Pix, crédito ou débito</div>
+                  </div>
+                  <div className="payment-option__radio" style={{ borderColor: paymentMode === "manual" ? "var(--color-primary)" : "var(--color-border-input)", background: paymentMode === "manual" ? "var(--color-primary)" : "#fff" }} />
+                </button>
               </div>
+
+              {paymentMode === "centro" && (
+                <label className="field-label" style={{ marginTop: 14 }}>
+                  Centro de custo
+                  <select value={costCenter} onChange={(e) => setCostCenter(e.target.value)}>
+                    <option value="">Selecione o centro de custo</option>
+                    {activeCostCenters.map((c) => (
+                      <option key={c.id} value={c.code}>
+                        {c.code} · {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              {paymentMode === "manual" && (
+                <div className="payment-options" style={{ marginTop: 14 }}>
+                  {MANUAL_PAYMENTS.map((p) => {
+                    const sel = manualPayment === p.id;
+                    return (
+                      <button key={p.id} className="payment-option" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border)", background: sel ? "#f4f6fc" : "#fff" }} onClick={() => setManualPayment(p.id)}>
+                        <div className="payment-option__icon">{p.emoji}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 14, fontWeight: 700 }}>{p.label}</div>
+                          <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{p.sub}</div>
+                        </div>
+                        <div className="payment-option__radio" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border-input)", background: sel ? "var(--color-primary)" : "#fff" }} />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="step-card">
-              <div className="step-heading">4. Anexo</div>
+              <div className="step-heading">6. Anexo</div>
               <AttachmentsField value={attachments} onChange={setAttachments} />
             </div>
           </div>
@@ -385,7 +388,7 @@ export function LancheOrder() {
               <div className="empty-state">
                 Seu carrinho está vazio.
                 <br />
-                Adicione um ou mais kits.
+                Adicione uma ou mais refeições.
               </div>
             )}
 
@@ -434,7 +437,7 @@ export function LancheOrder() {
             )}
 
             <button className="btn btn--primary btn--full" style={{ marginTop: 16 }} disabled={totalUnits === 0} onClick={submitOrder}>
-              Confirmar pedido de lanche
+              Confirmar reserva
             </button>
           </div>
         </div>
@@ -442,7 +445,8 @@ export function LancheOrder() {
 
       {detailsKitId &&
         (() => {
-          const k = lancheKits.find((x) => x.id === detailsKitId)!;
+          const k = reservaKits.find((x) => x.id === detailsKitId);
+          if (!k) return null;
           return <KitDetailsModal name={k.name} description={k.description} contents={kitContentsFromCatalog(k, products, serviceCatalog)} onClose={() => setDetailsKitId(null)} />;
         })()}
     </Layout>

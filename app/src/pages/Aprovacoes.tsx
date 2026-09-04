@@ -7,6 +7,7 @@ import { WhatsAppButton } from "../components/WhatsAppButton";
 import { useAppData } from "../mock/AppDataContext";
 import { STATUS_STYLE } from "../mock/services";
 import { money } from "../mock/money";
+import { gestorApprovalMessage, guApprovalMessage } from "../mock/whatsapp";
 import type { Order } from "../types";
 import "./OrderFlow.css";
 import "./Aprovacoes.css";
@@ -182,10 +183,7 @@ export function Aprovacoes() {
                       </div>
                       <div className="apr-approval-row__actions">
                         {!o.managerApproved && (
-                          <WhatsAppButton
-                            message={`Oi ${gestorNameFor(o)}, o pedido ${orderCode(o)} (${o.category}, ${o.value}) está aguardando sua aprovação.`}
-                            label="Cutucar"
-                          />
+                          <WhatsAppButton message={gestorApprovalMessage(o, gestorNameFor(o))} label="Cutucar" />
                         )}
                         <button
                           className={`apr-approve-btn ${o.managerApproved ? "is-approved" : ""}`}
@@ -207,10 +205,7 @@ export function Aprovacoes() {
                         </div>
                         <div className="apr-approval-row__actions">
                           {!o.guApproved && (
-                            <WhatsAppButton
-                              message={`Oi ${GU_NAME}, o pedido ${orderCode(o)} (${o.category}, ${o.value}) está aguardando sua aprovação da GU.`}
-                              label="Cutucar"
-                            />
+                            <WhatsAppButton message={guApprovalMessage(o, GU_NAME)} label="Cutucar" />
                           )}
                           <button
                             className={`apr-approve-btn ${o.guApproved ? "is-approved" : ""}`}

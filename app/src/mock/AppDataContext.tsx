@@ -16,6 +16,7 @@ import {
   type BusinessUnit,
   type Contract,
   type Copa,
+  type DeliveryLocation,
   type Segment,
   type CostCenter,
   type Decoration,
@@ -70,6 +71,7 @@ interface StoredState {
   branches: Branch[];
   costCenters: CostCenter[];
   copas: Copa[];
+  locations: DeliveryLocation[];
   occurrences: Occurrence[];
   popups: Popup[];
   dismissedPopupIds: string[];
@@ -653,14 +655,14 @@ const initialKits: Kit[] = [
   { id: "kit4", name: "Combo Fit", description: "Sanduíche natural, barra de cereal e suco detox.", items: [{ productId: "prod32", qty: 1 }, { productId: "prod35", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, pages: ["Lanche"], active: true },
   { id: "kit5", name: "Combo Tradicional", description: "Croissant misto com refrigerante.", items: [{ productId: "prod29", qty: 1 }, { productId: "prod1", qty: 1 }], serviceFeePercent: 10, pages: ["Lanche"], active: true },
   { id: "kit6", name: "Combo Doce", description: "Brigadeiro gourmet com suco detox.", items: [{ productId: "prod27", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, pages: ["Lanche"], active: true },
-  { id: "kit7", name: "Marmita Executiva Frango", description: "Arroz, feijão, frango grelhado e legumes.", items: [{ productId: "prod36", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit8", name: "Marmita Executiva Carne", description: "Arroz, feijão, carne assada e legumes.", items: [{ productId: "prod37", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit9", name: "Opção Vegetariana", description: "Grão-de-bico, legumes e arroz integral.", items: [{ productId: "prod38", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit10", name: "Café da Manhã Completo", description: "Pão na chapa com café e salada de frutas.", items: [{ productId: "prod42", qty: 1 }, { productId: "prod30", qty: 1 }], serviceFeePercent: 10, mealServices: ["Café da manhã"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit11", name: "Tapioca e Suco", description: "Tapioca recheada com suco detox.", items: [{ productId: "prod43", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, mealServices: ["Café da manhã"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit12", name: "Lanche da Tarde", description: "Sanduíche natural com sobremesa do dia.", items: [{ productId: "prod32", qty: 1 }, { productId: "prod39", qty: 1 }], serviceFeePercent: 10, mealServices: ["Lanche"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit13", name: "Sopa da Noite", description: "Sopa quente do dia.", items: [{ productId: "prod40", qty: 1 }], serviceFeePercent: 10, mealServices: ["Janta", "Ceia"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit14", name: "Vitamina e Pão", description: "Mingau/vitamina com pão na chapa.", items: [{ productId: "prod41", qty: 1 }, { productId: "prod42", qty: 1 }], serviceFeePercent: 10, mealServices: ["Ceia"], pages: ["Consumo Catraca"], active: true },
+  { id: "kit7", name: "Marmita Executiva Frango", description: "Arroz, feijão, frango grelhado e legumes.", items: [{ productId: "prod36", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Marmitex"], active: true },
+  { id: "kit8", name: "Marmita Executiva Carne", description: "Arroz, feijão, carne assada e legumes.", items: [{ productId: "prod37", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Marmitex"], active: true },
+  { id: "kit9", name: "Opção Vegetariana", description: "Grão-de-bico, legumes e arroz integral.", items: [{ productId: "prod38", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Marmitex"], active: true },
+  { id: "kit10", name: "Café da Manhã Completo", description: "Pão na chapa com café e salada de frutas.", items: [{ productId: "prod42", qty: 1 }, { productId: "prod30", qty: 1 }], serviceFeePercent: 10, mealServices: ["Café da manhã"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Normal"], active: true },
+  { id: "kit11", name: "Tapioca e Suco", description: "Tapioca recheada com suco detox.", items: [{ productId: "prod43", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, mealServices: ["Café da manhã"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Normal"], active: true },
+  { id: "kit12", name: "Lanche da Tarde", description: "Sanduíche natural com sobremesa do dia.", items: [{ productId: "prod32", qty: 1 }, { productId: "prod39", qty: 1 }], serviceFeePercent: 10, mealServices: ["Lanche"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Normal"], active: true },
+  { id: "kit13", name: "Sopa da Noite", description: "Sopa quente do dia.", items: [{ productId: "prod40", qty: 1 }], serviceFeePercent: 10, mealServices: ["Janta", "Ceia"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Normal"], active: true },
+  { id: "kit14", name: "Vitamina e Pão", description: "Mingau/vitamina com pão na chapa.", items: [{ productId: "prod41", qty: 1 }, { productId: "prod42", qty: 1 }], serviceFeePercent: 10, mealServices: ["Ceia"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Normal"], active: true },
 ];
 
 const initialServiceCatalog: ServiceCatalogItem[] = [
@@ -744,7 +746,7 @@ function fullAccessPerms(): Record<string, PagePermission> {
   return out;
 }
 
-const ORDER_PAGES = ["pedido-coffee", "pedido-evento", "pedido-agua", "pedido-abastecimento", "surpreenda", "pedido-lanche", "pedido-servicos-diversos"];
+const ORDER_PAGES = ["pedido-coffee", "pedido-evento", "pedido-agua", "pedido-abastecimento", "surpreenda", "pedido-lanche", "pedido-servicos-diversos", "reserva-refeicao"];
 
 const initialProfiles: Profile[] = [
   {
@@ -809,6 +811,7 @@ const initialProfiles: Profile[] = [
       "admin-filiais": { ver: true },
       "admin-centros-custo": { ver: true },
       "admin-copas": { ver: true, criarEditar: true },
+      "admin-localizacoes": { ver: true, criarEditar: true },
       "admin-contratos": { ver: true, criarEditar: true },
       "admin-ocorrencias": { ver: true, criarEditar: true },
       "admin-parametros": { ver: true, criarEditar: true },
@@ -881,7 +884,7 @@ const initialUsers: AppUser[] = [
   { id: "user2", name: "Marina Silva", email: "marina.silva@sparkxp.com", profileId: "prof-gu", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-02-03T09:00:00Z" },
   { id: "user3", name: "Carlos Santos", email: "carlos.santos@clienteempresa.com", profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC001"], active: true, createdAt: "2026-02-10T09:00:00Z" },
   { id: "user4", name: "Paula Costa", email: "paula.costa@clienteempresa.com", profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC002"], active: true, createdAt: "2026-02-10T09:00:00Z" },
-  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", profileId: "prof-cliente", companyId: "comp1", branchIds: ["branch1", "branch2"], costCenterCodes: ["CC001", "CC003"], active: true, createdAt: "2026-03-01T09:00:00Z" },
+  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", profileId: "prof-cliente", companyId: "comp1", branchIds: ["branch1", "branch2"], costCenterCodes: ["CC001", "CC003"], copaIds: ["copa1", "copa2"], active: true, createdAt: "2026-03-01T09:00:00Z" },
   { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sparkxp.com", profileId: "prof-producao", companyId: "comp1", branchIds: ["branch2"], active: true, createdAt: "2026-03-05T09:00:00Z" },
   { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sparkxp.com", profileId: "prof-faturamento", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-08T09:00:00Z" },
   { id: "user8", name: "Administrador do Sistema", email: "admin@sparkxp.com", profileId: "prof-admin", companyId: "comp1", branchIds: ["branch1", "branch2"], active: true, createdAt: "2026-01-01T09:00:00Z" },
@@ -921,6 +924,15 @@ const initialCostCenters: CostCenter[] = [
   { id: "cc3", code: "CC003", name: "Operações", companyId: "comp1", branchId: "branch2", areaName: "Operações", physicalLocation: "Galpão 2", active: true },
 ];
 
+const initialLocations: DeliveryLocation[] = [
+  { id: "loc1", name: "Sala 1", branchId: "branch1", active: true },
+  { id: "loc2", name: "Sala 2", branchId: "branch1", active: true },
+  { id: "loc3", name: "Sala 3", branchId: "branch1", active: true },
+  { id: "loc4", name: "Auditório Térreo", branchId: "branch1", active: true },
+  { id: "loc5", name: "Recepção", branchId: "branch2", active: true },
+  { id: "loc6", name: "Sala de Treinamento", branchId: "branch2", active: true },
+];
+
 const initialCopas: Copa[] = [
   {
     id: "copa1",
@@ -928,12 +940,28 @@ const initialCopas: Copa[] = [
     companyId: "comp1",
     branchId: "branch1",
     physicalLocation: "Térreo, ala leste",
+    locationIds: ["loc1", "loc2", "loc3", "loc4"],
     costCenterCodes: ["CC001", "CC002"],
     responsibleUserIds: ["user1", "user2", "user9"],
     slaHours: 2,
     operatingHours: WEEKDAYS.map((weekday) => ({ weekday, enabled: !["Sábado", "Domingo"].includes(weekday), start: "07:00", end: "19:00" })),
     nonBusinessDays: [],
     capacityPer30min: 20,
+    active: true,
+  },
+  {
+    id: "copa2",
+    name: "Copa Campinas",
+    companyId: "comp1",
+    branchId: "branch2",
+    physicalLocation: "1º andar, ala norte",
+    locationIds: ["loc5", "loc6"],
+    costCenterCodes: ["CC003"],
+    responsibleUserIds: ["user1", "user9"],
+    slaHours: 3,
+    operatingHours: WEEKDAYS.map((weekday) => ({ weekday, enabled: !["Sábado", "Domingo"].includes(weekday), start: "08:00", end: "18:00" })),
+    nonBusinessDays: [],
+    capacityPer30min: 8,
     active: true,
   },
 ];
@@ -1004,6 +1032,7 @@ const defaultState: StoredState = {
   branches: initialBranches,
   costCenters: initialCostCenters,
   copas: initialCopas,
+  locations: initialLocations,
   occurrences: initialOccurrences,
   popups: initialPopups,
   dismissedPopupIds: [],
@@ -1046,7 +1075,7 @@ interface AppDataValue {
 
   notifications: Notification[];
   markAllNotificationsRead: () => void;
-  addNotification: (title: string) => void;
+  addNotification: (title: string, link?: string) => void;
 
   favorites: Set<string>;
   toggleFavorite: (id: string) => void;
@@ -1157,6 +1186,11 @@ interface AppDataValue {
   updateCopa: (id: string, patch: Partial<Copa>) => void;
   removeCopa: (id: string) => void;
 
+  locations: DeliveryLocation[];
+  addLocation: (location: Omit<DeliveryLocation, "id">) => void;
+  updateLocation: (id: string, patch: Partial<DeliveryLocation>) => void;
+  removeLocation: (id: string) => void;
+
   occurrences: Occurrence[];
   addOccurrence: (occurrence: Omit<Occurrence, "id" | "createdAt">) => void;
   updateOccurrence: (id: string, patch: Partial<Occurrence>) => void;
@@ -1254,6 +1288,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   };
 
   const updateOrder: AppDataValue["updateOrder"] = (id, patch) => {
+    const current = state.orders.find((o) => o.id === id);
+    const willFinalize = !!current && patch.status === "Finalizado" && current.status !== "Finalizado";
     setState((s) => ({
       ...s,
       orders: s.orders.map((o) => {
@@ -1265,6 +1301,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         return next;
       }),
     }));
+    if (willFinalize && current) {
+      const merged = { ...current, ...patch };
+      const code = merged.id.replace(/^#/, "");
+      addNotification(`Pedido ${merged.id} (${merged.type}) finalizado! Conta pra gente como foi na pesquisa de satisfação. ⭐`, `/pesquisa-pedido/${code}`);
+    }
   };
 
   const cancelOrder = (id: string) => {
@@ -1296,10 +1337,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     showToast("Pedido duplicado.");
   };
 
-  const addNotification: AppDataValue["addNotification"] = (title) => {
+  const addNotification: AppDataValue["addNotification"] = (title, link) => {
     setState((s) => ({
       ...s,
-      notifications: [{ id: `notif${Date.now()}`, title, time: new Date().toLocaleString("pt-BR"), read: false }, ...s.notifications],
+      notifications: [{ id: `notif${Date.now()}`, title, time: new Date().toLocaleString("pt-BR"), read: false, link }, ...s.notifications],
     }));
   };
 
@@ -1582,6 +1623,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, copas: s.copas.filter((c) => c.id !== id) }));
   };
 
+  const addLocation: AppDataValue["addLocation"] = (location) => {
+    setState((s) => ({ ...s, locations: [{ ...location, id: `loc${Date.now()}` }, ...s.locations] }));
+  };
+  const updateLocation: AppDataValue["updateLocation"] = (id, patch) => {
+    setState((s) => ({ ...s, locations: s.locations.map((l) => (l.id === id ? { ...l, ...patch } : l)) }));
+  };
+  const removeLocation = (id: string) => {
+    setState((s) => ({ ...s, locations: s.locations.filter((l) => l.id !== id) }));
+  };
+
   const addOccurrence: AppDataValue["addOccurrence"] = (occurrence) => {
     setState((s) => ({
       ...s,
@@ -1789,6 +1840,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       addCopa,
       updateCopa,
       removeCopa,
+      locations: state.locations,
+      addLocation,
+      updateLocation,
+      removeLocation,
       occurrences: state.occurrences,
       addOccurrence,
       updateOccurrence,

@@ -63,6 +63,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Filiais", to: "/admin/filiais", glyph: "🏬", pageId: "admin-filiais" },
       { label: "Centros de custo", to: "/admin/centros-custo", glyph: "🏷", pageId: "admin-centros-custo" },
       { label: "Copas", to: "/admin/copas", glyph: "🍽", pageId: "admin-copas" },
+      { label: "Localizações", to: "/admin/localizacoes", glyph: "📍", pageId: "admin-localizacoes" },
     ],
   },
   {

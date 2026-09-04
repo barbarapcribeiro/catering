@@ -19,6 +19,7 @@ const EMPTY_FORM = {
   companyId: "",
   branchIds: [] as string[],
   costCenterCodes: [] as string[],
+  copaIds: [] as string[],
   active: true,
 };
 
@@ -30,7 +31,7 @@ function formatDateTime(iso: string) {
 }
 
 export function Usuarios() {
-  const { users, profiles, companies, branches, costCenters, addUser, updateUser, removeUser, resetUserPassword, showToast } = useAppData();
+  const { users, profiles, companies, branches, costCenters, copas, addUser, updateUser, removeUser, resetUserPassword, showToast } = useAppData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -47,6 +48,7 @@ export function Usuarios() {
   const activeCompanies = companies.filter((c) => c.active);
   const branchesForCompany = branches.filter((b) => b.active && b.companyId === form.companyId);
   const costCentersForBranches = costCenters.filter((cc) => cc.active && cc.branchId && form.branchIds.includes(cc.branchId));
+  const copasForBranches = copas.filter((c) => c.active && form.branchIds.includes(c.branchId));
 
   const openNew = () => {
     setEditingId(null);
@@ -68,25 +70,30 @@ export function Usuarios() {
       companyId: u.companyId ?? "",
       branchIds: u.branchIds ?? [],
       costCenterCodes: u.costCenterCodes ?? [],
+      copaIds: u.copaIds ?? [],
       active: u.active,
     });
     setModalOpen(true);
   };
 
   const setCompany = (companyId: string) => {
-    setForm((f) => ({ ...f, companyId, branchIds: [], costCenterCodes: [] }));
+    setForm((f) => ({ ...f, companyId, branchIds: [], costCenterCodes: [], copaIds: [] }));
   };
 
   const toggleBranch = (branchId: string) => {
     setForm((f) => {
       const branchIds = f.branchIds.includes(branchId) ? f.branchIds.filter((id) => id !== branchId) : [...f.branchIds, branchId];
       const validCodes = costCenters.filter((cc) => cc.branchId && branchIds.includes(cc.branchId)).map((cc) => cc.code);
-      return { ...f, branchIds, costCenterCodes: f.costCenterCodes.filter((code) => validCodes.includes(code)) };
+      const validCopaIds = copas.filter((c) => branchIds.includes(c.branchId)).map((c) => c.id);
+      return { ...f, branchIds, costCenterCodes: f.costCenterCodes.filter((code) => validCodes.includes(code)), copaIds: f.copaIds.filter((id) => validCopaIds.includes(id)) };
     });
   };
 
   const toggleCostCenter = (code: string) => {
     setForm((f) => ({ ...f, costCenterCodes: f.costCenterCodes.includes(code) ? f.costCenterCodes.filter((c) => c !== code) : [...f.costCenterCodes, code] }));
+  };
+  const toggleCopa = (id: string) => {
+    setForm((f) => ({ ...f, copaIds: f.copaIds.includes(id) ? f.copaIds.filter((c) => c !== id) : [...f.copaIds, id] }));
   };
 
   const canSave =
@@ -114,6 +121,7 @@ export function Usuarios() {
       companyId: form.companyId,
       branchIds: form.branchIds,
       costCenterCodes: needsCostCenter && form.costCenterCodes.length > 0 ? form.costCenterCodes : undefined,
+      copaIds: needsCostCenter && form.copaIds.length > 0 ? form.copaIds : undefined,
       active: form.active,
     };
     if (editingId) {
@@ -319,6 +327,27 @@ export function Usuarios() {
                   )
                 ) : (
                   <span className="field-hint">Selecione ao menos uma filial para listar os centros de custo.</span>
+                )}
+              </label>
+            )}
+
+            {needsCostCenter && (
+              <label className="field-label">
+                Copas <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(uma ou mais — de onde o usuário poderá solicitar pedidos; vazio libera todas as copas das filiais selecionadas)</span>
+                {form.branchIds.length > 0 ? (
+                  copasForBranches.length > 0 ? (
+                    <div className="usuarios-chip-row">
+                      {copasForBranches.map((c) => (
+                        <button key={c.id} type="button" className={form.copaIds.includes(c.id) ? "is-active" : ""} onClick={() => toggleCopa(c.id)}>
+                          {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="field-hint">Nenhuma copa ativa nas filiais selecionadas.</span>
+                  )
+                ) : (
+                  <span className="field-hint">Selecione ao menos uma filial para listar as copas.</span>
                 )}
               </label>
             )}

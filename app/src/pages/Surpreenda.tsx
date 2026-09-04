@@ -7,7 +7,7 @@ import { AttachmentsField } from "../components/AttachmentsField";
 import { KitDetailsModal } from "../components/KitDetailsModal";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
-import { LOCATIONS } from "../mock/services";
+import { CopaLocationFields } from "../components/CopaLocationFields";
 import type { OrderAttachment } from "../types";
 import "./OrderFlow.css";
 import "./Surpreenda.css";
@@ -89,11 +89,10 @@ const STEP_DEFS = [
 ];
 
 export function Surpreenda() {
-  const { addOrder, showToast, costCenters, serviceParameters, orders } = useAppData();
+  const { addOrder, showToast, costCenters, serviceParameters, orders, currentUser, locations, copas } = useAppData();
   const navigate = useNavigate();
   const routerLocation = useLocation();
   const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
-  const activeCostCenters = costCenters.filter((c) => c.active);
   const linkedCostCenterCode = serviceParameters.find((s) => s.category === "Surpreenda")?.linkedCostCenterCode;
 
   const [orderId] = useState(() => `#SP-${Math.floor(15200 + Math.random() * 800)}`);
@@ -104,9 +103,14 @@ export function Surpreenda() {
   const [eventName, setEventName] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
-  const [eventLocal, setEventLocal] = useState("");
+  const [branchId, setBranchId] = useState("");
+  const [locationId, setLocationId] = useState("");
+  const [copaId, setCopaId] = useState("");
+  const [routingBlocked, setRoutingBlocked] = useState(false);
+  const activeCostCenters = costCenters.filter(
+    (c) => c.active && (!currentUser?.costCenterCodes?.length || currentUser.costCenterCodes.includes(c.code)) && (!branchId || !c.branchId || c.branchId === branchId),
+  );
   const [needsApproval, setNeedsApproval] = useState(false);
-  const [localMenuOpen, setLocalMenuOpen] = useState(false);
   const [obs, setObs] = useState("");
   const [hasDietary, setHasDietary] = useState(false);
   const [dietaryDetails, setDietaryDetails] = useState("");
@@ -134,7 +138,9 @@ export function Surpreenda() {
     });
     setQtys(nextQtys);
     if (source.eventName) setEventName(source.eventName);
-    if (source.location) setEventLocal(source.location);
+    if (source.branchId) setBranchId(source.branchId);
+    if (source.locationId) setLocationId(source.locationId);
+    if (source.copaId) setCopaId(source.copaId);
     if (source.peopleCount) setPeople(source.peopleCount);
     if (source.costCenters && source.costCenters.length > 0) setCostCenter(source.costCenters[0].code);
     showToast("Carrinho preenchido com os itens do pedido anterior. Revise e confirme.");
@@ -175,6 +181,8 @@ export function Surpreenda() {
   const paymentDef = PAYMENTS.find((p) => p.id === payment);
 
   const todayLabel = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+  const locationName = locations.find((l) => l.id === locationId)?.name;
+  const copaName = copas.find((c) => c.id === copaId)?.name;
 
   const continueOrder = () => {
     setStep(2);
@@ -198,7 +206,10 @@ export function Surpreenda() {
       valueNumber: total,
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
       eventName,
-      location: eventLocal,
+      location: locations.find((l) => l.id === locationId)?.name,
+      branchId,
+      locationId,
+      copaId,
       eventTime,
       dietaryRestrictions: hasDietary ? dietaryDetails || "Sim, sem detalhes" : "Nenhuma",
       notes: obs,
@@ -316,34 +327,26 @@ export function Surpreenda() {
                     </span>
                     <input type="time" value={eventTime} onChange={(e) => setEventTime(e.target.value)} />
                   </label>
-                  <div style={{ position: "relative" }}>
-                    <label className="field-boxed" style={{ cursor: "pointer" }} onClick={() => setLocalMenuOpen((v) => !v)}>
-                      Local de entrega
-                      <div className="field-boxed-value" style={{ color: eventLocal ? "var(--color-text)" : "var(--color-text-muted)" }}>
-                        {eventLocal || "Selecionar local"}
-                      </div>
-                    </label>
-                    {localMenuOpen && (
-                      <div className="location-dropdown">
-                        {LOCATIONS.map((name) => (
-                          <button
-                            key={name}
-                            onClick={() => {
-                              setEventLocal(name);
-                              setLocalMenuOpen(false);
-                            }}
-                          >
-                            {name}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                   <label className="field-boxed">
                     Nº de pessoas
                     <input type="number" min={8} value={people} onChange={(e) => setPeople(Math.max(8, parseInt(e.target.value) || 8))} />
                   </label>
                 </div>
+                <CopaLocationFields
+                  date={eventDate}
+                  time={eventTime}
+                  onSuggestTime={(d, t) => {
+                    setEventDate(d);
+                    setEventTime(t);
+                  }}
+                  branchId={branchId}
+                  onBranchChange={setBranchId}
+                  locationId={locationId}
+                  onLocationChange={setLocationId}
+                  copaId={copaId}
+                  onCopaChange={setCopaId}
+                  onBlockedChange={setRoutingBlocked}
+                />
                 <div className="info-note">
                   <span>&#8505;</span>
                   <div>Você poderá revisar todos os detalhes na próxima etapa.</div>
@@ -452,30 +455,22 @@ export function Surpreenda() {
                   Data do evento
                   <input type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
                 </label>
-                <div style={{ position: "relative" }}>
-                  <label className="field-label" style={{ cursor: "pointer" }} onClick={() => setLocalMenuOpen((v) => !v)}>
-                    Local de entrega
-                    <div style={{ marginTop: 6, padding: "10px 12px", borderRadius: 8, border: "1px solid var(--color-border-input)", fontSize: 13, fontWeight: 600, color: eventLocal ? "var(--color-text)" : "var(--color-text-muted)", boxSizing: "border-box" }}>
-                      {eventLocal || "Selecionar local"}
-                    </div>
-                  </label>
-                  {localMenuOpen && (
-                    <div className="location-dropdown">
-                      {LOCATIONS.map((name) => (
-                        <button
-                          key={name}
-                          onClick={() => {
-                            setEventLocal(name);
-                            setLocalMenuOpen(false);
-                          }}
-                        >
-                          {name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </div>
+              <CopaLocationFields
+                date={eventDate}
+                time={eventTime}
+                onSuggestTime={(d, t) => {
+                  setEventDate(d);
+                  setEventTime(t);
+                }}
+                branchId={branchId}
+                onBranchChange={setBranchId}
+                locationId={locationId}
+                onLocationChange={setLocationId}
+                copaId={copaId}
+                onCopaChange={setCopaId}
+                onBlockedChange={setRoutingBlocked}
+              />
             </div>
 
             <div className="step-card step-card-flex">
@@ -597,7 +592,11 @@ export function Surpreenda() {
                 </div>
                 <div>
                   <div className="event-summary-item-label">Local de entrega</div>
-                  <div className="event-summary-item-value">{eventLocal || "Não informado"}</div>
+                  <div className="event-summary-item-value">{locationName || "Não informado"}</div>
+                </div>
+                <div>
+                  <div className="event-summary-item-label">Copa responsável</div>
+                  <div className="event-summary-item-value">{copaName || "Não informado"}</div>
                 </div>
                 <div>
                   <div className="event-summary-item-label">Nº de pessoas</div>
@@ -640,13 +639,15 @@ export function Surpreenda() {
                 )}
               </div>
               {!costCenter && <div className="error-text">Selecione um centro de custo.</div>}
+              {(!locationId || !copaId) && <div className="error-text">Selecione a localização e a copa de entrega na etapa anterior.</div>}
+              {routingBlocked && <div className="error-text">A copa selecionada está sem capacidade nesse horário. Volte e ajuste o horário ou a copa.</div>}
             </div>
 
             <div className="step-actions">
               <button className="btn btn--outline" onClick={() => setStep(2)}>
                 Voltar
               </button>
-              <button className="btn btn--primary" disabled={!costCenter} onClick={() => setStep(4)}>
+              <button className="btn btn--primary" disabled={!costCenter || !locationId || !copaId || routingBlocked} onClick={() => setStep(4)}>
                 Continuar para pagamento
               </button>
             </div>
@@ -740,7 +741,7 @@ export function Surpreenda() {
                 </div>
                 <div>
                   <div className="event-summary-item-label">Local de entrega</div>
-                  <div className="event-summary-item-value">{eventLocal || "Não informado"}</div>
+                  <div className="event-summary-item-value">{locationName || "Não informado"}{copaName ? ` · ${copaName}` : ""}</div>
                 </div>
                 <div>
                   <div className="event-summary-item-label">Nº de pessoas</div>

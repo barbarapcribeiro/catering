@@ -53,34 +53,12 @@ export const SERVICES: Service[] = [
     route: "/pedido/lanche",
   },
   {
-    id: "re",
-    name: "Refeição Especial",
-    desc: "Solicite refeições especiais.",
-    mono: "RE",
-    iconPath:
-      "M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z",
-  },
-  {
-    id: "rm",
-    name: "Refeição Marmitex",
-    desc: "Solicite refeições marmitex.",
-    mono: "RM",
-    iconPath: "M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8",
-  },
-  {
-    id: "rn",
-    name: "Refeição Normal",
-    desc: "Solicite refeições normais.",
-    mono: "RN",
-    iconPath:
-      "M6 2v7a2 2 0 004 0V2M8 9v13M16 2c-1.5 0-3 2-3 5s1.5 5 3 5 3-2 3-5-1.5-5-3-5zM16 12v10",
-  },
-  {
     id: "rr",
     name: "Reserva de Refeição",
-    desc: "Reserve refeições antecipadamente.",
+    desc: "Reserve refeições normais ou marmitex, com pagamento pelo centro de custo ou na hora.",
     mono: "RR",
     iconPath: "M12 3a9 9 0 100 18 9 9 0 000-18zM12 7v5l3 3",
+    route: "/reserva-refeicao",
   },
   {
     id: "sd",
@@ -132,6 +110,3 @@ export const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
 export function isOpenOrder(order: Order): boolean {
   return order.status !== "Entregue" && order.status !== "Finalizado" && order.status !== "Cancelado";
 }
-
-export const COST_CENTERS = ["CC001", "CC002", "CC003", "CC004", "CC005"];
-export const LOCATIONS = ["Sala 1", "Sala 2", "Sala 3"];

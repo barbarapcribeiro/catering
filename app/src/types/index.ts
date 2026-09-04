@@ -54,6 +54,12 @@ export interface Order {
   items?: OrderItem[];
   eventName?: string;
   location?: string;
+  /** Filial escolhida para o pedido (quando o solicitante tem acesso a mais de uma). */
+  branchId?: string;
+  /** Localização de entrega escolhida — referencia DeliveryLocation. */
+  locationId?: string;
+  /** Copa responsável por atender o pedido, definida pela localização de entrega. */
+  copaId?: string;
   eventTime?: string;
   pickupDate?: string;
   pickupTime?: string;
@@ -87,6 +93,8 @@ export interface Notification {
   title: string;
   time: string;
   read: boolean;
+  /** Rota para onde a notificação leva ao ser clicada (opcional). */
+  link?: string;
 }
 
 /** Tipos de pedido do cliente — cada um tem seu próprio conjunto de perguntas de satisfação. */
@@ -244,7 +252,6 @@ export const CATALOG_PAGES = [
   "Consumo Catraca",
   "Evento Especial",
   "Lanche",
-  "Refeição Especial",
   "Refeição Marmitex",
   "Refeição Normal",
   "Reserva de Refeição",
@@ -396,6 +403,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-empresas", label: "Cadastros · Empresas", group: "Painel Administrativo" },
   { id: "admin-filiais", label: "Cadastros · Filiais", group: "Painel Administrativo" },
   { id: "admin-copas", label: "Cadastros · Copas", group: "Painel Administrativo" },
+  { id: "admin-localizacoes", label: "Cadastros · Localizações", group: "Painel Administrativo" },
   { id: "admin-ocorrencias", label: "Ocorrências", group: "Painel Administrativo" },
   { id: "admin-popups", label: "Pop-ups", group: "Painel Administrativo" },
   { id: "admin-parametros", label: "Parâmetros", group: "Painel Administrativo" },
@@ -404,6 +412,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-tipos-ativo", label: "Tipos de Ativo", group: "Painel Administrativo" },
   { id: "admin-ativos-checkin", label: "Check-in / Check-out de Ativos", group: "Painel Administrativo" },
   { id: "consumo-catraca", label: "Consumo Catraca", group: "Área do colaborador" },
+  { id: "reserva-refeicao", label: "Reserva de Refeição", group: "Área do colaborador" },
   { id: "admin-catraca-checkin", label: "Check-in Consumo Catraca (operação)", group: "Painel Administrativo" },
   { id: "solicitar-orcamento", label: "Solicitar Orçamento", group: "Área do colaborador" },
   { id: "admin-orcamentos", label: "Orçamentos", group: "Painel Administrativo" },
@@ -478,6 +487,8 @@ export interface AppUser {
   branchIds?: string[];
   /** Centros de custo associados — filtrados pelas filiais selecionadas. */
   costCenterCodes?: string[];
+  /** Copas associadas — filtradas pelas filiais selecionadas. */
+  copaIds?: string[];
   active: boolean;
   createdAt: string;
   lastPasswordResetAt?: string;
@@ -555,6 +566,14 @@ export interface CostCenter {
   active: boolean;
 }
 
+/** Localização de entrega dentro de uma Filial (ex.: Sala 1, Recepção, Auditório). */
+export interface DeliveryLocation {
+  id: string;
+  name: string;
+  branchId: string;
+  active: boolean;
+}
+
 export const WEEKDAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"] as const;
 export type Weekday = (typeof WEEKDAYS)[number];
 
@@ -571,6 +590,8 @@ export interface Copa {
   companyId: string;
   branchId: string;
   physicalLocation: string;
+  /** Localizações de entrega atendidas por esta copa — precisam pertencer à mesma filial. */
+  locationIds: string[];
   /** Códigos dos centros de custo atendidos por esta copa. */
   costCenterCodes: string[];
   /** Usuários Sodexo responsáveis — precisam estar cadastrados em Usuários. */

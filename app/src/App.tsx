@@ -10,6 +10,7 @@ import { Surpreenda } from "./pages/Surpreenda";
 import { LancheOrder } from "./pages/LancheOrder";
 import { ServicosDiversosOrder } from "./pages/ServicosDiversosOrder";
 import { ConsumoCatraca } from "./pages/ConsumoCatraca";
+import { ReservaRefeicao } from "./pages/ReservaRefeicao";
 import { SolicitarOrcamento } from "./pages/SolicitarOrcamento";
 import { GerenciarPedidos } from "./pages/GerenciarPedidos";
 import { Producao } from "./pages/Producao";
@@ -49,6 +50,7 @@ import { Marcas } from "./pages/admin/Marcas";
 import { Empresas } from "./pages/admin/Empresas";
 import { Filiais } from "./pages/admin/Filiais";
 import { Copas } from "./pages/admin/Copas";
+import { Localizacoes } from "./pages/admin/Localizacoes";
 
 export default function App() {
   return (
@@ -65,6 +67,7 @@ export default function App() {
           <Route path="/pedido/lanche" element={<LancheOrder />} />
           <Route path="/pedido/servicos-diversos" element={<ServicosDiversosOrder />} />
           <Route path="/consumo-catraca" element={<ConsumoCatraca />} />
+          <Route path="/reserva-refeicao" element={<ReservaRefeicao />} />
           <Route path="/solicitar-orcamento" element={<SolicitarOrcamento />} />
           <Route path="/pedidos" element={<GerenciarPedidos />} />
           <Route path="/producao" element={<Producao />} />
@@ -98,6 +101,7 @@ export default function App() {
             <Route path="empresas" element={<Empresas />} />
             <Route path="filiais" element={<Filiais />} />
             <Route path="copas" element={<Copas />} />
+            <Route path="localizacoes" element={<Localizacoes />} />
             <Route path="contratos" element={<Contratos />} />
             <Route path="parametros" element={<Parametros />} />
             <Route path="servicos-filial" element={<ServicosPorFilial />} />

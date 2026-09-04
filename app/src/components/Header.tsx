@@ -32,6 +32,7 @@ const COLLAB_MENU_GROUPS: MenuGroup[] = [
       { pageId: "pedido-lanche", label: "Lanche", to: "/pedido/lanche", glyph: "🥪" },
       { pageId: "pedido-servicos-diversos", label: "Serviços Diversos", to: "/pedido/servicos-diversos", glyph: "🧰" },
       { pageId: "consumo-catraca", label: "Consumo Catraca", to: "/consumo-catraca", glyph: "🍽" },
+      { pageId: "reserva-refeicao", label: "Reserva de Refeição", to: "/reserva-refeicao", glyph: "🍱" },
       { pageId: "solicitar-orcamento", label: "Solicitar Orçamento", to: "/solicitar-orcamento", glyph: "🧾" },
     ],
   },
@@ -139,7 +140,16 @@ export function Header() {
             <div className="app-header__dropdown">
               <div className="app-header__dropdown-title">Notificações</div>
               {notifications.map((n) => (
-                <div key={n.id} className="app-header__dropdown-item">
+                <div
+                  key={n.id}
+                  className="app-header__dropdown-item"
+                  style={n.link ? { cursor: "pointer" } : undefined}
+                  onClick={() => {
+                    if (!n.link) return;
+                    setNotifOpen(false);
+                    navigate(n.link);
+                  }}
+                >
                   <div className="app-header__dropdown-item-title">{n.title}</div>
                   <div className="app-header__dropdown-item-time">{n.time}</div>
                 </div>
