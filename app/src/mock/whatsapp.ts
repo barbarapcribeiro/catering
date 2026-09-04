@@ -22,6 +22,7 @@ const CATEGORY_EMOJI: Record<string, string> = {
   Lanche: "🥪",
   "Serviços Diversos": "🧹",
   "Consumo Catraca": "🍽️",
+  "Reserva de Refeição": "🍱",
 };
 const DEFAULT_CATEGORY_EMOJI = "🍽️";
 

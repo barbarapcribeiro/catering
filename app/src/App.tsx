@@ -10,6 +10,7 @@ import { Surpreenda } from "./pages/Surpreenda";
 import { LancheOrder } from "./pages/LancheOrder";
 import { ServicosDiversosOrder } from "./pages/ServicosDiversosOrder";
 import { ConsumoCatraca } from "./pages/ConsumoCatraca";
+import { ReservaRefeicao } from "./pages/ReservaRefeicao";
 import { SolicitarOrcamento } from "./pages/SolicitarOrcamento";
 import { GerenciarPedidos } from "./pages/GerenciarPedidos";
 import { Producao } from "./pages/Producao";
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/pedido/lanche" element={<LancheOrder />} />
           <Route path="/pedido/servicos-diversos" element={<ServicosDiversosOrder />} />
           <Route path="/consumo-catraca" element={<ConsumoCatraca />} />
+          <Route path="/reserva-refeicao" element={<ReservaRefeicao />} />
           <Route path="/solicitar-orcamento" element={<SolicitarOrcamento />} />
           <Route path="/pedidos" element={<GerenciarPedidos />} />
           <Route path="/producao" element={<Producao />} />

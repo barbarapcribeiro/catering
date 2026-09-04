@@ -653,14 +653,14 @@ const initialKits: Kit[] = [
   { id: "kit4", name: "Combo Fit", description: "Sanduíche natural, barra de cereal e suco detox.", items: [{ productId: "prod32", qty: 1 }, { productId: "prod35", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, pages: ["Lanche"], active: true },
   { id: "kit5", name: "Combo Tradicional", description: "Croissant misto com refrigerante.", items: [{ productId: "prod29", qty: 1 }, { productId: "prod1", qty: 1 }], serviceFeePercent: 10, pages: ["Lanche"], active: true },
   { id: "kit6", name: "Combo Doce", description: "Brigadeiro gourmet com suco detox.", items: [{ productId: "prod27", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, pages: ["Lanche"], active: true },
-  { id: "kit7", name: "Marmita Executiva Frango", description: "Arroz, feijão, frango grelhado e legumes.", items: [{ productId: "prod36", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit8", name: "Marmita Executiva Carne", description: "Arroz, feijão, carne assada e legumes.", items: [{ productId: "prod37", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit9", name: "Opção Vegetariana", description: "Grão-de-bico, legumes e arroz integral.", items: [{ productId: "prod38", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit10", name: "Café da Manhã Completo", description: "Pão na chapa com café e salada de frutas.", items: [{ productId: "prod42", qty: 1 }, { productId: "prod30", qty: 1 }], serviceFeePercent: 10, mealServices: ["Café da manhã"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit11", name: "Tapioca e Suco", description: "Tapioca recheada com suco detox.", items: [{ productId: "prod43", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, mealServices: ["Café da manhã"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit12", name: "Lanche da Tarde", description: "Sanduíche natural com sobremesa do dia.", items: [{ productId: "prod32", qty: 1 }, { productId: "prod39", qty: 1 }], serviceFeePercent: 10, mealServices: ["Lanche"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit13", name: "Sopa da Noite", description: "Sopa quente do dia.", items: [{ productId: "prod40", qty: 1 }], serviceFeePercent: 10, mealServices: ["Janta", "Ceia"], pages: ["Consumo Catraca"], active: true },
-  { id: "kit14", name: "Vitamina e Pão", description: "Mingau/vitamina com pão na chapa.", items: [{ productId: "prod41", qty: 1 }, { productId: "prod42", qty: 1 }], serviceFeePercent: 10, mealServices: ["Ceia"], pages: ["Consumo Catraca"], active: true },
+  { id: "kit7", name: "Marmita Executiva Frango", description: "Arroz, feijão, frango grelhado e legumes.", items: [{ productId: "prod36", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Marmitex"], active: true },
+  { id: "kit8", name: "Marmita Executiva Carne", description: "Arroz, feijão, carne assada e legumes.", items: [{ productId: "prod37", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Marmitex"], active: true },
+  { id: "kit9", name: "Opção Vegetariana", description: "Grão-de-bico, legumes e arroz integral.", items: [{ productId: "prod38", qty: 1 }], serviceFeePercent: 10, mealServices: ["Almoço", "Janta"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Marmitex"], active: true },
+  { id: "kit10", name: "Café da Manhã Completo", description: "Pão na chapa com café e salada de frutas.", items: [{ productId: "prod42", qty: 1 }, { productId: "prod30", qty: 1 }], serviceFeePercent: 10, mealServices: ["Café da manhã"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Normal"], active: true },
+  { id: "kit11", name: "Tapioca e Suco", description: "Tapioca recheada com suco detox.", items: [{ productId: "prod43", qty: 1 }, { productId: "prod34", qty: 1 }], serviceFeePercent: 10, mealServices: ["Café da manhã"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Normal"], active: true },
+  { id: "kit12", name: "Lanche da Tarde", description: "Sanduíche natural com sobremesa do dia.", items: [{ productId: "prod32", qty: 1 }, { productId: "prod39", qty: 1 }], serviceFeePercent: 10, mealServices: ["Lanche"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Normal"], active: true },
+  { id: "kit13", name: "Sopa da Noite", description: "Sopa quente do dia.", items: [{ productId: "prod40", qty: 1 }], serviceFeePercent: 10, mealServices: ["Janta", "Ceia"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Normal"], active: true },
+  { id: "kit14", name: "Vitamina e Pão", description: "Mingau/vitamina com pão na chapa.", items: [{ productId: "prod41", qty: 1 }, { productId: "prod42", qty: 1 }], serviceFeePercent: 10, mealServices: ["Ceia"], pages: ["Consumo Catraca", "Reserva de Refeição", "Refeição Normal"], active: true },
 ];
 
 const initialServiceCatalog: ServiceCatalogItem[] = [
@@ -744,7 +744,7 @@ function fullAccessPerms(): Record<string, PagePermission> {
   return out;
 }
 
-const ORDER_PAGES = ["pedido-coffee", "pedido-evento", "pedido-agua", "pedido-abastecimento", "surpreenda", "pedido-lanche", "pedido-servicos-diversos"];
+const ORDER_PAGES = ["pedido-coffee", "pedido-evento", "pedido-agua", "pedido-abastecimento", "surpreenda", "pedido-lanche", "pedido-servicos-diversos", "reserva-refeicao"];
 
 const initialProfiles: Profile[] = [
   {
