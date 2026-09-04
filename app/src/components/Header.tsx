@@ -55,15 +55,24 @@ const COLLAB_MENU_GROUPS: MenuGroup[] = [
 ];
 
 export function Header() {
-  const { notifications, markAllNotificationsRead, currentUser, currentProfile, hasPageAccess, operatingParameters } = useAppData();
+  const { notifications, markAllNotificationsRead, currentUser, currentProfile, hasPageAccess, operatingParameters, logout, setCurrentProfileId } = useAppData();
   const [notifOpen, setNotifOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const unread = notifications.filter((n) => !n.read).length;
 
-  const displayName = currentUser?.name ?? currentProfile?.name ?? "Visitante";
-  const hasAnyAdminAccess = APP_PAGES.filter((p) => p.group === "Painel Administrativo").some((p) => hasPageAccess(p.id));
-  const visibleMenuGroups = COLLAB_MENU_GROUPS.map((g) => ({ ...g, items: g.items.filter((it) => hasPageAccess(it.pageId)) })).filter((g) => g.items.length > 0);
+  const displayName = currentUser?.name ?? "Visitante";
+  const isAdmin = currentUser?.profileId === "prof-admin";
+  const isPreviewingOtherProfile = isAdmin && currentProfile?.id !== currentUser?.profileId;
+  const hasAnyAdminAccess = !!currentUser && APP_PAGES.filter((p) => p.group === "Painel Administrativo").some((p) => hasPageAccess(p.id));
+  const visibleMenuGroups = currentUser
+    ? COLLAB_MENU_GROUPS.map((g) => ({ ...g, items: g.items.filter((it) => hasPageAccess(it.pageId)) })).filter((g) => g.items.length > 0)
+    : [];
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <header className="app-header">
@@ -81,8 +90,9 @@ export function Header() {
         <div>
           <div className="app-header__name">Olá, {displayName}</div>
           <div className="app-header__subtitle">
-            Direct Eventos &bull; {currentProfile?.name ?? "Demonstração"}
-            {operatingParameters.extensionNumber && ` · Ramal ${operatingParameters.extensionNumber}`}
+            Direct Eventos
+            {currentUser && ` • ${currentProfile?.name ?? "Demonstração"}`}
+            {currentUser && operatingParameters.extensionNumber && ` · Ramal ${operatingParameters.extensionNumber}`}
           </div>
         </div>
       </div>
@@ -111,63 +121,70 @@ export function Header() {
         </div>
       )}
 
-      <nav className="app-header__nav">
-        {hasPageAccess("home") && <Link to="/" className="app-header__home-link">Home</Link>}
-        {hasPageAccess("pedidos") && <Link to="/pedidos">Pedidos</Link>}
-        <div className="app-header__divider" />
-        <Link to="/autocadastro" className="app-header__signup-link">
-          Cadastre-se
-        </Link>
-        <ProfileSwitcher />
-        {hasAnyAdminAccess && (
-          <Link to="/admin" className="app-header__admin-btn">
-            Painel Administrativo
-          </Link>
-        )}
-        <div className="app-header__notif">
-          <button
-            className="app-header__bell"
-            onClick={() => setNotifOpen((v) => !v)}
-            aria-label="Notificações"
-          >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#46526a" strokeWidth="2">
-              <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 01-3.46 0" />
-            </svg>
-            {unread > 0 && <span className="app-header__badge">{unread}</span>}
-          </button>
-          {notifOpen && (
-            <div className="app-header__dropdown">
-              <div className="app-header__dropdown-title">Notificações</div>
-              {notifications.map((n) => (
-                <div
-                  key={n.id}
-                  className="app-header__dropdown-item"
-                  style={n.link ? { cursor: "pointer" } : undefined}
-                  onClick={() => {
-                    if (!n.link) return;
-                    setNotifOpen(false);
-                    navigate(n.link);
-                  }}
-                >
-                  <div className="app-header__dropdown-item-title">{n.title}</div>
-                  <div className="app-header__dropdown-item-time">{n.time}</div>
-                </div>
-              ))}
-              <div className="app-header__dropdown-footer">
-                <button
-                  onClick={() => {
-                    markAllNotificationsRead();
-                    setNotifOpen(false);
-                  }}
-                >
-                  Marcar todas como lidas
-                </button>
-              </div>
-            </div>
+      {currentUser && (
+        <nav className="app-header__nav">
+          {hasPageAccess("home") && <Link to="/" className="app-header__home-link">Home</Link>}
+          {hasPageAccess("pedidos") && <Link to="/pedidos">Pedidos</Link>}
+          <div className="app-header__divider" />
+          {isPreviewingOtherProfile && (
+            <button className="app-header__signup-link" onClick={() => setCurrentProfileId(currentUser.profileId!)}>
+              Voltar para Administrador
+            </button>
           )}
-        </div>
-      </nav>
+          {isAdmin && <ProfileSwitcher />}
+          {hasAnyAdminAccess && (
+            <Link to="/admin" className="app-header__admin-btn">
+              Painel Administrativo
+            </Link>
+          )}
+          <button className="app-header__signup-link" onClick={handleLogout}>
+            Sair
+          </button>
+          <div className="app-header__notif">
+            <button
+              className="app-header__bell"
+              onClick={() => setNotifOpen((v) => !v)}
+              aria-label="Notificações"
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#46526a" strokeWidth="2">
+                <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 01-3.46 0" />
+              </svg>
+              {unread > 0 && <span className="app-header__badge">{unread}</span>}
+            </button>
+            {notifOpen && (
+              <div className="app-header__dropdown">
+                <div className="app-header__dropdown-title">Notificações</div>
+                {notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    className="app-header__dropdown-item"
+                    style={n.link ? { cursor: "pointer" } : undefined}
+                    onClick={() => {
+                      if (!n.link) return;
+                      setNotifOpen(false);
+                      navigate(n.link);
+                    }}
+                  >
+                    <div className="app-header__dropdown-item-title">{n.title}</div>
+                    <div className="app-header__dropdown-item-time">{n.time}</div>
+                  </div>
+                ))}
+                <div className="app-header__dropdown-footer">
+                  <button
+                    onClick={() => {
+                      markAllNotificationsRead();
+                      setNotifOpen(false);
+                    }}
+                  >
+                    Marcar todas como lidas
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </nav>
+      )}
     </header>
   );
 }
