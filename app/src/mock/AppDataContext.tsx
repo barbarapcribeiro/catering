@@ -45,7 +45,7 @@ import {
 import { computeProductPrice } from "./pricing";
 import { money } from "./money";
 
-const STORAGE_KEY = "direct-eventos-mock-v4";
+const STORAGE_KEY = "direct-eventos-mock-v5";
 
 interface StoredState {
   orders: Order[];
@@ -947,7 +947,7 @@ const initialCopas: Copa[] = [
     physicalLocation: "Térreo, ala leste",
     locationIds: ["loc1", "loc2", "loc3", "loc4"],
     costCenterCodes: ["CC001", "CC002"],
-    responsibleUserIds: ["user1", "user2", "user9"],
+    responsibleUserIds: ["user1", "user2", "user9", "user6"],
     slaHours: 2,
     quoteValidityHours: 48,
     operatingHours: WEEKDAYS.map((weekday) => ({ weekday, enabled: !["Sábado", "Domingo"].includes(weekday), start: "07:00", end: "19:00" })),
@@ -963,7 +963,7 @@ const initialCopas: Copa[] = [
     physicalLocation: "1º andar, ala norte",
     locationIds: ["loc5", "loc6"],
     costCenterCodes: ["CC003"],
-    responsibleUserIds: ["user1", "user9"],
+    responsibleUserIds: ["user1", "user9", "user6"],
     slaHours: 3,
     quoteValidityHours: 72,
     operatingHours: WEEKDAYS.map((weekday) => ({ weekday, enabled: !["Sábado", "Domingo"].includes(weekday), start: "08:00", end: "18:00" })),

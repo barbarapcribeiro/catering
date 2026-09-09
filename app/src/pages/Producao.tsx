@@ -21,12 +21,28 @@ const CAPACITY = 180;
 const KITCHEN_STATUSES = new Set(["Solicitado", "Em preparação", "Pronto para entrega"]);
 
 export function Producao() {
-  const { orders, updateOrder, costCenters, showToast, statusFlowVisibility, serviceParameters } = useAppData();
+  const { orders, updateOrder, costCenters, showToast, statusFlowVisibility, serviceParameters, currentUser, copas, branches } = useAppData();
 
-  const kitchenOrders = useMemo(
-    () => orders.filter((o) => KITCHEN_STATUSES.has(o.status) && statusFlowVisibility[o.status]),
-    [orders, statusFlowVisibility],
-  );
+  /** Copas pelas quais o usuário logado responde — por responsabilidade direta ou, na falta dela, pela(s) filial(is) associada(s). Vazio = sem restrição (perfis de supervisão, ex.: Administrador). */
+  const userCopas = useMemo(() => {
+    if (!currentUser) return [];
+    const byResponsibility = copas.filter((c) => c.active && c.responsibleUserIds.includes(currentUser.id));
+    if (byResponsibility.length > 0) return byResponsibility;
+    if (currentUser.branchIds && currentUser.branchIds.length > 0) {
+      return copas.filter((c) => c.active && currentUser.branchIds!.includes(c.branchId));
+    }
+    return [];
+  }, [copas, currentUser]);
+
+  const [selectedCopaId, setSelectedCopaId] = useState<string | null>(null);
+  const activeCopa = userCopas.find((c) => c.id === selectedCopaId) ?? userCopas[0] ?? null;
+  const branchName = (id: string) => branches.find((b) => b.id === id)?.name ?? "—";
+
+  const kitchenOrders = useMemo(() => {
+    let list = orders.filter((o) => KITCHEN_STATUSES.has(o.status) && statusFlowVisibility[o.status]);
+    if (activeCopa) list = list.filter((o) => !o.copaId || o.copaId === activeCopa.id);
+    return list;
+  }, [orders, statusFlowVisibility, activeCopa]);
 
   const [startedIds, setStartedIds] = useState<Set<string>>(new Set());
   const [filterTab, setFilterTab] = useState<FilterTab>("todos");
@@ -129,6 +145,29 @@ export function Producao() {
           <div>
             <h1 className="prod-title">Pedidos para Produção</h1>
             <div className="prod-subtitle">Acompanhe e organize os pedidos que devem entrar em produção.</div>
+            {userCopas.length > 1 && (
+              <label className="prod-copa-select">
+                Copa
+                <select
+                  value={activeCopa?.id ?? ""}
+                  onChange={(e) => {
+                    setSelectedCopaId(e.target.value);
+                    setSelectedId(null);
+                  }}
+                >
+                  {userCopas.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} · {branchName(c.branchId)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            {userCopas.length === 1 && activeCopa && (
+              <div className="prod-copa-badge">
+                📍 {activeCopa.name} · {branchName(activeCopa.branchId)}
+              </div>
+            )}
           </div>
           <div className="prod-top-actions">
             <div className="prod-search">
