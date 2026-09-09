@@ -598,6 +598,8 @@ export interface Copa {
   responsibleUserIds: string[];
   /** SLA: quantidade mínima de horas de antecedência para realizar o pedido. */
   slaHours: number;
+  /** Validade do orçamento em horas, contada a partir do envio ao cliente — máximo de 72h. */
+  quoteValidityHours: number;
   operatingHours: CopaOperatingHours[];
   /** Datas (ISO) não úteis e feriados. */
   nonBusinessDays: string[];

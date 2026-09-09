@@ -18,11 +18,14 @@ const EMPTY_FORM = {
   costCenterCodes: [] as string[],
   responsibleUserIds: [] as string[],
   slaHours: 2,
+  quoteValidityHours: 48,
   operatingHours: defaultHours(),
   nonBusinessDays: [] as string[],
   capacityPer30min: 10,
   active: true,
 };
+
+const MAX_QUOTE_VALIDITY_HOURS = 72;
 
 export function Copas() {
   const { copas, companies, branches, costCenters, locations, users, addCopa, updateCopa, removeCopa, showToast } = useAppData();
@@ -60,6 +63,7 @@ export function Copas() {
       costCenterCodes: c.costCenterCodes,
       responsibleUserIds: c.responsibleUserIds,
       slaHours: c.slaHours,
+      quoteValidityHours: c.quoteValidityHours,
       operatingHours: c.operatingHours,
       nonBusinessDays: c.nonBusinessDays,
       capacityPer30min: c.capacityPer30min,
@@ -99,7 +103,16 @@ export function Copas() {
     setForm((f) => ({ ...f, nonBusinessDays: f.nonBusinessDays.filter((d) => d !== date) }));
   };
 
-  const canSave = form.name.trim() && form.companyId && form.branchId && form.physicalLocation.trim() && form.responsibleUserIds.length > 0 && form.slaHours > 0 && form.capacityPer30min > 0;
+  const canSave =
+    form.name.trim() &&
+    form.companyId &&
+    form.branchId &&
+    form.physicalLocation.trim() &&
+    form.responsibleUserIds.length > 0 &&
+    form.slaHours > 0 &&
+    form.capacityPer30min > 0 &&
+    form.quoteValidityHours > 0 &&
+    form.quoteValidityHours <= MAX_QUOTE_VALIDITY_HOURS;
 
   const save = () => {
     if (!canSave) return;
@@ -160,6 +173,10 @@ export function Copas() {
               <div>
                 <span>Capacidade</span>
                 <strong>{c.capacityPer30min} pedidos / 30min</strong>
+              </div>
+              <div>
+                <span>Validade do orçamento</span>
+                <strong>{c.quoteValidityHours}h</strong>
               </div>
               <div>
                 <span>Dias de funcionamento</span>
@@ -279,7 +296,7 @@ export function Copas() {
               <UserChipSelect users={activeUsers} selectedIds={form.responsibleUserIds} onToggle={toggleResponsible} />
             </label>
 
-            <div className="copas-fields-grid">
+            <div className="copas-fields-grid copas-fields-grid--3">
               <label className="field-label">
                 SLA <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(horas mínimas de antecedência)</span>
                 <input type="number" min={0} value={form.slaHours} onChange={(e) => setForm({ ...form, slaHours: Number(e.target.value) })} />
@@ -287,6 +304,17 @@ export function Copas() {
               <label className="field-label">
                 Capacidade produtiva <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(pedidos a cada 30min)</span>
                 <input type="number" min={0} value={form.capacityPer30min} onChange={(e) => setForm({ ...form, capacityPer30min: Number(e.target.value) })} />
+              </label>
+              <label className="field-label">
+                Validade do orçamento <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(horas, máximo de {MAX_QUOTE_VALIDITY_HOURS}h)</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={MAX_QUOTE_VALIDITY_HOURS}
+                  value={form.quoteValidityHours}
+                  onChange={(e) => setForm({ ...form, quoteValidityHours: Math.min(MAX_QUOTE_VALIDITY_HOURS, Number(e.target.value)) })}
+                />
+                {form.quoteValidityHours > MAX_QUOTE_VALIDITY_HOURS && <span className="field-hint">Valor máximo permitido: {MAX_QUOTE_VALIDITY_HOURS}h.</span>}
               </label>
             </div>
 

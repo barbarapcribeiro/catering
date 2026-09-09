@@ -104,6 +104,10 @@
   gap: 14px;
 }
 
+.copas-fields-grid--3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
 .copas-chip-row {
   display: flex;
   flex-wrap: wrap;
@@ -228,7 +232,8 @@
 }
 
 @media (max-width: 560px) {
-  .copas-fields-grid {
+  .copas-fields-grid,
+  .copas-fields-grid--3 {
     grid-template-columns: 1fr;
   }
   .copas-hours-row {
