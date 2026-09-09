@@ -45,7 +45,7 @@ import {
 import { computeProductPrice } from "./pricing";
 import { money } from "./money";
 
-const STORAGE_KEY = "direct-eventos-mock-v3";
+const STORAGE_KEY = "direct-eventos-mock-v4";
 
 interface StoredState {
   orders: Order[];
