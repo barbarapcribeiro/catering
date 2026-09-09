@@ -16,7 +16,7 @@ const PAYMENTS = [
 ];
 
 export function ServicosDiversosOrder() {
-  const { addOrder, showToast, costCenters, serviceCatalog, orders } = useAppData();
+  const { addOrder, showToast, costCenters, serviceCatalog, orders, currentUser } = useAppData();
   const navigate = useNavigate();
   const routerLocation = useLocation();
   const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
@@ -112,6 +112,7 @@ export function ServicosDiversosOrder() {
       value: money(total),
       valueNumber: total,
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
+      requestedByUserId: currentUser?.id,
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: [`Forma de pagamento: ${paymentDef?.label ?? "—"}`, observations && `Observações: ${observations}`].filter(Boolean).join(" · "),
       attachments: attachments.length ? attachments : undefined,

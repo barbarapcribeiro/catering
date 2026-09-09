@@ -216,6 +216,7 @@ export function Surpreenda() {
       branchId,
       locationId,
       copaId,
+      requestedByUserId: currentUser?.id,
       eventTime,
       dietaryRestrictions: hasDietary ? dietaryDetails || "Sim, sem detalhes" : "Nenhuma",
       notes: `Forma de pagamento: ${paymentLabel}${obs ? " • " + obs : ""}`,

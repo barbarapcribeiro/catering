@@ -7,7 +7,7 @@ import { WhatsAppButton } from "../components/WhatsAppButton";
 import { useAppData } from "../mock/AppDataContext";
 import { STATUS_STYLE } from "../mock/services";
 import { money } from "../mock/money";
-import { gestorApprovalMessage, guApprovalMessage } from "../mock/whatsapp";
+import { gestorApprovalMessage, gestorForOrder, guApprovalMessage, guForCopa } from "../mock/whatsapp";
 import type { Order } from "../types";
 import "./OrderFlow.css";
 import "./Aprovacoes.css";
@@ -32,23 +32,6 @@ function getDisplayItems(o: Order): DisplayItem[] {
   return [{ key: "single", name: o.type, qty: 1, unit, total: unit }];
 }
 
-// The prototype's mock orders each carry a fixed "gestor" (client manager) name.
-// The shared Order model has no such field yet, so approver names are derived
-// from the order category as a reasonable mock stand-in; GU (production unit)
-// approval always goes through the same production reviewer.
-const GESTOR_BY_CATEGORY: Record<string, string> = {
-  "Coffee Break": "Carlos Santos",
-  "Evento Especial": "Paula Costa",
-  Evento: "Paula Costa",
-  Lanche: "Ana Beatriz Lima",
-};
-const DEFAULT_GESTOR = "Ana Beatriz Lima";
-const GU_NAME = "Marina Silva";
-
-function gestorNameFor(order: Order) {
-  return GESTOR_BY_CATEGORY[order.category] ?? DEFAULT_GESTOR;
-}
-
 function orderCode(order: Order) {
   return order.id.replace(/^#/, "");
 }
@@ -60,7 +43,7 @@ function eventDateOf(order: Order) {
 
 export function Aprovacoes() {
   const navigate = useNavigate();
-  const { orders, updateOrder, showToast, operatingParameters, serviceParameters } = useAppData();
+  const { orders, updateOrder, showToast, operatingParameters, serviceParameters, costCenters, copas, users } = useAppData();
   const [viewOrder, setViewOrder] = useState<Order | null>(null);
 
   // "Pendente" here means the order still needs approval — once the GU step is
@@ -109,6 +92,8 @@ export function Aprovacoes() {
           <div className="apr-list">
             {pendingOrders.map((o) => {
               const st = STATUS_STYLE[o.status] || { bg: "#eee", color: "#555" };
+              const gestor = gestorForOrder(o, costCenters, users);
+              const gu = guForCopa(o.copaId, copas, users);
               return (
                 <div key={o.id} className="apr-card">
                   <div className="apr-card__header">
@@ -179,11 +164,11 @@ export function Aprovacoes() {
                     <div className="apr-approval-row">
                       <div className="apr-approval-row__info">
                         <div className="apr-approval-row__label">Aprovação do Gestor</div>
-                        <div className="apr-approval-row__name">{gestorNameFor(o)}</div>
+                        <div className="apr-approval-row__name">{gestor?.name ?? "Sem gestor definido no centro de custo"}</div>
                       </div>
                       <div className="apr-approval-row__actions">
-                        {!o.managerApproved && (
-                          <WhatsAppButton message={gestorApprovalMessage(o, gestorNameFor(o))} label="Cutucar" />
+                        {!o.managerApproved && gestor && (
+                          <WhatsAppButton message={gestorApprovalMessage(o, gestor.name)} phone={gestor.phone} label="Cutucar" />
                         )}
                         <button
                           className={`apr-approve-btn ${o.managerApproved ? "is-approved" : ""}`}
@@ -201,11 +186,11 @@ export function Aprovacoes() {
                       <div className="apr-approval-row">
                         <div className="apr-approval-row__info">
                           <div className="apr-approval-row__label">Aprovação GU Produção</div>
-                          <div className="apr-approval-row__name">{GU_NAME}</div>
+                          <div className="apr-approval-row__name">{gu?.name ?? "Sem GU responsável pela copa"}</div>
                         </div>
                         <div className="apr-approval-row__actions">
-                          {!o.guApproved && (
-                            <WhatsAppButton message={guApprovalMessage(o, GU_NAME)} label="Cutucar" />
+                          {!o.guApproved && gu && (
+                            <WhatsAppButton message={guApprovalMessage(o, gu.name)} phone={gu.phone} label="Cutucar" />
                           )}
                           <button
                             className={`apr-approve-btn ${o.guApproved ? "is-approved" : ""}`}

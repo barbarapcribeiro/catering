@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAppData } from "../../mock/AppDataContext";
 import { money } from "../../mock/money";
-import type { QuoteItem } from "../../types";
+import { WhatsAppButton } from "../../components/WhatsAppButton";
+import { orderStatusMessage, requesterPhone } from "../../mock/whatsapp";
+import type { Order, QuoteItem } from "../../types";
 import "../OrderFlow.css";
 import "./Kits.css";
 import "./OrcamentoBuilder.css";
@@ -12,7 +14,7 @@ type PickerTab = "produtos" | "kits" | "servicos";
 export function OrcamentoBuilder() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { quoteRequests, updateQuoteRequest, products, kits, serviceCatalog, orders, addOrder, updateOrder, addNotification, showToast } = useAppData();
+  const { quoteRequests, updateQuoteRequest, products, kits, serviceCatalog, orders, addOrder, updateOrder, addNotification, showToast, users } = useAppData();
 
   const quote = quoteRequests.find((q) => q.id === id);
 
@@ -26,6 +28,7 @@ export function OrcamentoBuilder() {
   const [customPrice, setCustomPrice] = useState("");
   const [feePercent, setFeePercent] = useState("10");
   const [guNotes, setGuNotes] = useState("");
+  const [sentOrder, setSentOrder] = useState<Order | null>(null);
 
   const startedRef = useRef(false);
   useEffect(() => {
@@ -112,10 +115,18 @@ export function OrcamentoBuilder() {
   }
 
   if (quote.status === "Enviado para aprovação" || quote.status === "Aprovado" || quote.status === "Rejeitado" || quote.status === "Cancelado") {
+    const phone = requesterPhone(quote.requestedByUserId, users);
     return (
       <div className="orc-builder-page">
-        <div className="empty-state">Esse orçamento já foi enviado ao cliente. Acompanhe pelo pedido {quote.orderId} em Gerenciar Pedidos.</div>
-        <button className="btn btn--outline" onClick={() => navigate("/admin/orcamentos")}>
+        <div className="empty-state">
+          {sentOrder ? "Orçamento enviado com sucesso!" : "Esse orçamento já foi enviado ao cliente."} Acompanhe pelo pedido {quote.orderId} em Gerenciar Pedidos.
+        </div>
+        {sentOrder && (
+          <div style={{ marginTop: 14 }}>
+            <WhatsAppButton message={orderStatusMessage(sentOrder)} phone={phone} label="Avisar cliente por WhatsApp" />
+          </div>
+        )}
+        <button className="btn btn--outline" onClick={() => navigate("/admin/orcamentos")} style={{ marginTop: 14 }}>
           Voltar
         </button>
       </div>
@@ -152,8 +163,10 @@ export function OrcamentoBuilder() {
     const isRevision = quote.status === "Editado" && !!existingOrder;
 
     let orderId: string;
+    let finalOrder: Order;
     if (isRevision && existingOrder) {
       orderId = existingOrder.id;
+      finalOrder = { ...existingOrder, value: money(total), valueNumber: total, items: allItems, notes: guNotes || undefined };
       updateOrder(existingOrder.id, {
         value: money(total),
         valueNumber: total,
@@ -179,8 +192,10 @@ export function OrcamentoBuilder() {
         notes: guNotes || undefined,
         costCenters: quote.costCenterCode ? [{ code: quote.costCenterCode, percent: 100 }] : undefined,
         quoteRequestId: quote.id,
+        requestedByUserId: quote.requestedByUserId,
       });
       orderId = created.id;
+      finalOrder = created;
     }
 
     updateQuoteRequest(quote.id, {
@@ -194,7 +209,7 @@ export function OrcamentoBuilder() {
     });
     addNotification(`Orçamento enviado para aprovação — pedido ${orderId}.`);
     showToast("Orçamento enviado ao cliente!");
-    navigate("/admin/orcamentos");
+    setSentOrder(finalOrder);
   };
 
   return (

@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { OpenOrdersCard, PromosSection, RecentOrdersCard } from "../components/HomeWidgets";
+import { WhatsAppButton } from "../components/WhatsAppButton";
 import { useAppData } from "../mock/AppDataContext";
+import { orderStatusMessage, requesterPhone, utensilsRetrievedMessage } from "../mock/whatsapp";
 import "./HomePersona.css";
 
 export function HomeCopeira() {
   const navigate = useNavigate();
-  const { orders, currentUser, updateOrder, showToast } = useAppData();
+  const { orders, currentUser, updateOrder, showToast, users } = useAppData();
 
   const readyForDelivery = orders.filter((o) => o.status === "Pronto para entrega");
   const pendingUtensils = orders.filter((o) => o.pickupDate && !o.utensilsRetrieved && (o.status === "Entregue" || o.status === "Finalizado"));
@@ -66,6 +68,11 @@ export function HomeCopeira() {
                   </div>
                   <div className="persona-home__list-value">{o.value}</div>
                   <div className="persona-home__list-actions">
+                    <WhatsAppButton
+                      message={orderStatusMessage({ ...o, status: "Entregue" })}
+                      phone={requesterPhone(o.requestedByUserId, users)}
+                      label="Avisar entrega"
+                    />
                     <button className="btn btn--primary btn--sm" onClick={() => markDelivered(o.id)}>
                       Marcar como entregue
                     </button>
@@ -93,6 +100,11 @@ export function HomeCopeira() {
                   </div>
                   <div />
                   <div className="persona-home__list-actions">
+                    <WhatsAppButton
+                      message={utensilsRetrievedMessage(o)}
+                      phone={requesterPhone(o.requestedByUserId, users)}
+                      label="Avisar recolhimento"
+                    />
                     <button className="btn btn--outline btn--sm" onClick={() => markUtensilsRetrieved(o.id)}>
                       Marcar utensílios recolhidos
                     </button>

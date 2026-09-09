@@ -317,6 +317,7 @@ export function EventoEspecialOrder() {
       branchId,
       locationId,
       copaId,
+      requestedByUserId: currentUser?.id,
       eventTime,
       pickupDate,
       pickupTime,

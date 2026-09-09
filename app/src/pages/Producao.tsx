@@ -3,7 +3,7 @@ import { Layout } from "../components/Layout";
 import { formatSize } from "../components/AttachmentsField";
 import { WhatsAppButton } from "../components/WhatsAppButton";
 import { useAppData } from "../mock/AppDataContext";
-import { orderStatusMessage } from "../mock/whatsapp";
+import { orderStatusMessage, requesterPhone } from "../mock/whatsapp";
 import type { Order } from "../types";
 import "./Producao.css";
 
@@ -21,7 +21,7 @@ const CAPACITY = 180;
 const KITCHEN_STATUSES = new Set(["Solicitado", "Em preparação", "Pronto para entrega"]);
 
 export function Producao() {
-  const { orders, updateOrder, costCenters, showToast, statusFlowVisibility, serviceParameters, currentUser, copas, branches } = useAppData();
+  const { orders, updateOrder, costCenters, showToast, statusFlowVisibility, serviceParameters, currentUser, copas, branches, users } = useAppData();
 
   /** Copas pelas quais o usuário logado responde — por responsabilidade direta ou, na falta dela, pela(s) filial(is) associada(s). Vazio = sem restrição (perfis de supervisão, ex.: Administrador). */
   const userCopas = useMemo(() => {
@@ -311,7 +311,7 @@ export function Producao() {
                     {bucketOf(selected) === "producao" ? "Em produção" : selected.status}
                   </span>
                   <div style={{ marginTop: 10 }}>
-                    <WhatsAppButton message={orderStatusMessage(selected)} label="Avisar status" />
+                    <WhatsAppButton message={orderStatusMessage(selected)} phone={requesterPhone(selected.requestedByUserId, users)} label="Avisar status" />
                   </div>
                 </div>
 

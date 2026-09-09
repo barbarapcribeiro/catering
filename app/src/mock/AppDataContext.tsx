@@ -45,7 +45,7 @@ import {
 import { computeProductPrice } from "./pricing";
 import { money } from "./money";
 
-const STORAGE_KEY = "direct-eventos-mock-v5";
+const STORAGE_KEY = "direct-eventos-mock-v7";
 
 interface StoredState {
   orders: Order[];
@@ -232,6 +232,9 @@ const initialOrders: Order[] = [
     items: [{ name: "Kit Aniversariantes do Mês", qty: 1, price: 250 }],
     eventName: "Aniversariantes de Setembro",
     location: "Sala 2",
+    branchId: "branch1",
+    locationId: "loc2",
+    copaId: "copa1",
     eventTime: "16:00",
     costCenters: [{ code: "CC002", percent: 100 }],
     requiresApproval: true,
@@ -253,6 +256,7 @@ const initialOrders: Order[] = [
     eventName: "Happy Hour Comercial",
     location: "Sala 3",
     eventTime: "18:30",
+    requestedByUserId: "user5",
     pickupDate: "2026-09-04",
     pickupTime: "09:00",
     costCenters: [{ code: "CC002", percent: 100 }],
@@ -276,6 +280,7 @@ const initialOrders: Order[] = [
     eventName: "Ceia de Confraternização",
     location: "Sala 1",
     eventTime: "19:00",
+    requestedByUserId: "user5",
     pickupDate: "2026-08-27",
     pickupTime: "10:00",
     utensilsRetrieved: false,
@@ -885,15 +890,15 @@ const initialProfiles: Profile[] = [
 const DEMO_PASSWORD = "123456";
 
 const initialUsers: AppUser[] = [
-  { id: "user1", name: "Bárbara C. Ribeiro", email: "barbara.ribeiro@sparkxp.com", password: DEMO_PASSWORD, profileId: "prof-gu", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-01-12T09:00:00Z" },
-  { id: "user2", name: "Marina Silva", email: "marina.silva@sparkxp.com", password: DEMO_PASSWORD, profileId: "prof-gu", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-02-03T09:00:00Z" },
-  { id: "user3", name: "Carlos Santos", email: "carlos.santos@clienteempresa.com", password: DEMO_PASSWORD, profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC001"], active: true, createdAt: "2026-02-10T09:00:00Z" },
-  { id: "user4", name: "Paula Costa", email: "paula.costa@clienteempresa.com", password: DEMO_PASSWORD, profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC002"], active: true, createdAt: "2026-02-10T09:00:00Z" },
-  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", password: DEMO_PASSWORD, profileId: "prof-cliente", companyId: "comp1", branchIds: ["branch1", "branch2"], costCenterCodes: ["CC001", "CC003"], copaIds: ["copa1", "copa2"], active: true, createdAt: "2026-03-01T09:00:00Z" },
-  { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sparkxp.com", password: DEMO_PASSWORD, profileId: "prof-producao", companyId: "comp1", branchIds: ["branch2"], active: true, createdAt: "2026-03-05T09:00:00Z" },
-  { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sparkxp.com", password: DEMO_PASSWORD, profileId: "prof-faturamento", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-08T09:00:00Z" },
-  { id: "user8", name: "Administrador do Sistema", email: "admin@sparkxp.com", password: DEMO_PASSWORD, profileId: "prof-admin", companyId: "comp1", branchIds: ["branch1", "branch2"], active: true, createdAt: "2026-01-01T09:00:00Z" },
-  { id: "user9", name: "Rosana Alves", email: "rosana.alves@sparkxp.com", password: DEMO_PASSWORD, profileId: "prof-copeira", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-10T09:00:00Z" },
+  { id: "user1", name: "Bárbara C. Ribeiro", email: "barbara.ribeiro@sparkxp.com", password: DEMO_PASSWORD, phone: { country: "55", ddd: "11", number: "91234-5001" }, profileId: "prof-gu", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-01-12T09:00:00Z" },
+  { id: "user2", name: "Marina Silva", email: "marina.silva@sparkxp.com", password: DEMO_PASSWORD, phone: { country: "55", ddd: "11", number: "91234-5002" }, profileId: "prof-gu", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-02-03T09:00:00Z" },
+  { id: "user3", name: "Carlos Santos", email: "carlos.santos@clienteempresa.com", password: DEMO_PASSWORD, phone: { country: "55", ddd: "11", number: "91234-5003" }, profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC001"], active: true, createdAt: "2026-02-10T09:00:00Z" },
+  { id: "user4", name: "Paula Costa", email: "paula.costa@clienteempresa.com", password: DEMO_PASSWORD, phone: { country: "55", ddd: "11", number: "91234-5004" }, profileId: "prof-gestor", companyId: "comp1", branchIds: ["branch1"], costCenterCodes: ["CC002"], active: true, createdAt: "2026-02-10T09:00:00Z" },
+  { id: "user5", name: "Ana Beatriz Lima", email: "ana.lima@clienteempresa.com", password: DEMO_PASSWORD, phone: { country: "55", ddd: "11", number: "91234-5005" }, profileId: "prof-cliente", companyId: "comp1", branchIds: ["branch1", "branch2"], costCenterCodes: ["CC001", "CC003"], copaIds: ["copa1", "copa2"], active: true, createdAt: "2026-03-01T09:00:00Z" },
+  { id: "user6", name: "João Pedro Nunes", email: "joao.nunes@sparkxp.com", password: DEMO_PASSWORD, phone: { country: "55", ddd: "11", number: "91234-5006" }, profileId: "prof-producao", companyId: "comp1", branchIds: ["branch2"], active: true, createdAt: "2026-03-05T09:00:00Z" },
+  { id: "user7", name: "Fernanda Costa", email: "fernanda.costa@sparkxp.com", password: DEMO_PASSWORD, phone: { country: "55", ddd: "11", number: "91234-5007" }, profileId: "prof-faturamento", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-08T09:00:00Z" },
+  { id: "user8", name: "Administrador do Sistema", email: "admin@sparkxp.com", password: DEMO_PASSWORD, phone: { country: "55", ddd: "11", number: "91234-5008" }, profileId: "prof-admin", companyId: "comp1", branchIds: ["branch1", "branch2"], active: true, createdAt: "2026-01-01T09:00:00Z" },
+  { id: "user9", name: "Rosana Alves", email: "rosana.alves@sparkxp.com", password: DEMO_PASSWORD, phone: { country: "55", ddd: "11", number: "91234-5009" }, profileId: "prof-copeira", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-10T09:00:00Z" },
 ];
 
 const initialSegments: Segment[] = [

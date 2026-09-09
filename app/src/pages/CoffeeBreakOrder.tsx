@@ -271,6 +271,7 @@ export function CoffeeBreakOrder() {
       branchId,
       locationId,
       copaId,
+      requestedByUserId: currentUser?.id,
       eventTime,
       pickupDate,
       pickupTime,

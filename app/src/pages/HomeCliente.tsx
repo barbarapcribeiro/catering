@@ -93,6 +93,7 @@ export function HomeCliente() {
       datetime: `${form.date || "A definir"} ${form.time || ""}`.trim(),
       notes: form.notes || undefined,
       attachments: form.attachments.length ? form.attachments : undefined,
+      requestedByUserId: currentUser?.id,
     });
     setModal(null);
     showToast("Pedido solicitado com sucesso!");

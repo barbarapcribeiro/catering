@@ -1,4 +1,4 @@
-import type { Order, PhoneNumber } from "../types";
+import type { AppUser, Copa, CostCenter, Occurrence, Order, PhoneNumber } from "../types";
 
 /** Monta um link wa.me com a mensagem pré-preenchida. Sem telefone, o wa.me deixa a pessoa
  * escolher o contato dentro do próprio WhatsApp — por isso o telefone é opcional aqui. */
@@ -102,6 +102,71 @@ export function gestorApprovalMessage(order: Order, gestorName: string): string 
     `⏰ Entrega: ${formatShortDateTime(order.datetime)}`,
     "",
     "Aprova aí? 👇",
+  ].join("\n");
+}
+
+/** Telefone de quem fez o pedido/orçamento, para direcionar o link do WhatsApp direto à pessoa certa. */
+export function requesterPhone(requestedByUserId: string | undefined, users: AppUser[]): PhoneNumber | undefined {
+  return users.find((u) => u.id === requestedByUserId)?.phone;
+}
+
+/** GU responsável pela copa do pedido — primeiro usuário com perfil GU listado como responsável na Copa. */
+export function guForCopa(copaId: string | undefined, copas: Copa[], users: AppUser[]): AppUser | undefined {
+  const copa = copas.find((c) => c.id === copaId);
+  if (!copa) return undefined;
+  return users.find((u) => u.active && u.profileId === "prof-gu" && copa.responsibleUserIds.includes(u.id));
+}
+
+/** Gestor aprovador do pedido — responsável (managerUserId) do centro de custo usado no pedido. */
+export function gestorForOrder(order: Order, costCenters: CostCenter[], users: AppUser[]): AppUser | undefined {
+  const code = order.costCenters?.[0]?.code;
+  const cc = code ? costCenters.find((c) => c.code === code) : undefined;
+  if (!cc?.managerUserId) return undefined;
+  return users.find((u) => u.id === cc.managerUserId && u.active);
+}
+
+export function utensilsRetrievedMessage(order: Order): string {
+  return [
+    HEADER,
+    "",
+    "Tudo certo! 🧺",
+    `Já recolhemos os utensílios do pedido ${order.id} (${order.category}).`,
+    "",
+    "Obrigado por avisar e até a próxima!",
+  ].join("\n");
+}
+
+/** GU ou Administrador responsável pela ocorrência — via copa do pedido vinculado, quando houver. */
+export function occurrenceResponsible(occurrence: Occurrence, orders: Order[], copas: Copa[], users: AppUser[]): AppUser | undefined {
+  const order = occurrence.orderId ? orders.find((o) => o.id === occurrence.orderId) : undefined;
+  if (!order?.copaId) return undefined;
+  const copa = copas.find((c) => c.id === order.copaId);
+  if (!copa) return undefined;
+  return users.find((u) => u.active && (u.profileId === "prof-gu" || u.profileId === "prof-admin") && copa.responsibleUserIds.includes(u.id));
+}
+
+export function occurrenceAlertMessage(occurrence: Occurrence, order?: Order): string {
+  return [
+    HEADER,
+    "",
+    "⚠️ Ocorrência aberta",
+    order ? `Pedido ${order.id} (${order.category})` : occurrence.orderId ? `Pedido ${occurrence.orderId}` : "Sem pedido vinculado",
+    `Tipo: ${occurrence.type} · Severidade: ${occurrence.severity}`,
+    "",
+    occurrence.description,
+    "",
+    "Dá uma olhada assim que possível?",
+  ].join("\n");
+}
+
+export function surveyInviteMessage(order: Order, surveyUrl: string): string {
+  return [
+    HEADER,
+    "",
+    `Como foi o pedido ${order.id} (${order.category})? ⭐`,
+    "Responde rapidinho nossa pesquisa de satisfação:",
+    "",
+    surveyUrl,
   ].join("\n");
 }
 

@@ -23,7 +23,7 @@ const MANUAL_PAYMENTS = [
 ];
 
 export function ReservaRefeicao() {
-  const { addOrder, showToast, costCenters, kits, products, serviceCatalog } = useAppData();
+  const { addOrder, showToast, costCenters, kits, products, serviceCatalog, currentUser } = useAppData();
   const navigate = useNavigate();
 
   const activeCostCenters = costCenters.filter((c) => c.active);
@@ -118,6 +118,7 @@ export function ReservaRefeicao() {
       value: money(total),
       valueNumber: total,
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
+      requestedByUserId: currentUser?.id,
       costCenters: paymentMode === "centro" ? [{ code: costCenter, percent: 100 }] : undefined,
       notes: `Forma de pagamento: ${paymentLabel}`,
       attachments: attachments.length ? attachments : undefined,

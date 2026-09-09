@@ -6,7 +6,7 @@ import { formatSize } from "../components/AttachmentsField";
 import { WhatsAppButton } from "../components/WhatsAppButton";
 import { useAppData } from "../mock/AppDataContext";
 import { STATUS_STYLE } from "../mock/services";
-import { orderStatusMessage } from "../mock/whatsapp";
+import { orderStatusMessage, requesterPhone, surveyInviteMessage } from "../mock/whatsapp";
 import { money } from "../mock/money";
 import { OCCURRENCE_TYPES, type Order, type OccurrenceType } from "../types";
 import "./GerenciarPedidos.css";
@@ -88,6 +88,7 @@ export function GerenciarPedidos() {
     serviceParameters,
     quoteRequests,
     updateQuoteRequest,
+    users,
   } = useAppData();
   const navigate = useNavigate();
 
@@ -404,7 +405,7 @@ export function GerenciarPedidos() {
                     </div>
                   </div>
                   <div className="gp-quick-actions">
-                    <WhatsAppButton message={orderStatusMessage(selected)} label="Avisar status" />
+                    <WhatsAppButton message={orderStatusMessage(selected)} phone={requesterPhone(selected.requestedByUserId, users)} label="Avisar status" />
                     <button className="btn btn--outline gp-quick-actions__btn" onClick={() => setQuickActionsOpen((v) => !v)}>
                       Ações rápidas
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#46526a" strokeWidth="2">
@@ -813,6 +814,13 @@ export function GerenciarPedidos() {
               <button className="btn btn--outline" onClick={() => navigate(`/pesquisa-pedido/${selected.id.replace(/^#/, "")}`)}>
                 ⭐ Simular pesquisa (QR code)
               </button>
+            )}
+            {(selected.status === "Entregue" || selected.status === "Finalizado") && (
+              <WhatsAppButton
+                message={surveyInviteMessage(selected, `${window.location.origin}/pesquisa-pedido/${selected.id.replace(/^#/, "")}`)}
+                phone={requesterPhone(selected.requestedByUserId, users)}
+                label="Enviar pesquisa por WhatsApp"
+              />
             )}
             {selected.status === "Entregue" && (
               <button className="btn btn--outline gp-action-bar__primary-outline" onClick={finalize}>

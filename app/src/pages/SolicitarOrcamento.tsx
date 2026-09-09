@@ -118,6 +118,7 @@ export function SolicitarOrcamento() {
       decorationNotes: decoration.trim() || undefined,
       costCenterCode: costCenter || undefined,
       requestedBy: currentUser?.name,
+      requestedByUserId: currentUser?.id,
     });
     addNotification("Nova solicitação de orçamento recebida — aguardando montagem pela GU.");
     showToast("Solicitação enviada! Você será avisado quando o orçamento estiver pronto.");

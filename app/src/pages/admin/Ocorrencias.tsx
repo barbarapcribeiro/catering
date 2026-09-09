@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useAppData } from "../../mock/AppDataContext";
 import { Modal } from "../../components/Modal";
+import { WhatsAppButton } from "../../components/WhatsAppButton";
+import { occurrenceAlertMessage, occurrenceResponsible } from "../../mock/whatsapp";
 import { OCCURRENCE_SEVERITIES, OCCURRENCE_STATUSES, OCCURRENCE_TYPES, type Occurrence, type OccurrenceSeverity, type OccurrenceStatus, type OccurrenceType } from "../../types";
 import "./Ocorrencias.css";
 
@@ -32,7 +34,7 @@ function formatDateTime(iso: string) {
 }
 
 export function Ocorrencias() {
-  const { occurrences, orders, addOccurrence, updateOccurrence, removeOccurrence, showToast } = useAppData();
+  const { occurrences, orders, addOccurrence, updateOccurrence, removeOccurrence, showToast, copas, users } = useAppData();
   const [statusFilter, setStatusFilter] = useState<"todas" | OccurrenceStatus>("todas");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -121,35 +123,43 @@ export function Ocorrencias() {
             <div>Status</div>
             <div>Ações</div>
           </div>
-          {filtered.map((o) => (
-            <div key={o.id} className="ocorrencias-table__row">
-              <div>
-                <div className="ocorrencias-table__type">{o.type}</div>
-                <div className="ocorrencias-table__desc">{o.description}</div>
-                {o.reportedBy && <div className="ocorrencias-table__reporter">Relatado por {o.reportedBy}</div>}
+          {filtered.map((o) => {
+            const responsible = occurrenceResponsible(o, orders, copas, users);
+            const relatedOrder = o.orderId ? orders.find((ord) => ord.id === o.orderId) : undefined;
+            const canAlert = o.status === "Aberta" || o.status === "Em análise";
+            return (
+              <div key={o.id} className="ocorrencias-table__row">
+                <div>
+                  <div className="ocorrencias-table__type">{o.type}</div>
+                  <div className="ocorrencias-table__desc">{o.description}</div>
+                  {o.reportedBy && <div className="ocorrencias-table__reporter">Relatado por {o.reportedBy}</div>}
+                </div>
+                <div className="ocorrencias-table__muted">{o.orderId || "—"}</div>
+                <div>
+                  <span className="status-pill" style={{ background: SEVERITY_STYLE[o.severity].bg, color: SEVERITY_STYLE[o.severity].color }}>
+                    {o.severity}
+                  </span>
+                </div>
+                <div className="ocorrencias-table__muted">{formatDateTime(o.createdAt)}</div>
+                <div>
+                  <span className="status-pill" style={{ background: STATUS_STYLE[o.status].bg, color: STATUS_STYLE[o.status].color }}>
+                    {o.status}
+                  </span>
+                </div>
+                <div className="ocorrencias-table__actions">
+                  {canAlert && responsible && (
+                    <WhatsAppButton message={occurrenceAlertMessage(o, relatedOrder)} phone={responsible.phone} label={`Avisar ${responsible.name.split(" ")[0]}`} />
+                  )}
+                  <button className="link" onClick={() => openEdit(o)}>
+                    Editar
+                  </button>
+                  <button className="ocorrencias-remove-btn" onClick={() => remove(o)}>
+                    Remover
+                  </button>
+                </div>
               </div>
-              <div className="ocorrencias-table__muted">{o.orderId || "—"}</div>
-              <div>
-                <span className="status-pill" style={{ background: SEVERITY_STYLE[o.severity].bg, color: SEVERITY_STYLE[o.severity].color }}>
-                  {o.severity}
-                </span>
-              </div>
-              <div className="ocorrencias-table__muted">{formatDateTime(o.createdAt)}</div>
-              <div>
-                <span className="status-pill" style={{ background: STATUS_STYLE[o.status].bg, color: STATUS_STYLE[o.status].color }}>
-                  {o.status}
-                </span>
-              </div>
-              <div className="ocorrencias-table__actions">
-                <button className="link" onClick={() => openEdit(o)}>
-                  Editar
-                </button>
-                <button className="ocorrencias-remove-btn" onClick={() => remove(o)}>
-                  Remover
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {filtered.length === 0 && <div className="empty-state">Nenhuma ocorrência encontrada.</div>}
         </div>
       </div>

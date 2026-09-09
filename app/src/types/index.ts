@@ -60,6 +60,8 @@ export interface Order {
   locationId?: string;
   /** Copa responsável por atender o pedido, definida pela localização de entrega. */
   copaId?: string;
+  /** Usuário que fez o pedido — usado para direcionar avisos de WhatsApp ao telefone certo. */
+  requestedByUserId?: string;
   eventTime?: string;
   pickupDate?: string;
   pickupTime?: string;
@@ -144,6 +146,8 @@ export interface QuoteRequest {
   decorationNotes?: string;
   costCenterCode?: string;
   requestedBy?: string;
+  /** Id do usuário que solicitou — usado para direcionar avisos de WhatsApp ao telefone certo. */
+  requestedByUserId?: string;
   status: QuoteStatus;
   items?: QuoteItem[];
   serviceFeePercent?: number;

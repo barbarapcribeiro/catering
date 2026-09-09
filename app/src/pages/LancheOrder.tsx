@@ -142,6 +142,7 @@ export function LancheOrder() {
       branchId,
       locationId,
       copaId,
+      requestedByUserId: currentUser?.id,
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Forma de pagamento: ${paymentDef?.label ?? "—"}`,
       attachments: attachments.length ? attachments : undefined,

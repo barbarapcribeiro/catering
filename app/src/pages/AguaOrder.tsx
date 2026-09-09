@@ -111,6 +111,7 @@ export function AguaOrder() {
       branchId,
       locationId,
       copaId,
+      requestedByUserId: currentUser?.id,
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Entregar para: ${deliverTo}${observations ? " • " + observations : ""}`,
       attachments: attachments.length ? attachments : undefined,
