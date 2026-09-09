@@ -78,13 +78,14 @@ const PAYMENTS = [
   { id: "credito", label: "Cartão de crédito", sub: "Pagamento na entrega, com maquininha", emoji: "💳" },
   { id: "debito", label: "Cartão de débito", sub: "Pagamento na entrega, com maquininha", emoji: "💳" },
   { id: "pix", label: "Pix", sub: "QR Code exibido no recibo", emoji: "⚡" },
+  { id: "centro", label: "Centro de custo", sub: "Lançado direto no centro de custo do solicitante", emoji: "💼" },
 ];
 
 const STEP_DEFS = [
   { title: "Kits", sub: "Escolha seus kits" },
   { title: "Informações", sub: "Detalhes do evento" },
+  { title: "Pagamento", sub: "Crédito, débito, Pix ou centro de custo" },
   { title: "Revisão", sub: "Confira os detalhes" },
-  { title: "Pagamento", sub: "Crédito, débito ou Pix" },
   { title: "Finalizar", sub: "Recibo do pedido" },
 ];
 
@@ -179,6 +180,7 @@ export function Surpreenda() {
   const cartEmpty = cartItems.length === 0;
   const noPayment = !payment;
   const paymentDef = PAYMENTS.find((p) => p.id === payment);
+  const paymentLabel = payment === "centro" ? `Centro de custo (${costCenter || "—"})` : paymentDef?.label ?? "—";
 
   const todayLabel = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
   const locationName = locations.find((l) => l.id === locationId)?.name;
@@ -188,11 +190,15 @@ export function Surpreenda() {
     setStep(2);
     showToast("Kits salvos! Prossiga com as informações do evento.");
   };
-  const continueToStep3 = () => {
+  const continueToPayment = () => {
     setStep(3);
     showToast("Informações do evento salvas!");
   };
-  const continueToStep5 = () => {
+  const continueToReview = () => {
+    setStep(4);
+    showToast("Forma de pagamento selecionada!");
+  };
+  const finalizeOrder = () => {
     addOrder({
       id: orderId,
       category: "Surpreenda",
@@ -212,8 +218,8 @@ export function Surpreenda() {
       copaId,
       eventTime,
       dietaryRestrictions: hasDietary ? dietaryDetails || "Sim, sem detalhes" : "Nenhuma",
-      notes: obs,
-      costCenters: [{ code: costCenter, percent: 100 }],
+      notes: `Forma de pagamento: ${paymentLabel}${obs ? " • " + obs : ""}`,
+      costCenters: payment === "centro" ? [{ code: costCenter, percent: 100 }] : undefined,
       requiresApproval: needsApproval,
       attachments: attachments.length ? attachments : undefined,
     });
@@ -517,16 +523,98 @@ export function Surpreenda() {
               <button className="btn btn--outline" onClick={() => setStep(1)}>
                 Voltar
               </button>
-              <button className="btn btn--primary" onClick={continueToStep3}>
-                Continuar para revisão
+              <button className="btn btn--primary" onClick={continueToPayment}>
+                Continuar para pagamento
               </button>
             </div>
           </div>
         )}
 
         {step === 3 && (
+          <div className="step-narrow">
+            <div className="step-heading">3. Forma de pagamento</div>
+
+            <div className="step-card">
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, color: "var(--color-text-secondary)", marginBottom: 6 }}>
+                <span>Subtotal</span>
+                <span>{money(subtotal)}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, color: "var(--color-text-secondary)", marginBottom: 6 }}>
+                <span>Taxa de serviço e/ou frete</span>
+                <span>{money(fee)}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 17, fontWeight: 800, borderTop: "1px solid var(--color-border-soft)", paddingTop: 10, marginTop: 6 }}>
+                <span>Total a pagar</span>
+                <span style={{ color: "var(--color-primary)" }}>{money(total)}</span>
+              </div>
+            </div>
+
+            <div className="payment-options">
+              {PAYMENTS.map((p) => {
+                const sel = payment === p.id;
+                return (
+                  <button key={p.id} className="payment-option" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border)", background: sel ? "#f4f6fc" : "#fff" }} onClick={() => setPayment(p.id)}>
+                    <div className="payment-option__icon">{p.emoji}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700 }}>{p.label}</div>
+                      <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{p.sub}</div>
+                    </div>
+                    <div className="payment-option__radio" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border-input)", background: sel ? "var(--color-primary)" : "#fff" }} />
+                  </button>
+                );
+              })}
+            </div>
+
+            {payment === "centro" && (
+              <div className="step-card" style={{ marginTop: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Selecione o centro de custo</div>
+                <div style={{ position: "relative", maxWidth: 360 }}>
+                  <div
+                    onClick={() => setCostCenterMenuOpen((v) => !v)}
+                    style={{ cursor: "pointer", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--color-border-input)", fontSize: 13, fontWeight: 600, color: costCenter ? "var(--color-text)" : "var(--color-text-muted)", boxSizing: "border-box" }}
+                  >
+                    {costCenter ? `${costCenter} · ${activeCostCenters.find((c) => c.code === costCenter)?.name}` : "Selecionar centro de custo"}
+                  </div>
+                  {costCenterMenuOpen && (
+                    <div className="location-dropdown">
+                      {activeCostCenters.map((c) => (
+                        <button
+                          key={c.code}
+                          onClick={() => {
+                            setCostCenter(c.code);
+                            setCostCenterMenuOpen(false);
+                          }}
+                        >
+                          {c.code} · {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {!costCenter && <div className="error-text">Selecione um centro de custo.</div>}
+              </div>
+            )}
+            {payment === "pix" && (
+              <div className="payment-note">O QR Code do Pix será exibido no recibo, na próxima etapa. O pedido é confirmado após a identificação do pagamento.</div>
+            )}
+            {(payment === "credito" || payment === "debito") && (
+              <div className="payment-note">O pagamento com cartão será realizado na entrega, com maquininha.</div>
+            )}
+
+            <div className="step-actions">
+              <button className="btn btn--outline" onClick={() => setStep(2)}>
+                Voltar
+              </button>
+              <button className="btn btn--primary" disabled={noPayment || (payment === "centro" && !costCenter)} onClick={continueToReview}>
+                Continuar para revisão
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
           <div className="step-wide">
-            <div className="step-heading">3. Revisão do pedido</div>
+            <div className="step-heading">4. Revisão do pedido</div>
 
             <div className="invoice-card">
               <div className="invoice-header">
@@ -607,100 +695,26 @@ export function Surpreenda() {
                   <div className="event-summary-item-value">{hasDietary ? dietaryDetails || "Sim, sem detalhes" : "Nenhuma"}</div>
                 </div>
               </div>
+              {(!locationId || !copaId) && <div className="error-text">Selecione a localização e a copa de entrega na etapa de informações.</div>}
+              {routingBlocked && <div className="error-text">A copa selecionada está sem capacidade nesse horário. Volte e ajuste o horário ou a copa.</div>}
               <button className="edit-link" onClick={() => setStep(2)}>
                 Editar informações do evento
               </button>
             </div>
 
             <div className="step-card">
-              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Centro de custo</div>
-              <div style={{ fontSize: 12.5, color: "var(--color-text-muted)", marginBottom: 14 }}>Selecione o centro de custo ao qual este pedido será atribuído.</div>
-              <div style={{ position: "relative", maxWidth: 360 }}>
-                <div
-                  onClick={() => setCostCenterMenuOpen((v) => !v)}
-                  style={{ cursor: "pointer", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--color-border-input)", fontSize: 13, fontWeight: 600, color: costCenter ? "var(--color-text)" : "var(--color-text-muted)", boxSizing: "border-box" }}
-                >
-                  {costCenter ? `${costCenter} · ${activeCostCenters.find((c) => c.code === costCenter)?.name}` : "Selecionar centro de custo"}
-                </div>
-                {costCenterMenuOpen && (
-                  <div className="location-dropdown">
-                    {activeCostCenters.map((c) => (
-                      <button
-                        key={c.code}
-                        onClick={() => {
-                          setCostCenter(c.code);
-                          setCostCenterMenuOpen(false);
-                        }}
-                      >
-                        {c.code} · {c.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {!costCenter && <div className="error-text">Selecione um centro de custo.</div>}
-              {(!locationId || !copaId) && <div className="error-text">Selecione a localização e a copa de entrega na etapa anterior.</div>}
-              {routingBlocked && <div className="error-text">A copa selecionada está sem capacidade nesse horário. Volte e ajuste o horário ou a copa.</div>}
-            </div>
-
-            <div className="step-actions">
-              <button className="btn btn--outline" onClick={() => setStep(2)}>
-                Voltar
-              </button>
-              <button className="btn btn--primary" disabled={!costCenter || !locationId || !copaId || routingBlocked} onClick={() => setStep(4)}>
-                Continuar para pagamento
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Forma de pagamento</div>
+              <div className="event-summary-item-value">{paymentLabel}</div>
+              <button className="edit-link" onClick={() => setStep(3)}>
+                Editar forma de pagamento
               </button>
             </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="step-narrow">
-            <div className="step-heading">4. Forma de pagamento</div>
-
-            <div className="step-card">
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, color: "var(--color-text-secondary)", marginBottom: 6 }}>
-                <span>Subtotal</span>
-                <span>{money(subtotal)}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, color: "var(--color-text-secondary)", marginBottom: 6 }}>
-                <span>Taxa de serviço e/ou frete</span>
-                <span>{money(fee)}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 17, fontWeight: 800, borderTop: "1px solid var(--color-border-soft)", paddingTop: 10, marginTop: 6 }}>
-                <span>Total a pagar</span>
-                <span style={{ color: "var(--color-primary)" }}>{money(total)}</span>
-              </div>
-            </div>
-
-            <div className="payment-options">
-              {PAYMENTS.map((p) => {
-                const sel = payment === p.id;
-                return (
-                  <button key={p.id} className="payment-option" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border)", background: sel ? "#f4f6fc" : "#fff" }} onClick={() => setPayment(p.id)}>
-                    <div className="payment-option__icon">{p.emoji}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700 }}>{p.label}</div>
-                      <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{p.sub}</div>
-                    </div>
-                    <div className="payment-option__radio" style={{ borderColor: sel ? "var(--color-primary)" : "var(--color-border-input)", background: sel ? "var(--color-primary)" : "#fff" }} />
-                  </button>
-                );
-              })}
-            </div>
-
-            {payment === "pix" && (
-              <div className="payment-note">O QR Code do Pix será exibido no recibo, na próxima etapa. O pedido é confirmado após a identificação do pagamento.</div>
-            )}
-            {(payment === "credito" || payment === "debito") && (
-              <div className="payment-note">O pagamento com cartão será realizado na entrega, com maquininha.</div>
-            )}
 
             <div className="step-actions">
               <button className="btn btn--outline" onClick={() => setStep(3)}>
                 Voltar
               </button>
-              <button className="btn btn--primary" disabled={noPayment} onClick={continueToStep5}>
+              <button className="btn btn--primary" disabled={!locationId || !copaId || routingBlocked} onClick={finalizeOrder}>
                 Finalizar pedido
               </button>
             </div>
@@ -779,7 +793,7 @@ export function Surpreenda() {
 
               <div className="receipt-payment-row">
                 <span style={{ color: "var(--color-text-muted)" }}>Forma de pagamento</span>
-                <span style={{ fontWeight: 700 }}>{paymentDef ? paymentDef.label : "—"}</span>
+                <span style={{ fontWeight: 700 }}>{paymentLabel}</span>
               </div>
 
               <div className="receipt-disclaimer">Este recibo é uma demonstração e não possui valor fiscal.</div>
