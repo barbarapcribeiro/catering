@@ -45,7 +45,7 @@ import {
 import { computeProductPrice } from "./pricing";
 import { money } from "./money";
 
-const STORAGE_KEY = "direct-eventos-mock-v7";
+const STORAGE_KEY = "direct-eventos-mock-v8";
 
 interface StoredState {
   orders: Order[];
@@ -983,7 +983,7 @@ const initialOccurrences: Occurrence[] = [];
 const initialPopups: Popup[] = [];
 
 const initialOperatingParameters: OperatingParameters = {
-  logoUrl: undefined,
+  logoUrl: "/logo-direct-eventos.png",
   showLogoOnPrint: true,
   showAgreementMessage: true,
   agreementMessage: 'Pedido(s) com "De Acordo" pendente(s).',

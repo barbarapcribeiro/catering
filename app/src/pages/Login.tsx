@@ -4,7 +4,7 @@ import { useAppData } from "../mock/AppDataContext";
 import "./Login.css";
 
 export function Login() {
-  const { login } = useAppData();
+  const { login, operatingParameters } = useAppData();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +28,9 @@ export function Login() {
   return (
     <div className="login-page">
       <form className="login-card card" onSubmit={submit}>
-        <div className="login-card__brand">Direct Eventos</div>
+        <div className="login-card__brand">
+          {operatingParameters.logoUrl ? <img src={operatingParameters.logoUrl} alt="Direct Eventos" className="login-card__brand-logo" /> : "Direct Eventos"}
+        </div>
         <div className="login-card__title">Entrar na sua conta</div>
         <div className="login-card__sub">Use o e-mail e a senha cadastrados para acessar seus pedidos.</div>
 

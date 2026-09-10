@@ -111,7 +111,7 @@ const NAV_GROUPS: NavGroup[] = [
 
 export function AdminLayout() {
   const location = useLocation();
-  const { notifications, currentUser, currentProfile, hasPageAccess } = useAppData();
+  const { notifications, currentUser, currentProfile, hasPageAccess, operatingParameters } = useAppData();
   const [topSearch, setTopSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const unread = notifications.filter((n) => !n.read).length;
@@ -121,7 +121,9 @@ export function AdminLayout() {
     <div className={`admin-shell ${sidebarOpen ? "" : "admin-shell--sidebar-collapsed"}`}>
       <aside className="admin-sidebar">
         <div className="admin-sidebar__brand">
-          <div className="admin-sidebar__logo">D</div>
+          <div className="admin-sidebar__logo">
+            {operatingParameters.logoUrl ? <img src={operatingParameters.logoUrl} alt="Logo" className="admin-sidebar__logo-img" /> : "D"}
+          </div>
           <div className="admin-sidebar__brand-name">Direct Eventos</div>
         </div>
 
