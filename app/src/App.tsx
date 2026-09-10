@@ -4,6 +4,7 @@ import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { Autocadastro } from "./pages/Autocadastro";
 import { CoffeeBreakOrder } from "./pages/CoffeeBreakOrder";
+import { CoffeeBreakOrderSimples } from "./pages/CoffeeBreakOrderSimples";
 import { AbastecimentoOrder } from "./pages/AbastecimentoOrder";
 import { EventoEspecialOrder } from "./pages/EventoEspecialOrder";
 import { AguaOrder } from "./pages/AguaOrder";
@@ -70,6 +71,7 @@ export default function App() {
           <Route element={<RequireAuth />}>
             <Route path="/" element={<Home />} />
             <Route path="/pedido/coffee-break" element={<CoffeeBreakOrder />} />
+            <Route path="/pedido/coffee-break-simples" element={<CoffeeBreakOrderSimples />} />
             <Route path="/pedido/evento-especial" element={<EventoEspecialOrder />} />
             <Route path="/pedido/agua" element={<AguaOrder />} />
             <Route path="/pedido/abastecimento-simples" element={<AbastecimentoOrder />} />

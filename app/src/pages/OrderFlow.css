@@ -355,6 +355,7 @@
   position: relative;
 }
 .field-boxed input,
+.field-boxed select,
 .field-boxed .field-boxed-value {
   display: block;
   width: 100%;
@@ -367,6 +368,7 @@
   box-sizing: border-box;
   padding: 0;
   font-family: inherit;
+  background: transparent;
 }
 .field-boxed-grid {
   display: grid;
