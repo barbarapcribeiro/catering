@@ -212,6 +212,7 @@ export function GerenciarPedidos() {
     const originalTotalQty = (selected.items ?? []).reduce((s, it) => s + it.qty, 0);
     const newTotalQty = cleanedItems.reduce((s, it) => s + it.qty, 0);
     const itemsIncreased = newTotalQty > originalTotalQty;
+    const isPartialCancellation = newTotalQty < originalTotalQty && editWithin2h && isGuOrAdmin;
 
     let finalDate = editForm.date;
     let finalTime = editForm.time;
@@ -248,8 +249,16 @@ export function GerenciarPedidos() {
       patch.value = money(total);
       patch.valueNumber = total;
     }
+    let cancelNote = "";
+    if (isPartialCancellation) {
+      patch.history = [
+        ...(selected.history ?? []),
+        { label: `Cancelamento parcial por ${currentUser?.name ?? "GU/Administrador"} (dentro de 2h da entrega)`, time: new Date().toLocaleString("pt-BR") },
+      ];
+      cancelNote = " Cancelamento parcial registrado no histórico do pedido.";
+    }
     updateOrder(selected.id, patch);
-    showToast(`Pedido atualizado.${slaNote}`);
+    showToast(`Pedido atualizado.${slaNote}${cancelNote}`);
     setEditModalOpen(false);
   };
   const duplicate = () => {
@@ -257,7 +266,8 @@ export function GerenciarPedidos() {
     duplicateOrder(selected.id);
     setQuickActionsOpen(false);
   };
-  const canCancel = operatingParameters.allowClientCancellation || currentUser?.profileId === "prof-gu" || currentUser?.profileId === "prof-admin";
+  const isGuOrAdmin = currentUser?.profileId === "prof-gu" || currentUser?.profileId === "prof-admin";
+  const canCancel = operatingParameters.allowClientCancellation || isGuOrAdmin;
 
   const cancel = () => {
     if (!selected || !canCancel) return;
@@ -961,11 +971,15 @@ export function GerenciarPedidos() {
               Itens do pedido
             </div>
             {editWithin2h && (
-              <div className="gp-edit-warning">Faltam menos de 2h para a entrega — itens já confirmados não podem ser reduzidos ou removidos, só incluídos.</div>
+              <div className="gp-edit-warning">
+                {isGuOrAdmin
+                  ? "Faltam menos de 2h para a entrega — como GU/Administrador, você ainda pode reduzir ou remover itens confirmados (cancelamento parcial)."
+                  : "Faltam menos de 2h para a entrega — itens já confirmados não podem ser reduzidos ou removidos, só incluídos."}
+              </div>
             )}
             <div className="gp-edit-items">
               {editItems.map((it, idx) => {
-                const lockedByTime = it.original && editWithin2h;
+                const lockedByTime = it.original && editWithin2h && !isGuOrAdmin;
                 const atFloor = it.original && it.qty <= it.originalQty;
                 return (
                   <div key={idx} className="gp-edit-item-row">
