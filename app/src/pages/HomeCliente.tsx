@@ -237,7 +237,7 @@ export function HomeCliente() {
 
             {openOrders.length > 0 && (
               <div className="home-open-compact__list">
-                {openOrders.map((o) => {
+                {openOrders.slice(0, 3).map((o) => {
                   const st = STATUS_STYLE[o.status] || { bg: "#eee", color: "#555" };
                   return (
                     <div key={o.id} className="home-open-row">
