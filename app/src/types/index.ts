@@ -97,6 +97,8 @@ export interface Notification {
   read: boolean;
   /** Rota para onde a notificação leva ao ser clicada (opcional). */
   link?: string;
+  /** Mensagem e telefone pré-configurados para reenviar este aviso por WhatsApp com um clique. */
+  whatsapp?: { message: string; phone?: PhoneNumber };
 }
 
 /** Tipos de pedido do cliente — cada um tem seu próprio conjunto de perguntas de satisfação. */

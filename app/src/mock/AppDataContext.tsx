@@ -28,6 +28,7 @@ import {
   type OrderStatus,
   type OperatingParameters,
   type PagePermission,
+  type PhoneNumber,
   type Popup,
   type PremiumEvent,
   type Product,
@@ -44,6 +45,7 @@ import {
 } from "../types";
 import { computeProductPrice } from "./pricing";
 import { money } from "./money";
+import { orderStatusHeadline, orderStatusMessage, requesterPhone, surveyInviteMessage } from "./whatsapp";
 
 const STORAGE_KEY = "direct-eventos-mock-v8";
 
@@ -1095,7 +1097,7 @@ interface AppDataValue {
 
   notifications: Notification[];
   markAllNotificationsRead: () => void;
-  addNotification: (title: string, link?: string) => void;
+  addNotification: (title: string, link?: string, whatsapp?: { message: string; phone?: PhoneNumber }) => void;
 
   favorites: Set<string>;
   toggleFavorite: (id: string) => void;
@@ -1329,9 +1331,29 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     return created;
   };
 
+  /** Dispara automaticamente ao mudar o status de um pedido: notificação in-app (push) para quem
+   * solicitou, já com a mensagem de WhatsApp correspondente pré-configurada para reenvio com um clique. */
+  const notifyOrderStatusChange = (merged: Order) => {
+    const phone = requesterPhone(merged.requestedByUserId, state.users);
+    if (merged.status === "Finalizado") {
+      const code = merged.id.replace(/^#/, "");
+      const surveyUrl = `${window.location.origin}/pesquisa-pedido/${code}`;
+      addNotification(
+        `Pedido ${merged.id} (${merged.type}) finalizado! Conta pra gente como foi na pesquisa de satisfação. ⭐`,
+        `/pesquisa-pedido/${code}`,
+        { message: surveyInviteMessage(merged, surveyUrl), phone },
+      );
+    } else {
+      addNotification(orderStatusHeadline(merged), `/pedidos?order=${encodeURIComponent(merged.id)}`, {
+        message: orderStatusMessage(merged),
+        phone,
+      });
+    }
+  };
+
   const updateOrder: AppDataValue["updateOrder"] = (id, patch) => {
     const current = state.orders.find((o) => o.id === id);
-    const willFinalize = !!current && patch.status === "Finalizado" && current.status !== "Finalizado";
+    const willChangeStatus = !!current && !!patch.status && patch.status !== current.status;
     setState((s) => ({
       ...s,
       orders: s.orders.map((o) => {
@@ -1343,14 +1365,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         return next;
       }),
     }));
-    if (willFinalize && current) {
-      const merged = { ...current, ...patch };
-      const code = merged.id.replace(/^#/, "");
-      addNotification(`Pedido ${merged.id} (${merged.type}) finalizado! Conta pra gente como foi na pesquisa de satisfação. ⭐`, `/pesquisa-pedido/${code}`);
+    if (willChangeStatus && current) {
+      notifyOrderStatusChange({ ...current, ...patch });
     }
   };
 
   const cancelOrder = (id: string) => {
+    const current = state.orders.find((o) => o.id === id);
     setState((s) => ({
       ...s,
       orders: s.orders.map((o) =>
@@ -1359,6 +1380,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           : o,
       ),
     }));
+    if (current && current.status !== "Cancelado") {
+      notifyOrderStatusChange({ ...current, status: "Cancelado" });
+    }
     showToast("Pedido cancelado.");
   };
 
@@ -1379,10 +1403,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     showToast("Pedido duplicado.");
   };
 
-  const addNotification: AppDataValue["addNotification"] = (title, link) => {
+  const addNotification: AppDataValue["addNotification"] = (title, link, whatsapp) => {
     setState((s) => ({
       ...s,
-      notifications: [{ id: `notif${Date.now()}`, title, time: new Date().toLocaleString("pt-BR"), read: false, link }, ...s.notifications],
+      notifications: [{ id: `notif${Date.now()}`, title, time: new Date().toLocaleString("pt-BR"), read: false, link, whatsapp }, ...s.notifications],
     }));
   };
 

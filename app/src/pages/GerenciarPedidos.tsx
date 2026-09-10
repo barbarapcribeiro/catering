@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Modal } from "../components/Modal";
 import { formatSize } from "../components/AttachmentsField";
@@ -111,11 +111,30 @@ export function GerenciarPedidos() {
     copas,
   } = useAppData();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [listTab, setListTab] = useState<ListTab>("andamento");
   const [listSearch, setListSearch] = useState("");
   const [topSearch, setTopSearch] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(orders[0]?.id ?? null);
+  const orderParam = searchParams.get("order");
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    if (orderParam && orders.some((o) => o.id === orderParam)) return orderParam;
+    return orders[0]?.id ?? null;
+  });
+
+  useEffect(() => {
+    if (!orderParam) return;
+    const target = orders.find((o) => o.id === orderParam);
+    if (target) {
+      setSelectedId(target.id);
+      setListTab(tabOf(target));
+      setDetailTab("resumo");
+    }
+    const next = new URLSearchParams(searchParams);
+    next.delete("order");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderParam]);
   const [detailTab, setDetailTab] = useState<DetailTab>("resumo");
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [convInput, setConvInput] = useState("");

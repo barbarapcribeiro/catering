@@ -74,6 +74,12 @@ export function orderCreatedMessage(order: Order): string {
   ].join("\n");
 }
 
+/** Título curto para a notificação em app — mesma copy amigável usada na mensagem de WhatsApp. */
+export function orderStatusHeadline(order: Order): string {
+  const status = STATUS_META[order.status];
+  return `${status.emoji} Pedido ${order.id} (${order.category}): ${status.headline}`;
+}
+
 export function orderStatusMessage(order: Order): string {
   const status = STATUS_META[order.status];
   return [

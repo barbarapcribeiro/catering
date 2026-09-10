@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAppData } from "../mock/AppDataContext";
+import { buildWhatsAppUrl } from "../mock/whatsapp";
 import { ProfileSwitcher } from "./ProfileSwitcher";
 import { APP_PAGES } from "../types";
 import "./Header.css";
@@ -156,18 +157,29 @@ export function Header() {
               <div className="app-header__dropdown">
                 <div className="app-header__dropdown-title">Notificações</div>
                 {notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className="app-header__dropdown-item"
-                    style={n.link ? { cursor: "pointer" } : undefined}
-                    onClick={() => {
-                      if (!n.link) return;
-                      setNotifOpen(false);
-                      navigate(n.link);
-                    }}
-                  >
-                    <div className="app-header__dropdown-item-title">{n.title}</div>
-                    <div className="app-header__dropdown-item-time">{n.time}</div>
+                  <div key={n.id} className="app-header__dropdown-item">
+                    <div
+                      style={n.link ? { cursor: "pointer" } : undefined}
+                      onClick={() => {
+                        if (!n.link) return;
+                        setNotifOpen(false);
+                        navigate(n.link);
+                      }}
+                    >
+                      <div className="app-header__dropdown-item-title">{n.title}</div>
+                      <div className="app-header__dropdown-item-time">{n.time}</div>
+                    </div>
+                    {n.whatsapp && (
+                      <a
+                        className="app-header__dropdown-item-whatsapp"
+                        href={buildWhatsAppUrl(n.whatsapp.message, n.whatsapp.phone)}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        💬 Reenviar por WhatsApp
+                      </a>
+                    )}
                   </div>
                 ))}
                 <div className="app-header__dropdown-footer">
