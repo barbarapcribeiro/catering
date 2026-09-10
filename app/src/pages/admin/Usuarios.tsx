@@ -31,11 +31,14 @@ function formatDateTime(iso: string) {
 }
 
 export function Usuarios() {
-  const { users, profiles, companies, branches, costCenters, copas, addUser, updateUser, removeUser, resetUserPassword, showToast } = useAppData();
+  const { users, profiles, clients, segments, businessUnits, companies, branches, costCenters, copas, addUser, updateUser, removeUser, resetUserPassword, showToast } = useAppData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [profileFilter, setProfileFilter] = useState<string>("todos");
+  const [clientId, setClientId] = useState("");
+  const [segmentId, setSegmentId] = useState("");
+  const [businessUnitId, setBusinessUnitId] = useState("");
 
   const profileName = (id?: string) => profiles.find((p) => p.id === id)?.name;
   const companyName = (id?: string) => companies.find((c) => c.id === id)?.name;
@@ -45,7 +48,10 @@ export function Usuarios() {
   };
   const needsCostCenter = COST_CENTER_LINKED_PROFILE_IDS.includes(form.profileId as (typeof COST_CENTER_LINKED_PROFILE_IDS)[number]);
 
-  const activeCompanies = companies.filter((c) => c.active);
+  const activeClients = clients.filter((c) => c.active);
+  const segmentsForClient = segments.filter((s) => s.active && s.clientId === clientId);
+  const businessUnitsForSegment = businessUnits.filter((u) => u.active && u.segmentId === segmentId);
+  const companiesForUnit = companies.filter((c) => c.active && c.unitId === businessUnitId);
   const branchesForCompany = branches.filter((b) => b.active && b.companyId === form.companyId);
   const costCentersForBranches = costCenters.filter((cc) => cc.active && cc.branchId && form.branchIds.includes(cc.branchId));
   const copasForBranches = copas.filter((c) => c.active && form.branchIds.includes(c.branchId));
@@ -53,6 +59,9 @@ export function Usuarios() {
   const openNew = () => {
     setEditingId(null);
     setForm(EMPTY_FORM);
+    setClientId("");
+    setSegmentId("");
+    setBusinessUnitId("");
     setModalOpen(true);
   };
 
@@ -73,7 +82,30 @@ export function Usuarios() {
       copaIds: u.copaIds ?? [],
       active: u.active,
     });
+    // Reconstrói a cadeia Cliente → Segmento → Unidade a partir da empresa já vinculada ao usuário.
+    const company = companies.find((c) => c.id === u.companyId);
+    const unit = businessUnits.find((bu) => bu.id === company?.unitId);
+    const segment = segments.find((s) => s.id === unit?.segmentId);
+    setClientId(segment?.clientId ?? "");
+    setSegmentId(unit?.segmentId ?? "");
+    setBusinessUnitId(company?.unitId ?? "");
     setModalOpen(true);
+  };
+
+  const setClient = (id: string) => {
+    setClientId(id);
+    setSegmentId("");
+    setBusinessUnitId("");
+    setCompany("");
+  };
+  const setSegment = (id: string) => {
+    setSegmentId(id);
+    setBusinessUnitId("");
+    setCompany("");
+  };
+  const setBusinessUnit = (id: string) => {
+    setBusinessUnitId(id);
+    setCompany("");
   };
 
   const setCompany = (companyId: string) => {
@@ -280,10 +312,46 @@ export function Usuarios() {
             </label>
 
             <label className="field-label">
+              Cliente
+              <select value={clientId} onChange={(e) => setClient(e.target.value)}>
+                <option value="">Selecione o cliente</option>
+                {activeClients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="field-label">
+              Segmento
+              <select value={segmentId} onChange={(e) => setSegment(e.target.value)} disabled={!clientId}>
+                <option value="">{clientId ? "Selecione o segmento" : "Selecione o cliente primeiro"}</option>
+                {segmentsForClient.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="field-label">
+              Unidade
+              <select value={businessUnitId} onChange={(e) => setBusinessUnit(e.target.value)} disabled={!segmentId}>
+                <option value="">{segmentId ? "Selecione a unidade" : "Selecione o segmento primeiro"}</option>
+                {businessUnitsForSegment.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="field-label">
               Empresa <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(obrigatório para todo usuário)</span>
-              <select value={form.companyId} onChange={(e) => setCompany(e.target.value)}>
-                <option value="">Nenhuma selecionada</option>
-                {activeCompanies.map((c) => (
+              <select value={form.companyId} onChange={(e) => setCompany(e.target.value)} disabled={!businessUnitId}>
+                <option value="">{businessUnitId ? "Nenhuma selecionada" : "Selecione a unidade primeiro"}</option>
+                {companiesForUnit.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
                   </option>

@@ -13,6 +13,7 @@ import {
   type Company,
   type Branch,
   type Brand,
+  type Client,
   type BusinessUnit,
   type Contract,
   type Copa,
@@ -66,6 +67,7 @@ interface StoredState {
   premiumEvents: PremiumEvent[];
   profiles: Profile[];
   users: AppUser[];
+  clients: Client[];
   segments: Segment[];
   businessUnits: BusinessUnit[];
   brands: Brand[];
@@ -903,11 +905,13 @@ const initialUsers: AppUser[] = [
   { id: "user9", name: "Rosana Alves", email: "rosana.alves@sparkxp.com", password: DEMO_PASSWORD, phone: { country: "55", ddd: "11", number: "91234-5009" }, profileId: "prof-copeira", companyId: "comp1", branchIds: ["branch1"], active: true, createdAt: "2026-03-10T09:00:00Z" },
 ];
 
+const initialClients: Client[] = [{ id: "client1", name: "Sodexo Brasil", active: true }];
+
 const initialSegments: Segment[] = [
-  { id: "seg1", name: "Corporativo", active: true },
-  { id: "seg2", name: "Educação", active: true },
-  { id: "seg3", name: "Energia e Recursos", active: true },
-  { id: "seg4", name: "Saúde", active: true },
+  { id: "seg1", name: "Corporativo", clientId: "client1", active: true },
+  { id: "seg2", name: "Educação", clientId: "client1", active: true },
+  { id: "seg3", name: "Energia e Recursos", clientId: "client1", active: true },
+  { id: "seg4", name: "Saúde", clientId: "client1", active: true },
 ];
 
 const initialBusinessUnits: BusinessUnit[] = [
@@ -1041,6 +1045,7 @@ const defaultState: StoredState = {
   premiumEvents: initialPremiumEvents,
   profiles: initialProfiles,
   users: initialUsers,
+  clients: initialClients,
   segments: initialSegments,
   businessUnits: initialBusinessUnits,
   brands: initialBrands,
@@ -1174,6 +1179,11 @@ interface AppDataValue {
   updateUser: (id: string, patch: Partial<AppUser>) => void;
   removeUser: (id: string) => void;
   resetUserPassword: (id: string) => void;
+
+  clients: Client[];
+  addClient: (client: Omit<Client, "id">) => void;
+  updateClient: (id: string, patch: Partial<Client>) => void;
+  removeClient: (id: string) => void;
 
   segments: Segment[];
   addSegment: (segment: Omit<Segment, "id">) => void;
@@ -1622,6 +1632,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     showToast(`Senha redefinida para: ${tempPassword} (repasse ao usuário — normalmente isso iria por e-mail).`);
   };
 
+  const addClient: AppDataValue["addClient"] = (client) => {
+    setState((s) => ({ ...s, clients: [{ ...client, id: `client${Date.now()}` }, ...s.clients] }));
+  };
+  const updateClient: AppDataValue["updateClient"] = (id, patch) => {
+    setState((s) => ({ ...s, clients: s.clients.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
+  };
+  const removeClient = (id: string) => {
+    setState((s) => ({ ...s, clients: s.clients.filter((c) => c.id !== id) }));
+  };
+
   const addSegment: AppDataValue["addSegment"] = (segment) => {
     setState((s) => ({ ...s, segments: [{ ...segment, id: `seg${Date.now()}` }, ...s.segments] }));
   };
@@ -1884,6 +1904,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       updateUser,
       removeUser,
       resetUserPassword,
+      clients: state.clients,
+      addClient,
+      updateClient,
+      removeClient,
       segments: state.segments,
       addSegment,
       updateSegment,

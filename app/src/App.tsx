@@ -46,6 +46,7 @@ import { Ocorrencias } from "./pages/admin/Ocorrencias";
 import { Faturamento } from "./pages/admin/Faturamento";
 import { CentrosCusto } from "./pages/admin/CentrosCusto";
 import { Contratos } from "./pages/admin/Contratos";
+import { Clientes } from "./pages/admin/Clientes";
 import { Segmentos } from "./pages/admin/Segmentos";
 import { Unidades } from "./pages/admin/Unidades";
 import { Marcas } from "./pages/admin/Marcas";
@@ -107,6 +108,7 @@ export default function App() {
               <Route path="permissoes" element={<Permissoes />} />
               <Route path="faturamento" element={<Faturamento />} />
               <Route path="centros-custo" element={<CentrosCusto />} />
+              <Route path="clientes" element={<Clientes />} />
               <Route path="segmentos" element={<Segmentos />} />
               <Route path="unidades" element={<Unidades />} />
               <Route path="marcas" element={<Marcas />} />

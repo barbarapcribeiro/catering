@@ -1,8 +1,8 @@
-.segmentos-page {
+.clientes-page {
   max-width: 860px;
 }
 
-.segmentos-header {
+.clientes-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -10,32 +10,32 @@
   gap: 16px;
   flex-wrap: wrap;
 }
-.segmentos-title {
+.clientes-title {
   font-size: 22px;
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.3px;
 }
-.segmentos-subtitle {
+.clientes-subtitle {
   font-size: 13px;
   color: var(--color-text-muted);
   margin-top: 4px;
 }
 
-.segmentos-table-card {
+.clientes-table-card {
   padding: 0;
   overflow-x: auto;
 }
-.segmentos-table__head,
-.segmentos-table__row {
+.clientes-table__head,
+.clientes-table__row {
   display: grid;
-  grid-template-columns: 1.4fr 1.2fr 0.8fr 0.9fr 1.2fr;
+  grid-template-columns: 1.6fr 0.8fr 0.9fr 1.2fr;
   gap: 10px;
   align-items: center;
   padding: 14px 20px;
-  min-width: 740px;
+  min-width: 620px;
 }
-.segmentos-table__head {
+.clientes-table__head {
   font-size: 11px;
   font-weight: 700;
   color: var(--color-text-muted);
@@ -43,34 +43,34 @@
   letter-spacing: 0.03em;
   border-bottom: 1px solid var(--color-border);
 }
-.segmentos-table__row {
+.clientes-table__row {
   border-bottom: 1px solid var(--color-border-soft);
   font-size: 13px;
 }
-.segmentos-table__row:last-child {
+.clientes-table__row:last-child {
   border-bottom: none;
 }
-.segmentos-table__name {
+.clientes-table__name {
   font-weight: 700;
 }
-.segmentos-table__muted {
+.clientes-table__muted {
   color: var(--color-text-secondary);
   font-size: 12.5px;
 }
-.segmentos-table__actions {
+.clientes-table__actions {
   display: flex;
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
 }
-.segmentos-table__actions button.link {
+.clientes-table__actions button.link {
   border: none;
   background: none;
   padding: 0;
   font: inherit;
   cursor: pointer;
 }
-.segmentos-remove-btn {
+.clientes-remove-btn {
   border: none;
   background: none;
   color: var(--color-danger);
@@ -79,6 +79,6 @@
   cursor: pointer;
   padding: 0;
 }
-.segmentos-remove-btn:hover {
+.clientes-remove-btn:hover {
   text-decoration: underline;
 }

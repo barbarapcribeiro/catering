@@ -56,6 +56,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Cadastros",
     items: [
+      { label: "Clientes", to: "/admin/clientes", glyph: "🤝", pageId: "admin-clientes" },
       { label: "Segmentos", to: "/admin/segmentos", glyph: "🧩", pageId: "admin-segmentos" },
       { label: "Unidades", to: "/admin/unidades", glyph: "🏭", pageId: "admin-unidades" },
       { label: "Marcas", to: "/admin/marcas", glyph: "🏷", pageId: "admin-marcas" },

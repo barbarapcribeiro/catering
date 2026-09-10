@@ -410,6 +410,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-faturamento", label: "Financeiro · Faturamento", group: "Painel Administrativo" },
   { id: "admin-centros-custo", label: "Cadastros · Centros de Custo", group: "Painel Administrativo" },
   { id: "admin-contratos", label: "Financeiro · Contratos", group: "Painel Administrativo" },
+  { id: "admin-clientes", label: "Cadastros · Clientes", group: "Painel Administrativo" },
   { id: "admin-segmentos", label: "Cadastros · Segmentos", group: "Painel Administrativo" },
   { id: "admin-unidades", label: "Cadastros · Unidades", group: "Painel Administrativo" },
   { id: "admin-marcas", label: "Cadastros · Marcas", group: "Painel Administrativo" },
@@ -510,10 +511,19 @@ export interface AppUser {
 /** Perfis cujo usuário fica associado a um centro de custo específico. */
 export const COST_CENTER_LINKED_PROFILE_IDS = ["prof-cliente", "prof-gestor", "prof-consumidor"] as const;
 
+/** Cliente — nível mais alto da hierarquia (Cliente → Segmento → Unidade → Empresa → Filial → Centro de Custo). */
+export interface Client {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
 /** Segmento de mercado atendido (ex.: Corporativo, Educação) — usado no cadastro de Unidade. */
 export interface Segment {
   id: string;
   name: string;
+  /** Cliente ao qual este segmento pertence. */
+  clientId?: string;
   active: boolean;
 }
 

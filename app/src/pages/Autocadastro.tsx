@@ -13,18 +13,39 @@ const EMPTY_FORM = { name: "", email: "", cargo: "", phone: EMPTY_PHONE, passwor
 
 export function Autocadastro() {
   const navigate = useNavigate();
-  const { companies, branches, costCenters, copas, users, registerAndLogin } = useAppData();
+  const { clients, segments, businessUnits, companies, branches, costCenters, copas, users, registerAndLogin } = useAppData();
   const [form, setForm] = useState(EMPTY_FORM);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [clientId, setClientId] = useState("");
+  const [segmentId, setSegmentId] = useState("");
+  const [businessUnitId, setBusinessUnitId] = useState("");
 
-  const activeCompanies = companies.filter((c) => c.active);
+  const activeClients = clients.filter((c) => c.active);
+  const segmentsForClient = segments.filter((s) => s.active && s.clientId === clientId);
+  const businessUnitsForSegment = businessUnits.filter((u) => u.active && u.segmentId === segmentId);
+  const companiesForUnit = companies.filter((c) => c.active && c.unitId === businessUnitId);
   const branchesForCompany = branches.filter((b) => b.active && b.companyId === form.companyId);
   const costCentersForBranches = costCenters.filter((cc) => cc.active && cc.branchId && form.branchIds.includes(cc.branchId));
   const copasForBranches = copas.filter((c) => c.active && form.branchIds.includes(c.branchId));
 
   const setCompany = (companyId: string) => {
     setForm((f) => ({ ...f, companyId, branchIds: [], costCenterCodes: [], copaIds: [] }));
+  };
+  const setClient = (id: string) => {
+    setClientId(id);
+    setSegmentId("");
+    setBusinessUnitId("");
+    setCompany("");
+  };
+  const setSegment = (id: string) => {
+    setSegmentId(id);
+    setBusinessUnitId("");
+    setCompany("");
+  };
+  const setBusinessUnit = (id: string) => {
+    setBusinessUnitId(id);
+    setCompany("");
   };
 
   const toggleBranch = (branchId: string) => {
@@ -120,11 +141,11 @@ export function Autocadastro() {
           </div>
         </div>
 
-        {activeCompanies.length === 0 && (
-          <div className="empty-state">Nenhuma empresa cadastrada ainda. Peça para o administrador cadastrar sua empresa antes de se autocadastrar.</div>
+        {activeClients.length === 0 && (
+          <div className="empty-state">Nenhum cliente cadastrado ainda. Peça para o administrador cadastrar sua empresa antes de se autocadastrar.</div>
         )}
 
-        {activeCompanies.length > 0 && (
+        {activeClients.length > 0 && (
           <>
             <div className="step-card">
               <div className="step-heading">1. Seus dados</div>
@@ -154,12 +175,51 @@ export function Autocadastro() {
             </div>
 
             <div className="step-card">
-              <div className="step-heading">2. Empresa</div>
+              <div className="step-heading">2. Cliente, segmento e unidade</div>
+              <div className="autocadastro-fields-grid">
+                <label className="field-label">
+                  Cliente
+                  <select value={clientId} onChange={(e) => setClient(e.target.value)}>
+                    <option value="">Selecione o cliente</option>
+                    {activeClients.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field-label">
+                  Segmento
+                  <select value={segmentId} onChange={(e) => setSegment(e.target.value)} disabled={!clientId}>
+                    <option value="">{clientId ? "Selecione o segmento" : "Selecione o cliente primeiro"}</option>
+                    {segmentsForClient.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field-label">
+                  Unidade
+                  <select value={businessUnitId} onChange={(e) => setBusinessUnit(e.target.value)} disabled={!segmentId}>
+                    <option value="">{segmentId ? "Selecione a unidade" : "Selecione o segmento primeiro"}</option>
+                    {businessUnitsForSegment.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div className="step-card">
+              <div className="step-heading">3. Empresa</div>
               <label className="field-label">
                 Empresa
-                <select value={form.companyId} onChange={(e) => setCompany(e.target.value)}>
-                  <option value="">Selecione sua empresa</option>
-                  {activeCompanies.map((c) => (
+                <select value={form.companyId} onChange={(e) => setCompany(e.target.value)} disabled={!businessUnitId}>
+                  <option value="">{businessUnitId ? "Selecione sua empresa" : "Selecione a unidade primeiro"}</option>
+                  {companiesForUnit.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
@@ -169,7 +229,7 @@ export function Autocadastro() {
             </div>
 
             <div className="step-card">
-              <div className="step-heading">3. Filiais</div>
+              <div className="step-heading">4. Filiais</div>
               {form.companyId ? (
                 branchesForCompany.length > 0 ? (
                   <div className="autocadastro-chip-row">
@@ -188,7 +248,7 @@ export function Autocadastro() {
             </div>
 
             <div className="step-card">
-              <div className="step-heading">4. Centros de custo</div>
+              <div className="step-heading">5. Centros de custo</div>
               {form.branchIds.length > 0 ? (
                 costCentersForBranches.length > 0 ? (
                   <div className="autocadastro-chip-row">
@@ -207,7 +267,7 @@ export function Autocadastro() {
             </div>
 
             <div className="step-card">
-              <div className="step-heading">5. Copas</div>
+              <div className="step-heading">6. Copas</div>
               {form.branchIds.length > 0 ? (
                 copasForBranches.length > 0 ? (
                   <div className="autocadastro-chip-row">

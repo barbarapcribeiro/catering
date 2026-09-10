@@ -4,33 +4,35 @@ import { Modal } from "../../components/Modal";
 import type { Segment } from "../../types";
 import "./Segmentos.css";
 
-const EMPTY_FORM = { name: "", active: true };
+const EMPTY_FORM = { name: "", clientId: "", active: true };
 
 export function Segmentos() {
-  const { segments, businessUnits, addSegment, updateSegment, removeSegment, showToast } = useAppData();
+  const { segments, businessUnits, clients, addSegment, updateSegment, removeSegment, showToast } = useAppData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
 
+  const activeClients = clients.filter((c) => c.active);
   const unitCount = (segmentId: string) => businessUnits.filter((u) => u.segmentId === segmentId).length;
+  const clientName = (id?: string) => clients.find((c) => c.id === id)?.name;
 
   const openNew = () => {
     setEditingId(null);
-    setForm(EMPTY_FORM);
+    setForm({ ...EMPTY_FORM, clientId: activeClients[0]?.id ?? "" });
     setModalOpen(true);
   };
 
   const openEdit = (s: Segment) => {
     setEditingId(s.id);
-    setForm({ name: s.name, active: s.active });
+    setForm({ name: s.name, clientId: s.clientId ?? "", active: s.active });
     setModalOpen(true);
   };
 
-  const canSave = form.name.trim().length > 0;
+  const canSave = form.name.trim().length > 0 && form.clientId;
 
   const save = () => {
     if (!canSave) return;
-    const payload = { name: form.name.trim(), active: form.active };
+    const payload = { name: form.name.trim(), clientId: form.clientId, active: form.active };
     if (editingId) {
       updateSegment(editingId, payload);
       showToast("Segmento atualizado.");
@@ -66,6 +68,7 @@ export function Segmentos() {
         <div className="segmentos-table">
           <div className="segmentos-table__head">
             <div>Nome</div>
+            <div>Cliente</div>
             <div>Unidades</div>
             <div>Situação</div>
             <div>Ações</div>
@@ -73,6 +76,7 @@ export function Segmentos() {
           {segments.map((s) => (
             <div key={s.id} className="segmentos-table__row">
               <div className="segmentos-table__name">{s.name}</div>
+              <div className="segmentos-table__muted">{clientName(s.clientId) ?? "—"}</div>
               <div className="segmentos-table__muted">{unitCount(s.id)}</div>
               <div>
                 <span className="status-pill" style={{ background: s.active ? "var(--color-success-soft)" : "var(--color-border-soft)", color: s.active ? "var(--color-success)" : "var(--color-text-muted)" }}>
@@ -102,6 +106,18 @@ export function Segmentos() {
             {editingId ? "Editar segmento" : "Novo segmento"}
           </div>
           <div className="modal-form">
+            <label className="field-label">
+              Cliente
+              <select value={form.clientId} onChange={(e) => setForm({ ...form, clientId: e.target.value })}>
+                <option value="">Selecione o cliente</option>
+                {activeClients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              {activeClients.length === 0 && <span className="field-hint">Cadastre um cliente ativo antes de criar um segmento.</span>}
+            </label>
             <label className="field-label">
               Nome
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ex.: Corporativo" />
