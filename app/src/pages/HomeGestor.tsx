@@ -34,7 +34,7 @@ function Sparkline({ seed, color }: { seed: number; color: string }) {
 
 export function HomeGestor() {
   const navigate = useNavigate();
-  const { orders, costCenters, currentUser, updateOrder, showToast } = useAppData();
+  const { orders, costCenters, currentUser, updateOrder, showToast, promos } = useAppData();
 
   const pendingGestor = orders.filter((o) => o.requiresApproval && o.status === "Aguardando aprovação" && !o.managerApproved);
   const totalPendingValue = pendingGestor.reduce((sum, o) => sum + (o.valueNumber ?? 0), 0);
@@ -143,7 +143,7 @@ export function HomeGestor() {
 
         <RecentOrdersCard orders={orders} />
         <OpenOrdersCard orders={orders} />
-        <PromosSection />
+        <PromosSection promos={promos} />
 
         <div className="persona-home__panel">
           <div className="persona-home__panel-header">

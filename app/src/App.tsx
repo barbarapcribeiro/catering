@@ -32,6 +32,7 @@ import { Kits } from "./pages/admin/Kits";
 import { Servicos } from "./pages/admin/Servicos";
 import { Decoracoes } from "./pages/admin/Decoracoes";
 import { Popups } from "./pages/admin/Popups";
+import { NovidadesPromocoes } from "./pages/admin/NovidadesPromocoes";
 import { Parametros } from "./pages/admin/Parametros";
 import { ServicosPorFilial } from "./pages/admin/ServicosPorFilial";
 import { Ativos } from "./pages/admin/Ativos";
@@ -103,6 +104,7 @@ export default function App() {
               <Route path="servicos" element={<Servicos />} />
               <Route path="decoracoes" element={<Decoracoes />} />
               <Route path="popups" element={<Popups />} />
+              <Route path="novidades-promocoes" element={<NovidadesPromocoes />} />
               <Route path="fornecedores" element={<Fornecedores />} />
               <Route path="usuarios" element={<Usuarios />} />
               <Route path="permissoes" element={<Permissoes />} />

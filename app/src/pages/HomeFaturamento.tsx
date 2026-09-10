@@ -12,7 +12,7 @@ function billingStatusOf(status?: BillingStatus): BillingStatus {
 
 export function HomeFaturamento() {
   const navigate = useNavigate();
-  const { orders, currentUser, updateOrder, showToast } = useAppData();
+  const { orders, currentUser, updateOrder, showToast, promos } = useAppData();
 
   const billable = orders.filter((o) => o.status !== "Cancelado");
   const pending = billable.filter((o) => billingStatusOf(o.billingStatus) === "Pendente");
@@ -36,7 +36,7 @@ export function HomeFaturamento() {
 
         <RecentOrdersCard orders={orders} />
         <OpenOrdersCard orders={orders} />
-        <PromosSection />
+        <PromosSection promos={promos} />
 
         <div className="persona-home__kpis">
           <div className="card persona-home__kpi">

@@ -31,6 +31,7 @@ import {
   type PagePermission,
   type PhoneNumber,
   type Popup,
+  type Promo,
   type PremiumEvent,
   type Product,
   type Profile,
@@ -79,6 +80,7 @@ interface StoredState {
   occurrences: Occurrence[];
   popups: Popup[];
   dismissedPopupIds: string[];
+  promos: Promo[];
   currentProfileId: string;
   /** Usuário efetivamente autenticado (login real). null = ninguém logado. */
   currentUserId: string | null;
@@ -809,6 +811,7 @@ const initialProfiles: Profile[] = [
       "admin-servicos": { ver: true, criarEditar: true },
       "admin-decoracoes": { ver: true, criarEditar: true },
       "admin-popups": { ver: true, criarEditar: true, excluir: true },
+      "admin-novidades": { ver: true, criarEditar: true, excluir: true },
       "admin-fornecedores": { ver: true, criarEditar: true },
       "admin-pesquisa": { ver: true, criarEditar: true },
       "admin-pesquisa-app": { ver: true, criarEditar: true },
@@ -988,6 +991,55 @@ const initialOccurrences: Occurrence[] = [];
 
 const initialPopups: Popup[] = [];
 
+const initialPromos: Promo[] = [
+  {
+    id: "combo",
+    tag: "NOVIDADE",
+    color: "var(--color-primary)",
+    bg: "var(--color-primary-soft)",
+    icon: "☕",
+    title: "Combo Reunião",
+    desc: "Um novo combo pensado para reuniões produtivas: coffee break completo com opções quentes e frias, montado em até 2h úteis.",
+    fullDesc: "Um novo combo pensado para reuniões produtivas: coffee break completo com opções quentes e frias, montado em até 2h úteis.",
+    terms: "Disponível para pedidos com no mínimo 10 pessoas. Sujeito à disponibilidade da unidade de atendimento.",
+    validity: "15/08/2026",
+    ctaLabel: "Conhecer opções",
+    route: "/pedido/coffee-break",
+    active: true,
+  },
+  {
+    id: "coffee",
+    tag: "PROMOÇÃO",
+    color: "#1a7a4f",
+    bg: "#e6f5ec",
+    icon: "☕",
+    title: "Desconto no Coffee Break",
+    desc: "Peça para grupos acima de 20 pessoas e ganhe 10% de desconto automático no valor total do pedido.",
+    fullDesc: "Peça para grupos acima de 20 pessoas e ganhe 10% de desconto automático no valor total do pedido.",
+    terms: "Desconto aplicado automaticamente no carrinho ao atingir 20 pessoas ou mais. Válido para todos os kits de Coffee Break.",
+    validity: "31/07/2026",
+    discount: "10% OFF",
+    ctaLabel: "Aproveitar agora",
+    route: "/pedido/coffee-break",
+    active: true,
+  },
+  {
+    id: "lanche",
+    tag: "NOVIDADE",
+    color: "#b5690f",
+    bg: "#faf0e3",
+    icon: "🥪",
+    title: "Lanche Saudável",
+    desc: "Novas opções de lanches saudáveis chegaram ao cardápio: frutas frescas, mix de castanhas e barrinhas integrais.",
+    fullDesc: "Novas opções de lanches saudáveis chegaram ao cardápio: frutas frescas, mix de castanhas e barrinhas integrais.",
+    terms: "Novos itens já disponíveis na categoria Lanche ao montar seu próximo pedido.",
+    validity: "sem data limite",
+    ctaLabel: "Ver opções",
+    route: "/pedido/lanche",
+    active: true,
+  },
+];
+
 const initialOperatingParameters: OperatingParameters = {
   logoUrl: "/logo-direct-eventos.png",
   showLogoOnPrint: true,
@@ -1056,6 +1108,7 @@ const defaultState: StoredState = {
   locations: initialLocations,
   occurrences: initialOccurrences,
   popups: initialPopups,
+  promos: initialPromos,
   dismissedPopupIds: [],
   currentProfileId: "prof-cliente",
   currentUserId: null,
@@ -1152,6 +1205,12 @@ interface AppDataValue {
   removePopup: (id: string) => void;
   dismissedPopupIds: Set<string>;
   dismissPopup: (id: string) => void;
+
+  promos: Promo[];
+  addPromo: (promo: Omit<Promo, "id">) => void;
+  updatePromo: (id: string, patch: Partial<Promo>) => void;
+  removePromo: (id: string) => void;
+  reorderPromo: (id: string, dir: -1 | 1) => void;
 
   contracts: Contract[];
   addContract: (contract: Omit<Contract, "id">) => void;
@@ -1563,6 +1622,26 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, popups: s.popups.filter((p) => p.id !== id) }));
   };
 
+  const addPromo: AppDataValue["addPromo"] = (promo) => {
+    setState((s) => ({ ...s, promos: [...s.promos, { ...promo, id: `promo${Date.now()}` }] }));
+  };
+  const updatePromo: AppDataValue["updatePromo"] = (id, patch) => {
+    setState((s) => ({ ...s, promos: s.promos.map((p) => (p.id === id ? { ...p, ...patch } : p)) }));
+  };
+  const removePromo = (id: string) => {
+    setState((s) => ({ ...s, promos: s.promos.filter((p) => p.id !== id) }));
+  };
+  const reorderPromo: AppDataValue["reorderPromo"] = (id, dir) => {
+    setState((s) => {
+      const list = [...s.promos];
+      const idx = list.findIndex((p) => p.id === id);
+      const swapIdx = idx + dir;
+      if (idx < 0 || swapIdx < 0 || swapIdx >= list.length) return s;
+      [list[idx], list[swapIdx]] = [list[swapIdx], list[idx]];
+      return { ...s, promos: list };
+    });
+  };
+
   const addContract: AppDataValue["addContract"] = (contract) => {
     setState((s) => ({ ...s, contracts: [{ ...contract, id: `ctr${Date.now()}` }, ...s.contracts] }));
   };
@@ -1882,6 +1961,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       removePopup,
       dismissedPopupIds: new Set(state.dismissedPopupIds),
       dismissPopup,
+      promos: state.promos,
+      addPromo,
+      updatePromo,
+      removePromo,
+      reorderPromo,
       contracts: state.contracts,
       addContract,
       updateContract,

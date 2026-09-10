@@ -6,7 +6,7 @@ import "./HomePersona.css";
 
 export function HomeProducao() {
   const navigate = useNavigate();
-  const { orders, currentUser, updateOrder, showToast } = useAppData();
+  const { orders, currentUser, updateOrder, showToast, promos } = useAppData();
 
   const inPreparation = orders.filter((o) => o.status === "Em preparação");
   const readyForDelivery = orders.filter((o) => o.status === "Pronto para entrega");
@@ -28,7 +28,7 @@ export function HomeProducao() {
 
         <RecentOrdersCard orders={orders} />
         <OpenOrdersCard orders={orders} />
-        <PromosSection />
+        <PromosSection promos={promos} />
 
         <div className="persona-home__kpis">
           <div className="card persona-home__kpi">

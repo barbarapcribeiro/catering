@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Modal } from "../components/Modal";
@@ -8,7 +8,6 @@ import { WhatsAppButton } from "../components/WhatsAppButton";
 import { useAppData } from "../mock/AppDataContext";
 import { isOpenOrder, SERVICES, STATUS_STYLE } from "../mock/services";
 import { orderCreatedMessage } from "../mock/whatsapp";
-import { PROMOS } from "../mock/promos";
 import type { Order, OrderAttachment } from "../types";
 import "./Home.css";
 
@@ -18,12 +17,14 @@ function formatDateTimePt(iso: string) {
   return `${d.toLocaleDateString("pt-BR")} • ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
 }
 
-const PROMO_ICON: Record<string, string> = { combo: "☕", coffee: "☕", lanche: "🥪" };
-
 type Modal_ = { type: "service"; service: (typeof SERVICES)[number] } | { type: "order"; order: Order } | null;
 
+type HeroSlide =
+  | { kind: "coffee" }
+  | { kind: "promo"; id: string; tag: string; icon: string; title: string; desc: string; route?: string };
+
 export function HomeCliente() {
-  const { orders, addOrder, cancelOrder, duplicateOrder, favorites, toggleFavorite, showToast, currentUser, branches, surveyResponses } = useAppData();
+  const { orders, addOrder, cancelOrder, duplicateOrder, favorites, toggleFavorite, showToast, currentUser, branches, surveyResponses, promos } = useAppData();
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,6 +34,7 @@ export function HomeCliente() {
   const [kebabOpenId, setKebabOpenId] = useState<string | null>(null);
   const [modal, setModal] = useState<Modal_>(null);
   const [form, setForm] = useState({ people: "", date: "", time: "", notes: "", attachments: [] as OrderAttachment[] });
+  const [heroIndex, setHeroIndex] = useState(0);
 
   // Serviços habilitados nas filiais do usuário (união entre elas). Usuário sem filial vinculada
   // vê tudo, pra não quebrar perfis que não passam por essa configuração (GU, Produção etc.).
@@ -40,11 +42,41 @@ export function HomeCliente() {
   const visibleServiceIds =
     userBranches.length > 0 ? new Set(userBranches.flatMap((b) => b.enabledServiceIds ?? SERVICES.map((s) => s.id))) : null;
   const visibleServices = visibleServiceIds ? SERVICES.filter((sv) => visibleServiceIds.has(sv.id)) : SERVICES;
-  const visiblePromos = PROMOS.filter((p) => {
+  const visiblePromos = promos.filter((p) => {
+    if (!p.active) return false;
     if (!p.route) return true;
     const svc = SERVICES.find((sv) => sv.route === p.route);
     return !svc || visibleServices.some((v) => v.id === svc.id);
   });
+
+  const hasCoffeeBreak = visibleServices.some((sv) => sv.id === "cb");
+  const heroSlides: HeroSlide[] = [
+    ...(hasCoffeeBreak ? [{ kind: "coffee" as const }] : []),
+    ...visiblePromos.map((p) => ({ kind: "promo" as const, id: p.id, tag: p.discount ? `${p.tag} · ${p.discount}` : p.tag, icon: p.icon ?? "🎉", title: p.title, desc: p.desc, route: p.route })),
+  ];
+  const heroSlide = heroSlides[heroIndex % heroSlides.length];
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopHeroAutoplay = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+  const startHeroAutoplay = () => {
+    stopHeroAutoplay();
+    if (heroSlides.length <= 1) return;
+    timerRef.current = setInterval(() => setHeroIndex((i) => (i + 1) % heroSlides.length), 5000);
+  };
+  useEffect(() => {
+    startHeroAutoplay();
+    return stopHeroAutoplay;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heroSlides.length]);
+
+  const goHeroSlide = (i: number) => {
+    setHeroIndex((i + heroSlides.length) % heroSlides.length);
+    startHeroAutoplay();
+  };
+
+  const favoritedServices = visibleServices.filter((sv) => sv.id !== "cb" && favorites.has(sv.id));
 
   const q = searchQuery.trim().toLowerCase();
   let filtered = visibleServices.filter((sv) => sv.name.toLowerCase().includes(q));
@@ -137,24 +169,61 @@ export function HomeCliente() {
         )}
 
         <div className="home-grid-2x2">
-          {visibleServices.some((sv) => sv.id === "cb") && (
-            <div className="home-hero">
+          {heroSlides.length > 0 && heroSlide && (
+            <div className="home-hero" onMouseEnter={stopHeroAutoplay} onMouseLeave={startHeroAutoplay}>
               <img className="home-hero__photo" src="/coffee-break-hero.png" alt="" />
               <div className="home-hero__photo-overlay" />
-              <button className="home-hero__arrow-btn" onClick={() => navigate("/pedido/coffee-break")} aria-label="Novo pedido de Coffee Break">
+
+              {heroSlides.length > 1 && (
+                <>
+                  <button className="home-hero__nav home-hero__nav--prev" onClick={() => goHeroSlide(heroIndex - 1)} aria-label="Anterior">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                  </button>
+                  <button className="home-hero__nav home-hero__nav--next" onClick={() => goHeroSlide(heroIndex + 1)} aria-label="Próximo">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
+                  <div className="home-hero__dots">
+                    {heroSlides.map((_, i) => (
+                      <button key={i} className={`home-hero__dot ${i === heroIndex % heroSlides.length ? "is-active" : ""}`} onClick={() => goHeroSlide(i)} aria-label={`Slide ${i + 1}`} />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <button
+                className="home-hero__arrow-btn"
+                onClick={() => (heroSlide.kind === "coffee" ? navigate("/pedido/coffee-break") : heroSlide.route && navigate(heroSlide.route))}
+                aria-label={heroSlide.kind === "coffee" ? "Novo pedido de Coffee Break" : heroSlide.title}
+              >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
               </button>
-              <div className="home-hero__row">
-                <div className="home-hero__icon-badge">
-                  <PathIcon path="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8zM6 2v4M10 2v4M14 2v4" color="#fff" size={20} strokeWidth={2} />
+
+              {heroSlide.kind === "coffee" ? (
+                <div className="home-hero__row">
+                  <div className="home-hero__icon-badge">
+                    <PathIcon path="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8zM6 2v4M10 2v4M14 2v4" color="#fff" size={20} strokeWidth={2} />
+                  </div>
+                  <div>
+                    <div className="home-hero__title">Coffee Break</div>
+                    <div className="home-hero__desc">Solicite coffee break para reuniões, treinamentos e eventos.</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="home-hero__title">Coffee Break</div>
-                  <div className="home-hero__desc">Solicite coffee break para reuniões, treinamentos e eventos.</div>
+              ) : (
+                <div className="home-hero__row">
+                  <div className="home-hero__icon-badge">{heroSlide.icon}</div>
+                  <div>
+                    <span className="home-hero__tag">{heroSlide.tag}</span>
+                    <div className="home-hero__title">{heroSlide.title}</div>
+                    <div className="home-hero__desc">{heroSlide.desc}</div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -195,29 +264,55 @@ export function HomeCliente() {
             ))}
           </div>
 
-          <div className="card home-promos-compact">
+          <div className="card home-favorites-compact">
             <div className="home-compact-card__header">
-              <span className="home-compact-card__title">Novidades e Promoções</span>
-              <a href="#" onClick={(e) => e.preventDefault()} className="link">
-                Ver todas
-              </a>
+              <div className="home-compact-card__title-row">
+                <span className="star-icon">★</span>
+                <span className="home-compact-card__title">Favoritos</span>
+              </div>
             </div>
-            <div className="home-promos-compact__list">
-              {visiblePromos.map((p) => (
-                <div key={p.id} className="home-promo-row" onClick={() => p.route && navigate(p.route)}>
-                  <div className="home-promo-row__thumb" style={{ background: p.bg }}>
-                    {PROMO_ICON[p.id] ?? "🎉"}
+            <div className="home-compact-card__subtitle">Coffee Break sempre aqui, mais os serviços que você marcou com estrela.</div>
+            <div className="home-fav-list">
+              {hasCoffeeBreak && (
+                <div className="home-fav-row" onClick={() => navigate("/pedido/coffee-break")}>
+                  <div className="home-fav-row__icon">
+                    <PathIcon path="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8zM6 2v4M10 2v4M14 2v4" color="#fff" size={18} strokeWidth={2} />
                   </div>
-                  <div className="home-promo-row__body">
-                    <div className="home-promo-row__tag" style={{ color: p.color }}>
-                      {p.tag}
-                      {p.discount ? ` · ${p.discount}` : ""}
+                  <div className="home-fav-row__body">
+                    <div className="home-fav-row__name-row">
+                      <span className="home-fav-row__name">Coffee Break</span>
+                      <span className="home-fav-row__pin">Sempre aqui</span>
                     </div>
-                    <div className="home-promo-row__title">{p.title}</div>
-                    <div className="home-promo-row__desc">{p.desc}</div>
+                    <div className="home-fav-row__desc">Solicite coffee break para reuniões, treinamentos e eventos.</div>
                   </div>
+                  <span className="star-icon">★</span>
+                </div>
+              )}
+              {favoritedServices.map((sv) => (
+                <div key={sv.id} className="home-fav-row" onClick={() => openService(sv)}>
+                  <div className="home-fav-row__icon">
+                    <PathIcon path={sv.iconPath} color="#fff" size={18} strokeWidth={2} />
+                  </div>
+                  <div className="home-fav-row__body">
+                    <div className="home-fav-row__name-row">
+                      <span className="home-fav-row__name">{sv.name}</span>
+                    </div>
+                    <div className="home-fav-row__desc">{sv.desc}</div>
+                  </div>
+                  <button
+                    className="star-icon home-fav-row__toggle"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(sv.id);
+                    }}
+                  >
+                    ★
+                  </button>
                 </div>
               ))}
+              {favoritedServices.length === 0 && (
+                <div className="home-fav-hint">Marque a estrela ☆ em qualquer serviço lá embaixo para ele aparecer aqui também.</div>
+              )}
             </div>
           </div>
 
@@ -313,38 +408,6 @@ export function HomeCliente() {
                       Avaliar agora
                     </button>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {visibleServices.some((sv) => favorites.has(sv.id)) && (
-          <div className="home-favorites">
-            <div className="home-favorites__header">
-              <span className="star-icon">★</span>
-              <div className="home-favorites__title">Favoritos</div>
-              <div className="home-favorites__hint">&bull; serviços mais solicitados por você</div>
-            </div>
-            <div className="favorites-grid">
-              {visibleServices.filter((sv) => favorites.has(sv.id)).map((sv) => (
-                <div key={sv.id} className="service-card service-card--fav" onClick={() => openService(sv)}>
-                  <div className="service-card__icon service-card__icon--primary">
-                    <PathIcon path={sv.iconPath} color="#fff" />
-                  </div>
-                  <div className="service-card__body">
-                    <div className="service-card__name">{sv.name}</div>
-                    <div className="service-card__desc">{sv.desc}</div>
-                  </div>
-                  <button
-                    className="fav-btn fav-btn--active"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(sv.id);
-                    }}
-                  >
-                    ★
-                  </button>
                 </div>
               ))}
             </div>

@@ -228,6 +228,13 @@ export interface Promo {
   ctaLabel: string;
   color: string;
   bg: string;
+  /** Emoji usado como ícone no card e no carrossel da Home. */
+  icon?: string;
+  discount?: string;
+  /** Rota do serviço relacionado (usada no CTA e no carrossel). */
+  route?: string;
+  /** Controla se aparece no carrossel da Home e em Fique por Dentro. */
+  active: boolean;
 }
 
 export interface WeeklyActivity {
@@ -420,6 +427,7 @@ export const APP_PAGES: AppPageDef[] = [
   { id: "admin-localizacoes", label: "Cadastros · Localizações", group: "Painel Administrativo" },
   { id: "admin-ocorrencias", label: "Ocorrências", group: "Painel Administrativo" },
   { id: "admin-popups", label: "Pop-ups", group: "Painel Administrativo" },
+  { id: "admin-novidades", label: "Novidades e Promoções", group: "Painel Administrativo" },
   { id: "admin-parametros", label: "Parâmetros", group: "Painel Administrativo" },
   { id: "admin-servicos-filial", label: "Configurações · Serviços por Filial", group: "Painel Administrativo" },
   { id: "admin-ativos", label: "Gestão de Ativos", group: "Painel Administrativo" },

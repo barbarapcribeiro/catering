@@ -1,8 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { isOpenOrder, STATUS_STYLE } from "../mock/services";
-import { PROMOS } from "../mock/promos";
 import { money } from "../mock/money";
-import type { Order } from "../types";
+import type { Order, Promo } from "../types";
 import "./HomeWidgets.css";
 
 function statusStyleOf(status: Order["status"]) {
@@ -95,8 +94,9 @@ export function OpenOrdersCard({ orders }: { orders: Order[] }) {
   );
 }
 
-export function PromosSection() {
+export function PromosSection({ promos }: { promos: Promo[] }) {
   const navigate = useNavigate();
+  const visible = promos.filter((p) => p.active);
   return (
     <div className="hw-promos">
       <div className="hw-card__header">
@@ -106,7 +106,7 @@ export function PromosSection() {
         </div>
       </div>
       <div className="hw-promos__grid">
-        {PROMOS.map((p) => (
+        {visible.map((p) => (
           <div key={p.id} className="hw-promo-card" style={{ background: p.bg }}>
             <div className="hw-promo-card__tags">
               <span className="hw-promo-card__tag" style={{ color: p.color }}>

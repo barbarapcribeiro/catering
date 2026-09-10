@@ -15,7 +15,7 @@ const SHORTCUTS = [
 
 export function HomeGU() {
   const navigate = useNavigate();
-  const { orders, occurrences, currentUser } = useAppData();
+  const { orders, occurrences, currentUser, promos } = useAppData();
 
   const openOrders = orders.filter((o) => o.status !== "Cancelado" && o.status !== "Finalizado");
   const awaitingApproval = orders.filter((o) => o.status === "Aguardando aprovação").length;
@@ -35,7 +35,7 @@ export function HomeGU() {
 
         <RecentOrdersCard orders={orders} />
         <OpenOrdersCard orders={orders} />
-        <PromosSection />
+        <PromosSection promos={promos} />
 
         <div className="persona-home__kpis persona-home__kpis--4">
           <div className="card persona-home__kpi">

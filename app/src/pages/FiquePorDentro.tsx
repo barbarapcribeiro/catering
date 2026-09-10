@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { useAppData } from "../mock/AppDataContext";
-import { PROMOS } from "../mock/promos";
 import "./FiquePorDentro.css";
 
 interface ActivityEntry {
@@ -32,7 +31,8 @@ function dayLabel(d: Date) {
 
 export function FiquePorDentro() {
   const navigate = useNavigate();
-  const { orders } = useAppData();
+  const { orders, promos } = useAppData();
+  const visiblePromos = promos.filter((p) => p.active);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const toggleDetail = (id: string) => setExpanded((s) => ({ ...s, [id]: !s[id] }));
@@ -84,7 +84,7 @@ export function FiquePorDentro() {
           </div>
 
           <div className="fpd-promo-list">
-            {PROMOS.map((p) => (
+            {visiblePromos.map((p) => (
               <div key={p.id} className="fpd-promo-card" style={{ background: p.bg }}>
                 <div className="fpd-promo-card__main">
                   <div className="fpd-promo-card__tags">

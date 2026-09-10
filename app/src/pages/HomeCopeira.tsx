@@ -8,7 +8,7 @@ import "./HomePersona.css";
 
 export function HomeCopeira() {
   const navigate = useNavigate();
-  const { orders, currentUser, updateOrder, showToast, users } = useAppData();
+  const { orders, currentUser, updateOrder, showToast, users, promos } = useAppData();
 
   const readyForDelivery = orders.filter((o) => o.status === "Pronto para entrega");
   const pendingUtensils = orders.filter((o) => o.pickupDate && !o.utensilsRetrieved && (o.status === "Entregue" || o.status === "Finalizado"));
@@ -35,7 +35,7 @@ export function HomeCopeira() {
 
         <RecentOrdersCard orders={orders} />
         <OpenOrdersCard orders={orders} />
-        <PromosSection />
+        <PromosSection promos={promos} />
 
         <div className="persona-home__kpis">
           <div className="card persona-home__kpi">

@@ -69,7 +69,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Conteúdo",
-    items: [{ label: "Pop-ups", to: "/admin/popups", glyph: "📢", pageId: "admin-popups" }],
+    items: [
+      { label: "Pop-ups", to: "/admin/popups", glyph: "📢", pageId: "admin-popups" },
+      { label: "Novidades e Promoções", to: "/admin/novidades-promocoes", glyph: "🎉", pageId: "admin-novidades" },
+    ],
   },
   {
     label: "Financeiro",
