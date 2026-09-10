@@ -47,7 +47,7 @@ import { computeProductPrice } from "./pricing";
 import { money } from "./money";
 import { orderStatusHeadline, orderStatusMessage, requesterPhone, surveyInviteMessage } from "./whatsapp";
 
-const STORAGE_KEY = "direct-eventos-mock-v8";
+const STORAGE_KEY = "direct-eventos-mock-v10";
 
 interface StoredState {
   orders: Order[];
@@ -994,6 +994,8 @@ const initialOperatingParameters: OperatingParameters = {
   showTotalValueInOrder: true,
   showDeliveryLocationField: true,
   showInstructionsField: true,
+  showPoNumberField: true,
+  allowClientCancellation: true,
 };
 
 const SLA_DEFAULTS: Record<OrderCategoryName, number> = {

@@ -90,7 +90,7 @@ const STEP_DEFS = [
 ];
 
 export function Surpreenda() {
-  const { addOrder, showToast, costCenters, serviceParameters, orders, currentUser, locations, copas } = useAppData();
+  const { addOrder, showToast, costCenters, serviceParameters, orders, currentUser, locations, copas, operatingParameters } = useAppData();
   const navigate = useNavigate();
   const routerLocation = useLocation();
   const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
@@ -102,6 +102,7 @@ export function Surpreenda() {
   const [qtys, setQtys] = useState<Record<string, number>>({});
   const [people, setPeople] = useState(8);
   const [eventName, setEventName] = useState("");
+  const [poNumber, setPoNumber] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
   const [branchId, setBranchId] = useState("");
@@ -220,6 +221,7 @@ export function Surpreenda() {
       eventTime,
       dietaryRestrictions: hasDietary ? dietaryDetails || "Sim, sem detalhes" : "Nenhuma",
       notes: `Forma de pagamento: ${paymentLabel}${obs ? " • " + obs : ""}`,
+      poNumber: poNumber || undefined,
       costCenters: payment === "centro" ? [{ code: costCenter, percent: 100 }] : undefined,
       requiresApproval: needsApproval,
       attachments: attachments.length ? attachments : undefined,
@@ -320,6 +322,12 @@ export function Surpreenda() {
                   Nome do evento
                   <input value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Ex.: Café da equipe, Aniversariantes de agosto..." />
                 </label>
+                {operatingParameters.showPoNumberField && (
+                  <label className="field-boxed">
+                    Número de PO
+                    <input value={poNumber} onChange={(e) => setPoNumber(e.target.value)} placeholder="Opcional" />
+                  </label>
+                )}
                 <div className="field-boxed-grid">
                   <label className="field-boxed">
                     Data do evento

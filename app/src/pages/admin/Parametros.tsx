@@ -131,6 +131,27 @@ export function Parametros() {
               />
               Visualização do campo de Instruções/observações
             </label>
+            <label className="param-toggle-row">
+              <input
+                type="checkbox"
+                checked={operatingParameters.showPoNumberField}
+                onChange={(e) => updateOperatingParameters({ showPoNumberField: e.target.checked })}
+              />
+              Visualização do campo Número de PO (em todos os tipos de pedido)
+            </label>
+          </div>
+
+          <div className="card parametros-card">
+            <div className="parametros-card__title">Cancelamento de pedidos</div>
+            <div className="parametros-card__hint">GU e Administrador sempre podem cancelar, independente deste parâmetro.</div>
+            <label className="param-toggle-row">
+              <input
+                type="checkbox"
+                checked={operatingParameters.allowClientCancellation}
+                onChange={(e) => updateOperatingParameters({ allowClientCancellation: e.target.checked })}
+              />
+              Permitir que o Cliente cancele o próprio pedido
+            </label>
           </div>
         </div>
       )}

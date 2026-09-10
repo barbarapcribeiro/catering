@@ -95,7 +95,7 @@ const STEP_DEFS = [
 ];
 
 export function CoffeeBreakOrder() {
-  const { addOrder, showToast, products, serviceParameters, orders, currentUser, costCenters, locations, copas } = useAppData();
+  const { addOrder, showToast, products, serviceParameters, orders, currentUser, costCenters, locations, copas, operatingParameters } = useAppData();
   const svcParams = serviceParameters.find((s) => s.category === "Coffee Break");
   const navigate = useNavigate();
   const routerLocation = useLocation();
@@ -121,6 +121,7 @@ export function CoffeeBreakOrder() {
   const [pickupDate, setPickupDate] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [coffeeInstructions, setCoffeeInstructions] = useState("");
+  const [poNumber, setPoNumber] = useState("");
   const [hasDietary, setHasDietary] = useState(false);
   const [dietaryDetails, setDietaryDetails] = useState("");
   const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
@@ -276,6 +277,7 @@ export function CoffeeBreakOrder() {
       pickupDate,
       pickupTime,
       coffeeInstructions,
+      poNumber: poNumber || undefined,
       dietaryRestrictions: hasDietary ? dietaryDetails || "Sim, sem detalhes" : "Nenhuma",
       costCenters: selCodes.map((code) => ({ code, percent: multiSel ? costCenterPct[code] : 100 })),
       requiresApproval: needsApproval,
@@ -428,6 +430,12 @@ export function CoffeeBreakOrder() {
                   Nome do evento
                   <input value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Ex.: Reunião de Diretoria, Confraternização..." />
                 </label>
+                {operatingParameters.showPoNumberField && (
+                  <label className="field-boxed">
+                    Número de PO
+                    <input value={poNumber} onChange={(e) => setPoNumber(e.target.value)} placeholder="Opcional" />
+                  </label>
+                )}
                 <div className="field-boxed-grid">
                   <label className="field-boxed">
                     Data do evento

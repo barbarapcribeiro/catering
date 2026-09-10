@@ -11,7 +11,7 @@ import "../pages/OrderFlow.css";
 import "./AguaOrder.css";
 
 export function AguaOrder() {
-  const { addOrder, showToast, costCenters, products, serviceParameters, orders, currentUser, locations } = useAppData();
+  const { addOrder, showToast, costCenters, products, serviceParameters, orders, currentUser, locations, operatingParameters } = useAppData();
   const navigate = useNavigate();
   const routerLocation = useLocation();
   const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
@@ -38,6 +38,7 @@ export function AguaOrder() {
   }, [linkedCostCenterCode]);
   const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
   const [observations, setObservations] = useState("");
+  const [poNumber, setPoNumber] = useState("");
   const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [hasError, setHasError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -114,6 +115,7 @@ export function AguaOrder() {
       requestedByUserId: currentUser?.id,
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Entregar para: ${deliverTo}${observations ? " • " + observations : ""}`,
+      poNumber: poNumber || undefined,
       attachments: attachments.length ? attachments : undefined,
     });
     showToast("Pedido de água solicitado com sucesso!");
@@ -182,6 +184,12 @@ export function AguaOrder() {
                   Entregar para
                   <input value={deliverTo} onChange={(e) => setDeliverTo(e.target.value)} placeholder="Nome, setor ou sala" />
                 </label>
+                {operatingParameters.showPoNumberField && (
+                  <label className="field-label">
+                    Número de PO
+                    <input value={poNumber} onChange={(e) => setPoNumber(e.target.value)} placeholder="Opcional" />
+                  </label>
+                )}
                 <CopaLocationFields
                   date={deliveryDate}
                   time={deliveryTime}

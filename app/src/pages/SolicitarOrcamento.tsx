@@ -15,6 +15,7 @@ type StepId =
   | "specialDietDetails"
   | "decoration"
   | "costCenter"
+  | "poNumber"
   | "review"
   | "done";
 
@@ -33,11 +34,12 @@ const STEP_QUESTIONS: Record<Exclude<StepId, "review" | "done">, string> = {
   specialDietDetails: "Quais restrições ou preferências? (ex.: vegetariano, sem glúten, sem lactose...)",
   decoration: "Quer decoração ou outros itens para melhorar a experiência?",
   costCenter: "Por qual centro de custo isso deve ser faturado?",
+  poNumber: "Tem número de PO (ordem de compra) para esse pedido? Se não tiver, pode avançar sem preencher.",
 };
 
 export function SolicitarOrcamento() {
   const navigate = useNavigate();
-  const { costCenters, currentUser, addQuoteRequest, addNotification, showToast } = useAppData();
+  const { costCenters, currentUser, addQuoteRequest, addNotification, showToast, operatingParameters } = useAppData();
   const activeCostCenters = costCenters.filter((c) => c.active);
 
   const [step, setStep] = useState<StepId>("serviceType");
@@ -51,6 +53,7 @@ export function SolicitarOrcamento() {
   const [specialDietDetails, setSpecialDietDetails] = useState("");
   const [decoration, setDecoration] = useState("");
   const [costCenter, setCostCenter] = useState("");
+  const [poNumber, setPoNumber] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -102,7 +105,12 @@ export function SolicitarOrcamento() {
   const submitCostCenter = () => {
     if (!costCenter) return;
     const cc = activeCostCenters.find((c) => c.code === costCenter);
-    advanceTo("review", cc ? `${cc.code} · ${cc.name}` : costCenter);
+    const label = cc ? `${cc.code} · ${cc.name}` : costCenter;
+    if (operatingParameters.showPoNumberField) advanceTo("poNumber", label);
+    else advanceTo("review", label);
+  };
+  const submitPoNumber = () => {
+    advanceTo("review", poNumber.trim() || "Sem PO informado");
   };
 
   const send = () => {
@@ -117,6 +125,7 @@ export function SolicitarOrcamento() {
       specialDietDetails: specialDiet ? specialDietDetails.trim() || undefined : undefined,
       decorationNotes: decoration.trim() || undefined,
       costCenterCode: costCenter || undefined,
+      poNumber: poNumber.trim() || undefined,
       requestedBy: currentUser?.name,
       requestedByUserId: currentUser?.id,
     });
@@ -248,6 +257,15 @@ export function SolicitarOrcamento() {
               </div>
             )}
 
+            {step === "poNumber" && (
+              <div className="orc-inline-row">
+                <input value={poNumber} onChange={(e) => setPoNumber(e.target.value)} placeholder="Opcional" />
+                <button className="btn btn--primary" onClick={submitPoNumber}>
+                  Avançar
+                </button>
+              </div>
+            )}
+
             {step === "review" && (
               <div className="orc-review">
                 <div className="orc-review__title">Confirme sua solicitação</div>
@@ -276,6 +294,12 @@ export function SolicitarOrcamento() {
                     <span>Centro de custo</span>
                     <strong>{costCenter}</strong>
                   </div>
+                  {operatingParameters.showPoNumberField && (
+                    <div>
+                      <span>Número de PO</span>
+                      <strong>{poNumber.trim() || "—"}</strong>
+                    </div>
+                  )}
                 </div>
                 <button className="btn btn--primary btn--full" onClick={send}>
                   Enviar solicitação

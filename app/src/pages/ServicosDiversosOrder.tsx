@@ -16,7 +16,7 @@ const PAYMENTS = [
 ];
 
 export function ServicosDiversosOrder() {
-  const { addOrder, showToast, costCenters, serviceCatalog, orders, currentUser } = useAppData();
+  const { addOrder, showToast, costCenters, serviceCatalog, orders, currentUser, operatingParameters } = useAppData();
   const navigate = useNavigate();
   const routerLocation = useLocation();
   const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
@@ -32,6 +32,7 @@ export function ServicosDiversosOrder() {
   const [costCenterMenuOpen, setCostCenterMenuOpen] = useState(false);
   const [payment, setPayment] = useState<string | null>(null);
   const [observations, setObservations] = useState("");
+  const [poNumber, setPoNumber] = useState("");
   const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [confirmed, setConfirmed] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -115,6 +116,7 @@ export function ServicosDiversosOrder() {
       requestedByUserId: currentUser?.id,
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: [`Forma de pagamento: ${paymentDef?.label ?? "—"}`, observations && `Observações: ${observations}`].filter(Boolean).join(" · "),
+      poNumber: poNumber || undefined,
       attachments: attachments.length ? attachments : undefined,
     });
     showToast("Pedido de serviços diversos solicitado com sucesso!");
@@ -265,6 +267,12 @@ export function ServicosDiversosOrder() {
                   Horário do serviço
                   <input type="time" value={serviceTime} onChange={(e) => setServiceTime(e.target.value)} />
                 </label>
+                {operatingParameters.showPoNumberField && (
+                  <label className="field-label">
+                    Número de PO
+                    <input value={poNumber} onChange={(e) => setPoNumber(e.target.value)} placeholder="Opcional" />
+                  </label>
+                )}
                 <div style={{ position: "relative" }}>
                   <label className="field-label" style={{ marginBottom: 6 }}>Centro de custo</label>
                   <div className="sd-local-box" onClick={() => setCostCenterMenuOpen((v) => !v)} style={{ color: costCenter ? "var(--color-text)" : "var(--color-text-muted)" }}>

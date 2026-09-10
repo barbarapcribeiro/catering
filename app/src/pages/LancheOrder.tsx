@@ -21,7 +21,7 @@ const PAYMENTS = [
 ];
 
 export function LancheOrder() {
-  const { addOrder, showToast, costCenters, kits, products, serviceCatalog, orders, currentUser, locations } = useAppData();
+  const { addOrder, showToast, costCenters, kits, products, serviceCatalog, orders, currentUser, locations, operatingParameters } = useAppData();
   const navigate = useNavigate();
   const routerLocation = useLocation();
   const repeatOrderId = (routerLocation.state as { repeatOrderId?: string } | null)?.repeatOrderId;
@@ -43,6 +43,7 @@ export function LancheOrder() {
   const [copaId, setCopaId] = useState("");
   const [routingBlocked, setRoutingBlocked] = useState(false);
   const [costCenter, setCostCenter] = useState("");
+  const [poNumber, setPoNumber] = useState("");
   const activeCostCenters = costCenters.filter(
     (c) => c.active && (!currentUser?.costCenterCodes?.length || currentUser.costCenterCodes.includes(c.code)) && (!branchId || !c.branchId || c.branchId === branchId),
   );
@@ -145,6 +146,7 @@ export function LancheOrder() {
       requestedByUserId: currentUser?.id,
       costCenters: [{ code: costCenter, percent: 100 }],
       notes: `Forma de pagamento: ${paymentDef?.label ?? "—"}`,
+      poNumber: poNumber || undefined,
       attachments: attachments.length ? attachments : undefined,
     });
     showToast("Pedido de lanche solicitado com sucesso!");
@@ -310,6 +312,12 @@ export function LancheOrder() {
                   Horário de retirada
                   <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} />
                 </label>
+                {operatingParameters.showPoNumberField && (
+                  <label className="field-label">
+                    Número de PO
+                    <input value={poNumber} onChange={(e) => setPoNumber(e.target.value)} placeholder="Opcional" />
+                  </label>
+                )}
                 <CopaLocationFields
                   date={pickupDate}
                   time={pickupTime}

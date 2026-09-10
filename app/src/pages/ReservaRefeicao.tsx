@@ -23,7 +23,7 @@ const MANUAL_PAYMENTS = [
 ];
 
 export function ReservaRefeicao() {
-  const { addOrder, showToast, costCenters, kits, products, serviceCatalog, currentUser } = useAppData();
+  const { addOrder, showToast, costCenters, kits, products, serviceCatalog, currentUser, operatingParameters } = useAppData();
   const navigate = useNavigate();
 
   const activeCostCenters = costCenters.filter((c) => c.active);
@@ -43,6 +43,7 @@ export function ReservaRefeicao() {
   const [consumeTime, setConsumeTime] = useState("");
   const [paymentMode, setPaymentMode] = useState<"centro" | "manual" | null>(null);
   const [costCenter, setCostCenter] = useState("");
+  const [poNumber, setPoNumber] = useState("");
   const [manualPayment, setManualPayment] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<OrderAttachment[]>([]);
   const [confirmed, setConfirmed] = useState(false);
@@ -121,6 +122,7 @@ export function ReservaRefeicao() {
       requestedByUserId: currentUser?.id,
       costCenters: paymentMode === "centro" ? [{ code: costCenter, percent: 100 }] : undefined,
       notes: `Forma de pagamento: ${paymentLabel}`,
+      poNumber: poNumber || undefined,
       attachments: attachments.length ? attachments : undefined,
     });
     showToast("Reserva de refeição solicitada com sucesso!");
@@ -306,6 +308,12 @@ export function ReservaRefeicao() {
                   Horário
                   <input type="time" value={consumeTime} onChange={(e) => setConsumeTime(e.target.value)} />
                 </label>
+                {operatingParameters.showPoNumberField && (
+                  <label className="field-label">
+                    Número de PO
+                    <input value={poNumber} onChange={(e) => setPoNumber(e.target.value)} placeholder="Opcional" />
+                  </label>
+                )}
               </div>
             </div>
 

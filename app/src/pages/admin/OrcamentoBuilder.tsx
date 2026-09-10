@@ -191,6 +191,7 @@ export function OrcamentoBuilder() {
         items: allItems,
         notes: guNotes || undefined,
         costCenters: quote.costCenterCode ? [{ code: quote.costCenterCode, percent: 100 }] : undefined,
+        poNumber: quote.poNumber,
         quoteRequestId: quote.id,
         requestedByUserId: quote.requestedByUserId,
       });

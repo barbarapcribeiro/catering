@@ -127,7 +127,7 @@ const STEP_DEFS = [
 ];
 
 export function EventoEspecialOrder() {
-  const { addOrder, showToast, serviceParameters, orders, currentUser, costCenters, locations, copas } = useAppData();
+  const { addOrder, showToast, serviceParameters, orders, currentUser, costCenters, locations, copas, operatingParameters } = useAppData();
   const svcParams = serviceParameters.find((s) => s.category === "Evento Especial");
   const navigate = useNavigate();
   const routerLocation = useLocation();
@@ -143,6 +143,7 @@ export function EventoEspecialOrder() {
   const [qtys, setQtys] = useState<Record<string, number>>({});
   const [people, setPeople] = useState(15);
   const [eventName, setEventName] = useState("");
+  const [poNumber, setPoNumber] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
   const [branchId, setBranchId] = useState("");
@@ -313,6 +314,7 @@ export function EventoEspecialOrder() {
       valueNumber: total,
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
       eventName,
+      poNumber: poNumber || undefined,
       location: locations.find((l) => l.id === locationId)?.name,
       branchId,
       locationId,
@@ -505,6 +507,12 @@ export function EventoEspecialOrder() {
                   Nome do evento
                   <input value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Ex.: Reunião de Diretoria, Confraternização..." />
                 </label>
+                {operatingParameters.showPoNumberField && (
+                  <label className="field-boxed">
+                    Número de PO
+                    <input value={poNumber} onChange={(e) => setPoNumber(e.target.value)} placeholder="Opcional" />
+                  </label>
+                )}
                 <div className="field-boxed-grid">
                   <label className="field-boxed">
                     Data do evento

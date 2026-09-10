@@ -53,6 +53,8 @@ export interface Order {
   valueNumber?: number;
   items?: OrderItem[];
   eventName?: string;
+  /** Número de PO (ordem de compra) do cliente — campo opcional, exibido só quando habilitado em Parâmetros. */
+  poNumber?: string;
   location?: string;
   /** Filial escolhida para o pedido (quando o solicitante tem acesso a mais de uma). */
   branchId?: string;
@@ -147,6 +149,7 @@ export interface QuoteRequest {
   specialDietDetails?: string;
   decorationNotes?: string;
   costCenterCode?: string;
+  poNumber?: string;
   requestedBy?: string;
   /** Id do usuário que solicitou — usado para direcionar avisos de WhatsApp ao telefone certo. */
   requestedByUserId?: string;
@@ -173,6 +176,10 @@ export interface OperatingParameters {
   showTotalValueInOrder: boolean;
   showDeliveryLocationField: boolean;
   showInstructionsField: boolean;
+  /** Controla se o campo Número de PO aparece nos formulários de novo pedido (todos os tipos de pedido e serviço). */
+  showPoNumberField: boolean;
+  /** Controla se o solicitante (Cliente) pode cancelar o próprio pedido. GU e Administrador sempre podem, independente deste parâmetro. */
+  allowClientCancellation: boolean;
 }
 
 /** Parâmetros por tipo de pedido (serviço) — SLA, retirada agendada, taxa e centro de custo padrão. */

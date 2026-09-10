@@ -142,7 +142,7 @@ export function GerenciarPedidos() {
   const [reportType, setReportType] = useState<OccurrenceType>(OCCURRENCE_TYPES[0]);
   const [reportDescription, setReportDescription] = useState("");
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ date: "", time: "", location: "", peopleCount: "", notes: "" });
+  const [editForm, setEditForm] = useState({ date: "", time: "", location: "", peopleCount: "", notes: "", poNumber: "" });
   const [editItems, setEditItems] = useState<{ name: string; qty: number; price: number; productId?: string; original: boolean; originalQty: number }[]>([]);
   const [newItemName, setNewItemName] = useState("");
   const [newItemQty, setNewItemQty] = useState("1");
@@ -182,6 +182,7 @@ export function GerenciarPedidos() {
       location: selected.location ?? "",
       peopleCount: selected.peopleCount ? String(selected.peopleCount) : "",
       notes: selected.notes ?? "",
+      poNumber: selected.poNumber ?? "",
     });
     setEditItems((selected.items ?? []).map((it) => ({ name: it.name, qty: it.qty, price: it.price, productId: it.productId, original: true, originalQty: it.qty })));
     setNewItemName("");
@@ -232,6 +233,7 @@ export function GerenciarPedidos() {
       datetime: `${finalDate || "A definir"} ${finalTime}`.trim(),
       location: editForm.location || undefined,
       notes: editForm.notes || undefined,
+      poNumber: editForm.poNumber || undefined,
     };
     if (editForm.peopleCount) {
       const peopleCount = Math.max(1, parseInt(editForm.peopleCount) || 1);
@@ -255,8 +257,10 @@ export function GerenciarPedidos() {
     duplicateOrder(selected.id);
     setQuickActionsOpen(false);
   };
+  const canCancel = operatingParameters.allowClientCancellation || currentUser?.profileId === "prof-gu" || currentUser?.profileId === "prof-admin";
+
   const cancel = () => {
-    if (!selected) return;
+    if (!selected || !canCancel) return;
     if (selected.status === "Orçamento enviado") {
       const q = quoteRequests.find((qr) => qr.orderId === selected.id);
       if (q) updateQuoteRequest(q.id, { status: "Cancelado" });
@@ -522,9 +526,11 @@ export function GerenciarPedidos() {
                         <button onClick={openEditModal}>Editar pedido</button>
                         <button onClick={printOrder}>Imprimir</button>
                         <button onClick={duplicate}>Duplicar pedido</button>
-                        <button className="kebab-menu__danger" onClick={cancel}>
-                          Cancelar pedido
-                        </button>
+                        {canCancel && (
+                          <button className="kebab-menu__danger" onClick={cancel}>
+                            Cancelar pedido
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -697,6 +703,12 @@ export function GerenciarPedidos() {
                           : "—"}
                       </div>
                     </div>
+                    {operatingParameters.showPoNumberField && (
+                      <div>
+                        <div className="gp-info-grid__label">Número de PO</div>
+                        <div className="gp-info-grid__value">{selected.poNumber || "—"}</div>
+                      </div>
+                    )}
                     {operatingParameters.showInstructionsField && (
                       <div className="gp-info-grid__full">
                         <div className="gp-info-grid__label">Observações</div>
@@ -835,6 +847,12 @@ export function GerenciarPedidos() {
                 <span>Pessoas</span>
                 <strong>{selected.peopleCount ?? selected.qty}</strong>
               </div>
+              {operatingParameters.showPoNumberField && selected.poNumber && (
+                <div>
+                  <span>Número de PO</span>
+                  <strong>{selected.poNumber}</strong>
+                </div>
+              )}
               <div>
                 <span>Status</span>
                 <strong>{selected.status}</strong>
@@ -924,9 +942,11 @@ export function GerenciarPedidos() {
                 ⚠ Reportar problema
               </button>
             )}
-            <button className="btn btn--outline gp-action-bar__danger-outline" onClick={cancel}>
-              ✕ Cancelar pedido
-            </button>
+            {canCancel && (
+              <button className="btn btn--outline gp-action-bar__danger-outline" onClick={cancel}>
+                ✕ Cancelar pedido
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -1003,6 +1023,12 @@ export function GerenciarPedidos() {
               <label className="field-label">
                 Nº de pessoas
                 <input type="number" min={1} value={editForm.peopleCount} onChange={(e) => setEditForm({ ...editForm, peopleCount: e.target.value })} />
+              </label>
+            )}
+            {operatingParameters.showPoNumberField && (
+              <label className="field-label">
+                Número de PO
+                <input value={editForm.poNumber} onChange={(e) => setEditForm({ ...editForm, poNumber: e.target.value })} placeholder="Opcional" />
               </label>
             )}
             {operatingParameters.showInstructionsField && (
