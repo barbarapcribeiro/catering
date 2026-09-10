@@ -29,6 +29,25 @@ function splitDateTime(dt: string): [string, string] {
   return [dt.slice(0, idx), time || "—"];
 }
 
+/** Datas de pedido são sempre gravadas como "YYYY-MM-DD" pelos fluxos de solicitação — outros formatos (pedidos legados) não dá pra calcular o SLA com segurança. */
+function parseOrderDateTime(date: string, time: string): Date | null {
+  const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date.trim());
+  if (!dm) return null;
+  const tm = /^(\d{1,2}):(\d{2})$/.exec(time.trim());
+  const d = new Date(Number(dm[1]), Number(dm[2]) - 1, Number(dm[3]), tm ? Number(tm[1]) : 0, tm ? Number(tm[2]) : 0);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+function roundUpToQuarterHour(d: Date): Date {
+  const ms = 15 * 60000;
+  return new Date(Math.ceil(d.getTime() / ms) * ms);
+}
+function fmtOrderDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function fmtOrderTime(d: Date): string {
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 function stageIndex(status: Order["status"]): number {
   switch (status) {
     case "Aguardando aprovação":
@@ -89,6 +108,7 @@ export function GerenciarPedidos() {
     quoteRequests,
     updateQuoteRequest,
     users,
+    copas,
   } = useAppData();
   const navigate = useNavigate();
 
@@ -104,6 +124,10 @@ export function GerenciarPedidos() {
   const [reportDescription, setReportDescription] = useState("");
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({ date: "", time: "", location: "", peopleCount: "", notes: "" });
+  const [editItems, setEditItems] = useState<{ name: string; qty: number; price: number; productId?: string; original: boolean; originalQty: number }[]>([]);
+  const [newItemName, setNewItemName] = useState("");
+  const [newItemQty, setNewItemQty] = useState("1");
+  const [newItemPrice, setNewItemPrice] = useState("");
   const [changeRequestOpen, setChangeRequestOpen] = useState(false);
   const [changeRequestText, setChangeRequestText] = useState("");
 
@@ -140,12 +164,53 @@ export function GerenciarPedidos() {
       peopleCount: selected.peopleCount ? String(selected.peopleCount) : "",
       notes: selected.notes ?? "",
     });
+    setEditItems((selected.items ?? []).map((it) => ({ name: it.name, qty: it.qty, price: it.price, productId: it.productId, original: true, originalQty: it.qty })));
+    setNewItemName("");
+    setNewItemQty("1");
+    setNewItemPrice("");
     setEditModalOpen(true);
   };
+
+  const editScheduled = parseOrderDateTime(editForm.date, editForm.time);
+  const editWithin2h = !!editScheduled && editScheduled.getTime() - Date.now() < 2 * 3600000;
+
+  const setEditItemQty = (idx: number, qty: number) => setEditItems((items) => items.map((it, i) => (i === idx ? { ...it, qty: Math.max(0, qty) } : it)));
+  const removeEditItem = (idx: number) => setEditItems((items) => items.filter((_, i) => i !== idx));
+  const addEditItem = () => {
+    const price = parseFloat(newItemPrice.replace(",", "."));
+    const qty = Math.max(1, parseInt(newItemQty) || 1);
+    if (!newItemName.trim() || !price || price <= 0) return;
+    setEditItems((items) => [...items, { name: newItemName.trim(), qty, price, original: false, originalQty: 0 }]);
+    setNewItemName("");
+    setNewItemQty("1");
+    setNewItemPrice("");
+  };
+
   const saveEdit = () => {
     if (!selected) return;
+    const cleanedItems = editItems.filter((it) => it.qty > 0);
+    const originalTotalQty = (selected.items ?? []).reduce((s, it) => s + it.qty, 0);
+    const newTotalQty = cleanedItems.reduce((s, it) => s + it.qty, 0);
+    const itemsIncreased = newTotalQty > originalTotalQty;
+
+    let finalDate = editForm.date;
+    let finalTime = editForm.time;
+    let slaNote = "";
+    if (itemsIncreased) {
+      const copa = copas.find((c) => c.id === selected.copaId);
+      if (copa) {
+        const minAllowed = new Date(Date.now() + copa.slaHours * 3600000);
+        if (!editScheduled || editScheduled < minAllowed) {
+          const rounded = roundUpToQuarterHour(minAllowed);
+          finalDate = fmtOrderDate(rounded);
+          finalTime = fmtOrderTime(rounded);
+          slaNote = ` Como foram incluídos itens, o horário passou a ser ${finalDate} às ${finalTime} — prazo mínimo da copa (SLA de ${copa.slaHours}h) contado a partir de agora.`;
+        }
+      }
+    }
+
     const patch: Partial<Order> = {
-      datetime: `${editForm.date || "A definir"} ${editForm.time}`.trim(),
+      datetime: `${finalDate || "A definir"} ${finalTime}`.trim(),
       location: editForm.location || undefined,
       notes: editForm.notes || undefined,
     };
@@ -154,8 +219,16 @@ export function GerenciarPedidos() {
       patch.peopleCount = peopleCount;
       if (/pessoas/.test(selected.qty)) patch.qty = `${peopleCount} pessoas`;
     }
+    if ((selected.items && selected.items.length > 0) || cleanedItems.length > 0) {
+      const feePercent = serviceParameters.find((s) => s.category === selected.category)?.adminFeePercent ?? 10;
+      const subtotal = cleanedItems.reduce((s, it) => s + it.qty * it.price, 0);
+      const total = subtotal * (1 + feePercent / 100);
+      patch.items = cleanedItems.map(({ name, qty, price, productId }) => ({ name, qty, price, productId }));
+      patch.value = money(total);
+      patch.valueNumber = total;
+    }
     updateOrder(selected.id, patch);
-    showToast("Pedido atualizado.");
+    showToast(`Pedido atualizado.${slaNote}`);
     setEditModalOpen(false);
   };
   const duplicate = () => {
@@ -840,12 +913,58 @@ export function GerenciarPedidos() {
       </div>
 
       {editModalOpen && selected && (
-        <Modal onClose={() => setEditModalOpen(false)} width={440}>
+        <Modal onClose={() => setEditModalOpen(false)} width={520}>
           <div className="modal-title" style={{ marginBottom: 18 }}>
             Editar pedido — {selected.id}
           </div>
           <div className="modal-form">
-            <div className="field-row">
+            <div className="field-label" style={{ marginBottom: 4 }}>
+              Itens do pedido
+            </div>
+            {editWithin2h && (
+              <div className="gp-edit-warning">Faltam menos de 2h para a entrega — itens já confirmados não podem ser reduzidos ou removidos, só incluídos.</div>
+            )}
+            <div className="gp-edit-items">
+              {editItems.map((it, idx) => {
+                const lockedByTime = it.original && editWithin2h;
+                const atFloor = it.original && it.qty <= it.originalQty;
+                return (
+                  <div key={idx} className="gp-edit-item-row">
+                    <div className="gp-edit-item-row__name">{it.name}</div>
+                    <div className="gp-edit-item-qty">
+                      <button type="button" disabled={lockedByTime && atFloor} onClick={() => setEditItemQty(idx, it.qty - 1)}>
+                        −
+                      </button>
+                      <span>{it.qty}</span>
+                      <button type="button" onClick={() => setEditItemQty(idx, it.qty + 1)}>
+                        +
+                      </button>
+                    </div>
+                    <div className="gp-edit-item-row__price">{money(it.qty * it.price)}</div>
+                    <button
+                      type="button"
+                      className="gp-edit-item-remove"
+                      disabled={lockedByTime}
+                      title={lockedByTime ? "Itens confirmados não podem ser removidos com menos de 2h para a entrega." : "Remover item"}
+                      onClick={() => removeEditItem(idx)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
+              {editItems.length === 0 && <div className="empty-state">Nenhum item detalhado neste pedido.</div>}
+            </div>
+            <div className="gp-edit-item-add">
+              <input value={newItemName} onChange={(e) => setNewItemName(e.target.value)} placeholder="Nome do item" />
+              <input type="number" min={1} value={newItemQty} onChange={(e) => setNewItemQty(e.target.value)} style={{ width: 56 }} />
+              <input value={newItemPrice} onChange={(e) => setNewItemPrice(e.target.value)} placeholder="Preço unit." inputMode="decimal" style={{ width: 90 }} />
+              <button type="button" className="btn btn--outline btn--sm" onClick={addEditItem}>
+                + Adicionar
+              </button>
+            </div>
+
+            <div className="field-row" style={{ marginTop: 14 }}>
               <label className="field-label">
                 Data
                 <input value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} placeholder="Ex.: 20/08/2026" />
