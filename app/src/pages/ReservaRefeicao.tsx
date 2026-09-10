@@ -6,6 +6,7 @@ import { AttachmentsField } from "../components/AttachmentsField";
 import { KitDetailsModal } from "../components/KitDetailsModal";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
+import { wouldExceedBudget } from "../mock/budget";
 import { computeKitPrice } from "../mock/pricing";
 import { kitContentsFromCatalog } from "../mock/kitContents";
 import { MEAL_SERVICES, type Kit, type MealServiceName, type OrderAttachment } from "../types";
@@ -23,7 +24,7 @@ const MANUAL_PAYMENTS = [
 ];
 
 export function ReservaRefeicao() {
-  const { addOrder, showToast, costCenters, kits, products, serviceCatalog, currentUser, operatingParameters } = useAppData();
+  const { addOrder, showToast, costCenters, kits, products, serviceCatalog, orders, currentUser, operatingParameters } = useAppData();
   const navigate = useNavigate();
 
   const activeCostCenters = costCenters.filter((c) => c.active);
@@ -106,6 +107,9 @@ export function ReservaRefeicao() {
     setHasError(false);
     setErrorMsg("");
 
+    const costCenterAllocations = paymentMode === "centro" ? [{ code: costCenter, percent: 100 }] : [];
+    const overBudget = wouldExceedBudget(costCenterAllocations, total, costCenters, orders);
+
     addOrder({
       id: orderId,
       category: "Reserva de Refeição",
@@ -115,17 +119,18 @@ export function ReservaRefeicao() {
       pickupDate: consumeDate,
       pickupTime: consumeTime,
       datetime: `${consumeDate} ${consumeTime}`.trim(),
-      status: "Solicitado",
+      status: overBudget ? "Aguardando aprovação" : "Solicitado",
+      requiresApproval: overBudget,
       value: money(total),
       valueNumber: total,
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
       requestedByUserId: currentUser?.id,
-      costCenters: paymentMode === "centro" ? [{ code: costCenter, percent: 100 }] : undefined,
+      costCenters: costCenterAllocations.length ? costCenterAllocations : undefined,
       notes: `Forma de pagamento: ${paymentLabel}`,
       poNumber: poNumber || undefined,
       attachments: attachments.length ? attachments : undefined,
     });
-    showToast("Reserva de refeição solicitada com sucesso!");
+    showToast(overBudget ? "Saldo do centro de custo insuficiente — pedido enviado para aprovação do gestor." : "Reserva de refeição solicitada com sucesso!");
     setConfirmed(true);
   };
 

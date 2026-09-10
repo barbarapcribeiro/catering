@@ -6,6 +6,7 @@ import { AttachmentsField } from "../components/AttachmentsField";
 import { KitDetailsModal } from "../components/KitDetailsModal";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
+import { wouldExceedBudget } from "../mock/budget";
 import { computeKitPrice } from "../mock/pricing";
 import { kitContentsFromCatalog } from "../mock/kitContents";
 import { CopaLocationFields } from "../components/CopaLocationFields";
@@ -126,6 +127,9 @@ export function LancheOrder() {
     setHasError(false);
     setErrorMsg("");
 
+    const costCenterAllocations = [{ code: costCenter, percent: 100 }];
+    const overBudget = wouldExceedBudget(costCenterAllocations, total, costCenters, orders);
+
     addOrder({
       id: orderId,
       category: "Lanche",
@@ -135,7 +139,8 @@ export function LancheOrder() {
       pickupDate,
       pickupTime,
       datetime: `${pickupDate} ${pickupTime}`.trim(),
-      status: "Solicitado",
+      status: overBudget ? "Aguardando aprovação" : "Solicitado",
+      requiresApproval: overBudget,
       value: money(total),
       valueNumber: total,
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
@@ -144,12 +149,12 @@ export function LancheOrder() {
       locationId,
       copaId,
       requestedByUserId: currentUser?.id,
-      costCenters: [{ code: costCenter, percent: 100 }],
+      costCenters: costCenterAllocations,
       notes: `Forma de pagamento: ${paymentDef?.label ?? "—"}`,
       poNumber: poNumber || undefined,
       attachments: attachments.length ? attachments : undefined,
     });
-    showToast("Pedido de lanche solicitado com sucesso!");
+    showToast(overBudget ? "Saldo do centro de custo insuficiente — pedido enviado para aprovação do gestor." : "Pedido de lanche solicitado com sucesso!");
     setConfirmed(true);
   };
 

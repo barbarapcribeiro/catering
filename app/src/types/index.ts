@@ -576,6 +576,8 @@ export interface CostCenter {
   /** Usuário responsável — precisa ter perfil de Gestor aprovador. */
   managerUserId?: string;
   physicalLocation?: string;
+  /** Saldo mensal do centro de custo (opcional — sem valor definido, não há controle de saldo). Reinicia todo mês. */
+  monthlyBudget?: number;
   active: boolean;
 }
 

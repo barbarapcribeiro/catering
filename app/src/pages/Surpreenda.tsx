@@ -7,6 +7,7 @@ import { AttachmentsField } from "../components/AttachmentsField";
 import { KitDetailsModal } from "../components/KitDetailsModal";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
+import { wouldExceedBudget } from "../mock/budget";
 import { CopaLocationFields } from "../components/CopaLocationFields";
 import type { OrderAttachment } from "../types";
 import "./OrderFlow.css";
@@ -200,6 +201,8 @@ export function Surpreenda() {
     showToast("Forma de pagamento selecionada!");
   };
   const finalizeOrder = () => {
+    const costCenterAllocations = payment === "centro" ? [{ code: costCenter, percent: 100 }] : [];
+    const overBudget = wouldExceedBudget(costCenterAllocations, total, costCenters, orders);
     addOrder({
       id: orderId,
       category: "Surpreenda",
@@ -208,7 +211,7 @@ export function Surpreenda() {
       qty: `${people} pessoas`,
       peopleCount: people,
       datetime: `${eventDate || "A definir"} ${eventTime || ""}`.trim(),
-      status: needsApproval ? "Aguardando aprovação" : "Solicitado",
+      status: needsApproval || overBudget ? "Aguardando aprovação" : "Solicitado",
       value: money(total),
       valueNumber: total,
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
@@ -222,12 +225,12 @@ export function Surpreenda() {
       dietaryRestrictions: hasDietary ? dietaryDetails || "Sim, sem detalhes" : "Nenhuma",
       notes: `Forma de pagamento: ${paymentLabel}${obs ? " • " + obs : ""}`,
       poNumber: poNumber || undefined,
-      costCenters: payment === "centro" ? [{ code: costCenter, percent: 100 }] : undefined,
-      requiresApproval: needsApproval,
+      costCenters: costCenterAllocations.length ? costCenterAllocations : undefined,
+      requiresApproval: needsApproval || overBudget,
       attachments: attachments.length ? attachments : undefined,
     });
     setStep(5);
-    showToast("Pedido finalizado com sucesso!");
+    showToast(overBudget ? "Saldo do centro de custo insuficiente — pedido enviado para aprovação do gestor." : "Pedido finalizado com sucesso!");
   };
 
   return (

@@ -5,6 +5,7 @@ import { OpenOrdersCard, PromosSection, RecentOrdersCard } from "../components/H
 import { useAppData } from "../mock/AppDataContext";
 import { STATUS_STYLE } from "../mock/services";
 import { money } from "../mock/money";
+import { costCenterConsumptionByCategory, costCenterRemainingBudget } from "../mock/budget";
 import type { Order } from "../types";
 import "./HomePersona.css";
 
@@ -51,12 +52,25 @@ export function HomeGestor() {
   const ccAvgTicket = ccOrders.length > 0 ? ccRevenue / ccOrders.length : 0;
   const ccPeople = ccOrders.reduce((sum, o) => sum + (o.peopleCount ?? 0), 0);
 
+  const budgetedCostCenters = userCostCenters.filter((c) => c.monthlyBudget);
+  const ccBudgetTotal = budgetedCostCenters.reduce((sum, c) => sum + (c.monthlyBudget ?? 0), 0);
+  const ccBudgetRemaining = budgetedCostCenters.reduce((sum, c) => sum + (costCenterRemainingBudget(c, orders) ?? 0), 0);
+
+  const consumptionByCategory = costCenterCodes.reduce<Record<string, number>>((acc, code) => {
+    const byCat = costCenterConsumptionByCategory(code, orders);
+    for (const [cat, val] of Object.entries(byCat)) acc[cat] = (acc[cat] ?? 0) + val;
+    return acc;
+  }, {});
+
   const ccKpis = [
     { glyph: "💰", label: "Faturamento total", value: money(ccRevenue), seed: 1, sparkColor: "var(--color-primary)" },
     { glyph: "📦", label: "Pedidos realizados", value: String(ccOrders.length), seed: 2, sparkColor: "#1e4fa3" },
     { glyph: "🎟", label: "Ticket médio", value: money(ccAvgTicket), seed: 3, sparkColor: "#1a7a4f" },
     { glyph: "👥", label: "Unidades atendidas", value: String(ccPeople), seed: 4, sparkColor: "#b5690f" },
     { glyph: "⭐", label: "Satisfação (NPS)", value: "62", seed: 5, sparkColor: "#c99a1f" },
+    ...(budgetedCostCenters.length > 0
+      ? [{ glyph: "🏦", label: "Saldo do mês", value: `${money(ccBudgetRemaining)} / ${money(ccBudgetTotal)}`, seed: 6, sparkColor: ccBudgetRemaining < 0 ? "var(--color-danger)" : "#1a7a4f" }]
+      : []),
   ];
 
   const approve = (o: Order) => {
@@ -155,6 +169,22 @@ export function HomeGestor() {
                   <Sparkline seed={k.seed} color={k.sparkColor} />
                 </div>
               ))}
+            </div>
+          )}
+
+          {Object.keys(consumptionByCategory).length > 0 && (
+            <div className="card" style={{ marginTop: 16, padding: 16 }}>
+              <div className="persona-home__panel-title" style={{ marginBottom: 10 }}>
+                Consumo do mês por serviço
+              </div>
+              {Object.entries(consumptionByCategory)
+                .sort((a, b) => b[1] - a[1])
+                .map(([category, value]) => (
+                  <div key={category} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--color-border-soft)", fontSize: 13 }}>
+                    <span>{category}</span>
+                    <strong>{money(value)}</strong>
+                  </div>
+                ))}
             </div>
           )}
         </div>

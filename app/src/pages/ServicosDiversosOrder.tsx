@@ -4,6 +4,7 @@ import { Layout } from "../components/Layout";
 import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
+import { wouldExceedBudget } from "../mock/budget";
 import type { OrderAttachment } from "../types";
 import "./OrderFlow.css";
 import "./Surpreenda.css";
@@ -100,6 +101,9 @@ export function ServicosDiversosOrder() {
     setHasError(false);
     setErrorMsg("");
 
+    const costCenterAllocations = [{ code: costCenter, percent: 100 }];
+    const overBudget = wouldExceedBudget(costCenterAllocations, total, costCenters, orders);
+
     addOrder({
       id: orderId,
       category: "Serviços Diversos",
@@ -109,17 +113,18 @@ export function ServicosDiversosOrder() {
       pickupDate: serviceDate,
       pickupTime: serviceTime,
       datetime: `${serviceDate} ${serviceTime}`.trim(),
-      status: "Solicitado",
+      status: overBudget ? "Aguardando aprovação" : "Solicitado",
+      requiresApproval: overBudget,
       value: money(total),
       valueNumber: total,
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
       requestedByUserId: currentUser?.id,
-      costCenters: [{ code: costCenter, percent: 100 }],
+      costCenters: costCenterAllocations,
       notes: [`Forma de pagamento: ${paymentDef?.label ?? "—"}`, observations && `Observações: ${observations}`].filter(Boolean).join(" · "),
       poNumber: poNumber || undefined,
       attachments: attachments.length ? attachments : undefined,
     });
-    showToast("Pedido de serviços diversos solicitado com sucesso!");
+    showToast(overBudget ? "Saldo do centro de custo insuficiente — pedido enviado para aprovação do gestor." : "Pedido de serviços diversos solicitado com sucesso!");
     setConfirmed(true);
   };
 

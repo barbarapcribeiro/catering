@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useAppData } from "../../mock/AppDataContext";
 import { Modal } from "../../components/Modal";
+import { costCenterRemainingBudget } from "../../mock/budget";
+import { money } from "../../mock/money";
 import type { CostCenter } from "../../types";
 import "./CentrosCusto.css";
 
-const EMPTY_FORM = { code: "", name: "", companyId: "", branchId: "", areaName: "", managerUserId: "", physicalLocation: "", active: true };
+const EMPTY_FORM = { code: "", name: "", companyId: "", branchId: "", areaName: "", managerUserId: "", physicalLocation: "", monthlyBudget: "", active: true };
 
 export function CentrosCusto() {
   const { costCenters, orders, companies, branches, users, addCostCenter, updateCostCenter, removeCostCenter, showToast } = useAppData();
@@ -37,6 +39,7 @@ export function CentrosCusto() {
       areaName: c.areaName ?? "",
       managerUserId: c.managerUserId ?? "",
       physicalLocation: c.physicalLocation ?? "",
+      monthlyBudget: c.monthlyBudget ? String(c.monthlyBudget) : "",
       active: c.active,
     });
     setModalOpen(true);
@@ -58,6 +61,7 @@ export function CentrosCusto() {
       areaName: form.areaName,
       managerUserId: form.managerUserId || undefined,
       physicalLocation: form.physicalLocation || undefined,
+      monthlyBudget: form.monthlyBudget ? parseFloat(form.monthlyBudget.replace(",", ".")) || undefined : undefined,
       active: form.active,
     };
     if (editingId) {
@@ -102,10 +106,13 @@ export function CentrosCusto() {
             <div>Empresa / Filial</div>
             <div>Responsável</div>
             <div>Pedidos</div>
+            <div>Saldo do mês</div>
             <div>Status</div>
             <div>Ações</div>
           </div>
-          {costCenters.map((c) => (
+          {costCenters.map((c) => {
+            const remaining = costCenterRemainingBudget(c, orders);
+            return (
             <div key={c.id} className="centroscusto-table__row">
               <div className="centroscusto-table__code">{c.code}</div>
               <div>
@@ -118,6 +125,9 @@ export function CentrosCusto() {
               </div>
               <div className="centroscusto-table__muted">{managerName(c.managerUserId) || "—"}</div>
               <div className="centroscusto-table__muted">{orderCount(c.code)}</div>
+              <div className="centroscusto-table__muted" style={remaining !== null && remaining < 0 ? { color: "var(--color-danger)", fontWeight: 700 } : undefined}>
+                {remaining === null ? "Sem controle" : `${money(remaining)} / ${money(c.monthlyBudget!)}`}
+              </div>
               <div>
                 <span className="status-pill" style={{ background: c.active ? "var(--color-success-soft)" : "var(--color-border-soft)", color: c.active ? "var(--color-success)" : "var(--color-text-muted)" }}>
                   {c.active ? "Ativo" : "Bloqueado"}
@@ -135,7 +145,8 @@ export function CentrosCusto() {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
           {costCenters.length === 0 && <div className="empty-state">Nenhum centro de custo cadastrado ainda.</div>}
         </div>
       </div>
@@ -195,6 +206,16 @@ export function CentrosCusto() {
             <label className="field-label">
               Local físico <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional)</span>
               <input value={form.physicalLocation} onChange={(e) => setForm({ ...form, physicalLocation: e.target.value })} placeholder="Ex.: Torre A, 5º andar" />
+            </label>
+            <label className="field-label">
+              Saldo mensal <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>(opcional — sem valor, não há controle de saldo)</span>
+              <input
+                value={form.monthlyBudget}
+                onChange={(e) => setForm({ ...form, monthlyBudget: e.target.value })}
+                placeholder="Ex.: 5000"
+                inputMode="decimal"
+              />
+              <span className="field-hint">Quando o consumo do mês estourar esse valor, novos pedidos passam a exigir aprovação do gestor responsável.</span>
             </label>
             <label className="centroscusto-active-check">
               <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />

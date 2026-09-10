@@ -8,6 +8,7 @@ import { AttachmentsField } from "../components/AttachmentsField";
 import { KitDetailsModal } from "../components/KitDetailsModal";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
+import { wouldExceedBudget } from "../mock/budget";
 import { CopaLocationFields } from "../components/CopaLocationFields";
 import type { OrderAttachment } from "../types";
 import "./OrderFlow.css";
@@ -301,6 +302,8 @@ export function EventoEspecialOrder() {
     showToast("Informações do evento salvas!");
   };
   const continueToStep4 = () => {
+    const costCenterAllocations = selCodes.map((code) => ({ code, percent: multiSel ? costCenterPct[code] : 100 }));
+    const overBudget = wouldExceedBudget(costCenterAllocations, total, costCenters, orders);
     addOrder({
       id: orderId,
       category: "Evento Especial",
@@ -309,7 +312,7 @@ export function EventoEspecialOrder() {
       qty: `${people} pessoas`,
       peopleCount: people,
       datetime: `${eventDate || "A definir"} ${eventTime || ""}`.trim(),
-      status: needsApproval ? "Aguardando aprovação" : "Solicitado",
+      status: needsApproval || overBudget ? "Aguardando aprovação" : "Solicitado",
       value: money(total),
       valueNumber: total,
       items: cartItems.map((ci) => ({ name: ci.name, qty: ci.qty, price: ci.unitPrice })),
@@ -325,12 +328,12 @@ export function EventoEspecialOrder() {
       pickupTime,
       coffeeInstructions,
       dietaryRestrictions: hasDietary ? dietaryDetails || "Sim, sem detalhes" : "Nenhuma",
-      costCenters: selCodes.map((code) => ({ code, percent: multiSel ? costCenterPct[code] : 100 })),
-      requiresApproval: needsApproval,
+      costCenters: costCenterAllocations,
+      requiresApproval: needsApproval || overBudget,
       attachments: attachments.length ? attachments : undefined,
     });
     setStep(4);
-    showToast("Faturamento confirmado!");
+    showToast(overBudget ? "Saldo do centro de custo insuficiente — pedido enviado para aprovação do gestor." : "Faturamento confirmado!");
   };
 
   return (

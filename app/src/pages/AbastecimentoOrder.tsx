@@ -5,6 +5,7 @@ import { ImagePlaceholder } from "../components/ImagePlaceholder";
 import { AttachmentsField } from "../components/AttachmentsField";
 import { useAppData } from "../mock/AppDataContext";
 import { money } from "../mock/money";
+import { wouldExceedBudget } from "../mock/budget";
 import { CopaLocationFields } from "../components/CopaLocationFields";
 import type { OrderAttachment, Product } from "../types";
 import "./OrderFlow.css";
@@ -98,6 +99,9 @@ export function AbastecimentoOrder() {
     setHasError(false);
     setErrorMsg("");
 
+    const costCenterAllocations = [{ code: costCenter, percent: 100 }];
+    const overBudget = wouldExceedBudget(costCenterAllocations, total, costCenters, orders);
+
     addOrder({
       id: orderId,
       category: "Abastecimento Simples",
@@ -105,7 +109,8 @@ export function AbastecimentoOrder() {
       mono: "AS",
       qty: `${totalUnits} item(ns)`,
       datetime: `${deliveryDate} ${deliveryTime}`.trim(),
-      status: "Solicitado",
+      status: overBudget ? "Aguardando aprovação" : "Solicitado",
+      requiresApproval: overBudget,
       value: money(total),
       valueNumber: total,
       items: allItems.filter((p) => (qty[p.id] ?? 0) > 0).map((p) => ({ name: p.name, qty: qty[p.id], price: p.price, productId: p.id })),
@@ -114,12 +119,12 @@ export function AbastecimentoOrder() {
       locationId,
       copaId,
       requestedByUserId: currentUser?.id,
-      costCenters: [{ code: costCenter, percent: 100 }],
+      costCenters: costCenterAllocations,
       notes: `Entregar para: ${deliverTo}${observations ? " • " + observations : ""}`,
       poNumber: poNumber || undefined,
       attachments: attachments.length ? attachments : undefined,
     });
-    showToast("Pedido de abastecimento solicitado com sucesso!");
+    showToast(overBudget ? "Saldo do centro de custo insuficiente — pedido enviado para aprovação do gestor." : "Pedido de abastecimento solicitado com sucesso!");
     navigate("/");
   };
 
